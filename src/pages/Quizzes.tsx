@@ -1,0 +1,529 @@
+
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Progress } from "@/components/ui/progress";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/use-toast";
+import { BookOpen, CheckCircle, Clock, Award, ArrowRight, Sparkles, Calendar } from "lucide-react";
+
+interface QuizQuestion {
+  id: number;
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  explanation: string;
+}
+
+interface Quiz {
+  id: string;
+  title: string;
+  subject: string;
+  questions: QuizQuestion[];
+}
+
+// Mock quiz data
+const mockQuizzes: Quiz[] = [
+  {
+    id: "algebra-1",
+    title: "Algebra Fundamentals",
+    subject: "Mathematics",
+    questions: [
+      {
+        id: 1,
+        question: "Solve for x: 3x + 7 = 22",
+        options: ["x = 3", "x = 5", "x = 7", "x = 15"],
+        correctAnswer: 1,
+        explanation: "3x + 7 = 22\n3x = 22 - 7\n3x = 15\nx = 15/3\nx = 5"
+      },
+      {
+        id: 2,
+        question: "Factor the expression: x² + 7x + 12",
+        options: ["(x + 3)(x + 4)", "(x + 6)(x + 2)", "(x - 3)(x - 4)", "(x - 6)(x - 2)"],
+        correctAnswer: 0,
+        explanation: "We need to find two numbers that multiply to give 12 and add to give 7.\nThe numbers are 3 and 4, so the factorization is (x + 3)(x + 4)."
+      },
+      {
+        id: 3,
+        question: "What is the slope of the line passing through points (2, 5) and (4, 9)?",
+        options: ["1", "2", "3", "4"],
+        correctAnswer: 1,
+        explanation: "The slope formula is (y₂ - y₁)/(x₂ - x₁).\nSlope = (9 - 5)/(4 - 2) = 4/2 = 2"
+      },
+      {
+        id: 4,
+        question: "Simplify: 2(3x - 4) + 5x",
+        options: ["11x - 4", "11x - 8", "6x - 8", "6x - 4"],
+        correctAnswer: 1,
+        explanation: "2(3x - 4) + 5x\n= 6x - 8 + 5x\n= 11x - 8"
+      },
+      {
+        id: 5,
+        question: "What is the value of x in the equation 2^x = 32?",
+        options: ["4", "5", "8", "16"],
+        correctAnswer: 1,
+        explanation: "2^x = 32\n2^x = 2^5\nTherefore, x = 5"
+      }
+    ]
+  }
+];
+
+const mockQuizHistory = [
+  {
+    id: "past-quiz-1",
+    title: "Geometry Basics",
+    date: "2 days ago",
+    score: 80,
+    questionCount: 10
+  },
+  {
+    id: "past-quiz-2",
+    title: "Cell Biology",
+    date: "1 week ago",
+    score: 70,
+    questionCount: 10
+  }
+];
+
+const Quizzes: React.FC = () => {
+  const { toast } = useToast();
+  const [activeQuiz, setActiveQuiz] = useState<Quiz | null>(null);
+  const [quizMode, setQuizMode] = useState<"browse" | "taking" | "results">("browse");
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [userAnswers, setUserAnswers] = useState<(number | null)[]>([]);
+  const [newQuizTopic, setNewQuizTopic] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [quizResults, setQuizResults] = useState<{
+    score: number;
+    totalQuestions: number;
+    correctAnswers: number;
+  } | null>(null);
+  
+  const startQuiz = (quiz: Quiz) => {
+    setActiveQuiz(quiz);
+    setQuizMode("taking");
+    setCurrentQuestionIndex(0);
+    setUserAnswers(new Array(quiz.questions.length).fill(null));
+  };
+  
+  const handleAnswerSelect = (answerIndex: number) => {
+    const newAnswers = [...userAnswers];
+    newAnswers[currentQuestionIndex] = answerIndex;
+    setUserAnswers(newAnswers);
+  };
+  
+  const handleNextQuestion = () => {
+    if (currentQuestionIndex < (activeQuiz?.questions.length || 0) - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    } else {
+      // Calculate results
+      if (!activeQuiz) return;
+      
+      const correctAnswers = userAnswers.reduce((count, answer, index) => {
+        if (answer === activeQuiz.questions[index].correctAnswer) {
+          return count + 1;
+        }
+        return count;
+      }, 0);
+      
+      const score = Math.round((correctAnswers / activeQuiz.questions.length) * 100);
+      
+      setQuizResults({
+        score,
+        totalQuestions: activeQuiz.questions.length,
+        correctAnswers,
+      });
+      
+      setQuizMode("results");
+    }
+  };
+
+  const generateNewQuiz = () => {
+    if (!newQuizTopic.trim()) {
+      toast({
+        title: "Topic required",
+        description: "Please enter a topic for your new quiz",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsGenerating(true);
+    
+    // Simulate API call to GPT-4o
+    setTimeout(() => {
+      toast({
+        title: "Quiz Generated!",
+        description: `A new quiz on ${newQuizTopic} has been created with 5 questions.`,
+      });
+      setIsGenerating(false);
+      setNewQuizTopic("");
+    }, 2000);
+  };
+
+  const exitQuiz = () => {
+    setActiveQuiz(null);
+    setQuizMode("browse");
+    setUserAnswers([]);
+    setQuizResults(null);
+  };
+
+  const renderBrowseMode = () => {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Available Quizzes</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {mockQuizzes.map((quiz) => (
+                <div 
+                  key={quiz.id}
+                  className="p-4 border rounded-lg hover:border-brightpair hover:bg-brightpair-50 transition-colors cursor-pointer"
+                  onClick={() => startQuiz(quiz)}
+                >
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h3 className="font-medium">{quiz.title}</h3>
+                      <p className="text-sm text-gray-500">{quiz.subject} • {quiz.questions.length} questions</p>
+                    </div>
+                    <Button size="sm" className="bg-brightpair hover:bg-brightpair-600">
+                      Start
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Quiz History</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {mockQuizHistory.map((quiz) => (
+                <div 
+                  key={quiz.id}
+                  className="p-4 border rounded-lg"
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-medium">{quiz.title}</h3>
+                      <div className="flex items-center mt-1 text-sm text-gray-500">
+                        <Clock size={14} className="mr-1" />
+                        <span>{quiz.date}</span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-lg font-semibold">{quiz.score}%</div>
+                      <p className="text-xs text-gray-500">{Math.round(quiz.score / 10 * quiz.questionCount) / 10} of {quiz.questionCount} correct</p>
+                    </div>
+                  </div>
+                  <div className="mt-2">
+                    <Progress value={quiz.score} className="h-2" />
+                  </div>
+                </div>
+              ))}
+              
+              <div className="flex justify-center mt-4">
+                <Button variant="outline" className="w-full">
+                  View All Quiz History
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        
+        <div>
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Generate Custom Quiz</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="quiz-topic">Quiz Topic</Label>
+                  <Input 
+                    id="quiz-topic"
+                    placeholder="e.g., Quadratic Equations, French Revolution"
+                    value={newQuizTopic}
+                    onChange={(e) => setNewQuizTopic(e.target.value)}
+                  />
+                </div>
+                <Button 
+                  className="w-full bg-brightpair hover:bg-brightpair-600"
+                  onClick={generateNewQuiz}
+                  disabled={isGenerating}
+                >
+                  {isGenerating ? "Generating..." : "Generate Quiz"}
+                </Button>
+                <div className="text-sm text-gray-500">
+                  Your AI tutor will create a custom quiz with multiple-choice questions based on your learning profile.
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Quiz Tips</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-start">
+                  <div className="bg-brightpair-50 p-2 rounded-full mr-3">
+                    <Calendar size={16} className="text-brightpair" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium">Regular Practice</h4>
+                    <p className="text-sm text-gray-600">
+                      Regular quizzing helps reinforce learning and improves long-term retention.
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start">
+                  <div className="bg-brightpair-50 p-2 rounded-full mr-3">
+                    <BookOpen size={16} className="text-brightpair" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium">Review Mistakes</h4>
+                    <p className="text-sm text-gray-600">
+                      After each quiz, review any questions you missed to strengthen your understanding.
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start">
+                  <div className="bg-brightpair-50 p-2 rounded-full mr-3">
+                    <Sparkles size={16} className="text-brightpair" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium">Flashcard Integration</h4>
+                    <p className="text-sm text-gray-600">
+                      Convert quiz questions you struggled with into flashcards for additional review.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  };
+
+  const renderTakingQuizMode = () => {
+    if (!activeQuiz) return null;
+    
+    const currentQuestion = activeQuiz.questions[currentQuestionIndex];
+    const hasAnswered = userAnswers[currentQuestionIndex] !== null;
+    
+    return (
+      <div className="max-w-3xl mx-auto">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h2 className="text-xl font-semibold">{activeQuiz.title}</h2>
+            <p className="text-gray-600">Question {currentQuestionIndex + 1} of {activeQuiz.questions.length}</p>
+          </div>
+          <Button variant="outline" onClick={exitQuiz}>Exit Quiz</Button>
+        </div>
+        
+        <Progress 
+          value={(currentQuestionIndex / activeQuiz.questions.length) * 100} 
+          className="h-2 mb-8" 
+        />
+        
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg font-medium">{currentQuestion.question}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <RadioGroup
+              value={userAnswers[currentQuestionIndex]?.toString() || ""}
+              onValueChange={(value) => handleAnswerSelect(parseInt(value))}
+              className="space-y-3"
+            >
+              {currentQuestion.options.map((option, index) => (
+                <div 
+                  key={index} 
+                  className={`flex items-center space-x-2 p-3 rounded-lg border ${
+                    userAnswers[currentQuestionIndex] === index ? 'border-brightpair bg-brightpair-50' : 'border-gray-200'
+                  }`}
+                >
+                  <RadioGroupItem value={index.toString()} id={`option-${index}`} />
+                  <Label className="flex-1 cursor-pointer" htmlFor={`option-${index}`}>{option}</Label>
+                </div>
+              ))}
+            </RadioGroup>
+          </CardContent>
+          <CardFooter className="flex justify-end">
+            <Button 
+              onClick={handleNextQuestion}
+              disabled={!hasAnswered}
+              className="bg-brightpair hover:bg-brightpair-600"
+            >
+              {currentQuestionIndex === activeQuiz.questions.length - 1 ? "Finish Quiz" : "Next Question"}
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+    );
+  };
+
+  const renderResultsMode = () => {
+    if (!activeQuiz || !quizResults) return null;
+    
+    return (
+      <div className="max-w-3xl mx-auto">
+        <Card className="mb-8">
+          <CardContent className="pt-6">
+            <div className="text-center mb-6">
+              <div className="inline-flex items-center justify-center h-24 w-24 rounded-full bg-brightpair-50 mb-4">
+                <Award size={40} className="text-brightpair" />
+              </div>
+              <h2 className="text-2xl font-bold mb-2">Quiz Completed!</h2>
+              <p className="text-gray-600">
+                You scored {quizResults.score}% ({quizResults.correctAnswers} of {quizResults.totalQuestions} correct)
+              </p>
+            </div>
+            
+            <div className="my-6">
+              <Progress value={quizResults.score} className="h-3" />
+            </div>
+            
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <p className="text-sm text-gray-500">Questions</p>
+                <p className="text-xl font-semibold">{quizResults.totalQuestions}</p>
+              </div>
+              <div className="p-4 bg-green-50 rounded-lg">
+                <p className="text-sm text-gray-500">Correct</p>
+                <p className="text-xl font-semibold text-green-600">{quizResults.correctAnswers}</p>
+              </div>
+              <div className="p-4 bg-red-50 rounded-lg">
+                <p className="text-sm text-gray-500">Incorrect</p>
+                <p className="text-xl font-semibold text-red-600">{quizResults.totalQuestions - quizResults.correctAnswers}</p>
+              </div>
+            </div>
+            
+            <div className="mt-8 flex flex-col md:flex-row justify-center space-y-3 md:space-y-0 md:space-x-3">
+              <Button onClick={exitQuiz} variant="outline">
+                Return to Quizzes
+              </Button>
+              <Button className="bg-brightpair hover:bg-brightpair-600">
+                Review Answers
+              </Button>
+              <Button variant="outline">
+                <Sparkles size={16} className="mr-2" />
+                Create Flashcards from Mistakes
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <div className="bg-brightpair-50 p-4 rounded-lg mb-4">
+          <div className="flex items-start">
+            <div className="p-2 bg-white rounded-full mr-3">
+              <Sparkles size={16} className="text-brightpair" />
+            </div>
+            <div>
+              <h3 className="font-medium">AI Tutor Feedback</h3>
+              <p className="text-sm">
+                You did well with algebraic manipulation, but might need more practice with
+                factoring expressions. I've prepared some additional exercises focused on this area.
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Detailed Review</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              {activeQuiz.questions.map((question, qIndex) => {
+                const userAnswer = userAnswers[qIndex];
+                const isCorrect = userAnswer === question.correctAnswer;
+                
+                return (
+                  <div key={qIndex} className="border rounded-lg overflow-hidden">
+                    <div className={`p-4 ${isCorrect ? 'bg-green-50' : 'bg-red-50'}`}>
+                      <div className="flex justify-between items-center mb-2">
+                        <h3 className="font-medium">Question {qIndex + 1}</h3>
+                        {isCorrect ? (
+                          <span className="flex items-center text-green-600 text-sm font-medium">
+                            <CheckCircle size={16} className="mr-1" /> Correct
+                          </span>
+                        ) : (
+                          <span className="flex items-center text-red-600 text-sm font-medium">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+                              <circle cx="12" cy="12" r="10" />
+                              <line x1="15" y1="9" x2="9" y2="15" />
+                              <line x1="9" y1="9" x2="15" y2="15" />
+                            </svg>
+                            Incorrect
+                          </span>
+                        )}
+                      </div>
+                      <p>{question.question}</p>
+                    </div>
+                    
+                    <div className="p-4 border-t">
+                      <div className="mb-3">
+                        <p className="text-sm font-medium">Your answer:</p>
+                        <p className={userAnswer !== null ? (isCorrect ? 'text-green-600' : 'text-red-600') : 'text-gray-500'}>
+                          {userAnswer !== null ? question.options[userAnswer] : 'No answer provided'}
+                        </p>
+                      </div>
+                      
+                      {!isCorrect && (
+                        <div className="mb-3">
+                          <p className="text-sm font-medium">Correct answer:</p>
+                          <p className="text-green-600">{question.options[question.correctAnswer]}</p>
+                        </div>
+                      )}
+                      
+                      <div>
+                        <p className="text-sm font-medium">Explanation:</p>
+                        <p className="text-gray-600 whitespace-pre-line">{question.explanation}</p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  };
+
+  return (
+    <div className="p-6 md:p-8">
+      <div className="max-w-7xl mx-auto">
+        {quizMode === "browse" && (
+          <>
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold font-display mb-1">Quizzes</h1>
+                <p className="text-gray-600">Test your knowledge and track your progress</p>
+              </div>
+            </div>
+            {renderBrowseMode()}
+          </>
+        )}
+        
+        {quizMode === "taking" && renderTakingQuizMode()}
+        {quizMode === "results" && renderResultsMode()}
+      </div>
+    </div>
+  );
+};
+
+export default Quizzes;
