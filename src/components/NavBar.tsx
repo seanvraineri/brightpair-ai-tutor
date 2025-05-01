@@ -50,7 +50,7 @@ const NavBar = () => {
           </Link>
           <Link to="/signup">
             <Button className="bg-brightpair hover:bg-brightpair-600 text-white">
-              Start Free Trial
+              Free Consultation
             </Button>
           </Link>
         </div>
@@ -88,7 +88,7 @@ const NavBar = () => {
             </Link>
             <Link to="/signup" onClick={() => setIsMenuOpen(false)}>
               <Button className="w-full bg-brightpair hover:bg-brightpair-600 text-white">
-                Start Free Trial
+                Free Consultation
               </Button>
             </Link>
           </div>

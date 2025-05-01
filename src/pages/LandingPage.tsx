@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -26,7 +27,7 @@ const faqs = [
   },
   {
     question: "How much does BrightPair cost?",
-    answer: "Our pricing plans are available in the Pricing section above. We offer different tiers based on how much human tutoring and AI support your child needs. All plans start with a 14-day free trial with no credit card required."
+    answer: "Our pricing plans are available in the Pricing section above. We offer different tiers based on how much human tutoring and AI support your child needs. All plans start with a free consultation with no credit card required."
   },
   {
     question: "Is my child's data secure with BrightPair?",
@@ -60,7 +61,7 @@ const LandingPage: React.FC = () => {
               <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
                 <Link to="/signup">
                   <ButtonPrimary size="lg">
-                    Start Free Trial
+                    Free Consultation
                   </ButtonPrimary>
                 </Link>
                 <Button size="lg" variant="outline">

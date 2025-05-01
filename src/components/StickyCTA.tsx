@@ -27,7 +27,7 @@ const StickyCTA: React.FC = () => {
         </div>
         <div className="flex flex-col sm:flex-row gap-3">
           <Link to="/signup">
-            <ButtonPrimary size="lg">Start Free Trial</ButtonPrimary>
+            <ButtonPrimary size="lg">Free Consultation</ButtonPrimary>
           </Link>
           <Link to="/contact">
             <Button size="lg" variant="outline">Contact Sales</Button>

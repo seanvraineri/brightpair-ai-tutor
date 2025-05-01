@@ -11,13 +11,13 @@ const CTASection: React.FC = () => {
           Ready to Transform Your Child's Learning Experience?
         </h2>
         <p className="text-white/90 mb-8 text-lg max-w-2xl mx-auto">
-          Start your 14-day free trial and see how a personalized AI tutor can help your child excel.
+          Schedule a free consultation and see how a personalized AI tutor can help your child excel.
           No credit card required.
         </p>
         <div className="flex flex-col sm:flex-row justify-center gap-4">
           <Link to="/signup">
             <ButtonPrimary size="lg">
-              Start Free Trial
+              Free Consultation
             </ButtonPrimary>
           </Link>
           <Link to="/contact">

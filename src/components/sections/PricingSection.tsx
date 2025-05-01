@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,13 +16,12 @@ const PricingSection: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {/* Free Trial */}
+          {/* Free Consultation */}
           <div className="border rounded-xl p-8 shadow-sm hover:shadow-md transition-all bg-white">
             <div className="mb-6">
-              <h3 className="text-xl font-bold font-display mb-2">Free Trial</h3>
+              <h3 className="text-xl font-bold font-display mb-2">Free Consultation</h3>
               <div className="mb-4">
                 <span className="text-3xl font-bold">$0</span>
-                <span className="text-gray-500"> / 14 days</span>
               </div>
               <p className="text-gray-600 mb-6">
                 Experience the power of personalized AI tutoring with no commitment.
@@ -34,20 +34,20 @@ const PricingSection: React.FC = () => {
               </li>
               <li className="flex items-start">
                 <Check className="h-5 w-5 text-brightpair mt-0.5 mr-2 flex-shrink-0" />
-                <span>Personalized AI tutor</span>
+                <span>Personalized AI tutor demo</span>
               </li>
               <li className="flex items-start">
                 <Check className="h-5 w-5 text-brightpair mt-0.5 mr-2 flex-shrink-0" />
-                <span>Limited AI tutoring sessions</span>
+                <span>Learning plan recommendation</span>
               </li>
               <li className="flex items-start">
                 <Check className="h-5 w-5 text-brightpair mt-0.5 mr-2 flex-shrink-0" />
-                <span>Basic flashcards & quizzes</span>
+                <span>Needs assessment</span>
               </li>
             </ul>
             <Link to="/signup">
               <Button variant="outline" className="w-full">
-                Start Free Trial
+                Book Consultation
               </Button>
             </Link>
           </div>
