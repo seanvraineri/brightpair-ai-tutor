@@ -8,6 +8,7 @@ import HowItWorksSection from "@/components/sections/HowItWorksSection";
 import ComparisonSection from "@/components/sections/ComparisonSection";
 import PricingSection from "@/components/sections/PricingSection";
 import TestimonialsSection from "@/components/sections/TestimonialsSection";
+import TutorsSection from "@/components/sections/TutorsSection";
 import CTASection from "@/components/sections/CTASection";
 
 const LandingPage: React.FC = () => {
@@ -140,6 +141,7 @@ const LandingPage: React.FC = () => {
       <HowItWorksSection />
       <ComparisonSection />
       <TestimonialsSection />
+      <TutorsSection />
       <PricingSection />
       <CTASection />
       <Footer />
