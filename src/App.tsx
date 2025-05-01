@@ -19,6 +19,7 @@ import DashboardLayout from "./components/dashboard/DashboardLayout";
 import TutorSignup from "./pages/TutorSignup";
 import TutorFAQ from "./pages/TutorFAQ";
 import Contact from "./pages/Contact";
+import Homework from "./pages/Homework";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const App = () => (
           {/* Dashboard Routes */}
           <Route element={<DashboardLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/homework" element={<Homework />} />
             <Route path="/tutor-chat" element={<TutorChat />} />
             <Route path="/flashcards" element={<Flashcards />} />
             <Route path="/quizzes" element={<Quizzes />} />

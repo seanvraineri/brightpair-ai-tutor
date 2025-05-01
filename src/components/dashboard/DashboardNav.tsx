@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
@@ -9,7 +8,8 @@ import {
   Settings,
   LogOut,
   Menu,
-  X
+  X,
+  ListTodo
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Logo from "@/components/Logo";
@@ -70,6 +70,12 @@ const DashboardNav: React.FC = () => {
       icon: <User size={20} />, 
       label: "Dashboard",
       active: isActive("/dashboard")
+    },
+    { 
+      to: "/homework", 
+      icon: <ListTodo size={20} />, 
+      label: "Homework",
+      active: isActive("/homework")
     },
     { 
       to: "/tutor-chat", 
