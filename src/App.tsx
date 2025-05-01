@@ -24,37 +24,39 @@ import Homework from "./pages/Homework";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="/consultation" element={<ConsultationScheduling />} />
-          <Route path="/onboarding" element={<OnboardingForm />} />
-          <Route path="/tutor-signup" element={<TutorSignup />} />
-          <Route path="/tutor-faq" element={<TutorFAQ />} />
-          <Route path="/contact" element={<Contact />} />
-          
-          {/* Dashboard Routes */}
-          <Route element={<DashboardLayout />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/homework" element={<Homework />} />
-            <Route path="/tutor-chat" element={<TutorChat />} />
-            <Route path="/flashcards" element={<Flashcards />} />
-            <Route path="/quizzes" element={<Quizzes />} />
-            <Route path="/settings" element={<Settings />} />
-          </Route>
-          
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <BrowserRouter>
+          <Toaster />
+          <Sonner />
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/consultation" element={<ConsultationScheduling />} />
+            <Route path="/onboarding" element={<OnboardingForm />} />
+            <Route path="/tutor-signup" element={<TutorSignup />} />
+            <Route path="/tutor-faq" element={<TutorFAQ />} />
+            <Route path="/contact" element={<Contact />} />
+            
+            {/* Dashboard Routes */}
+            <Route element={<DashboardLayout />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/homework" element={<Homework />} />
+              <Route path="/tutor-chat" element={<TutorChat />} />
+              <Route path="/flashcards" element={<Flashcards />} />
+              <Route path="/quizzes" element={<Quizzes />} />
+              <Route path="/settings" element={<Settings />} />
+            </Route>
+            
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
