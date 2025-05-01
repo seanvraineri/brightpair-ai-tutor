@@ -1,7 +1,7 @@
 
 import React from "react";
-import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
 import HowItWorksSection from "@/components/sections/HowItWorksSection";
@@ -10,18 +10,47 @@ import PricingSection from "@/components/sections/PricingSection";
 import TestimonialsSection from "@/components/sections/TestimonialsSection";
 import TutorsSection from "@/components/sections/TutorsSection";
 import CTASection from "@/components/sections/CTASection";
+import StickyCTA from "@/components/StickyCTA";
+import VideoModal from "@/components/VideoModal";
+import TrustBar from "@/components/TrustBar";
+import ButtonPrimary from "@/components/ButtonPrimary";
+import FaqSection from "@/components/sections/FaqSection";
+
+const faqs = [
+  {
+    question: "How does BrightPair combine human and AI tutoring?",
+    answer: "BrightPair starts with a 1-on-1 session with a human tutor who gets to know your child's learning style and needs. Based on this session, we create a personalized AI tutor that's available 24/7 for practice and questions. Your child continues to have regular sessions with their human tutor, while the AI supports them between sessions."
+  },
+  {
+    question: "What subjects does BrightPair cover?",
+    answer: "BrightPair currently supports K-12 math, science, English, history, and standardized test prep. Our tutors are matched based on subject expertise and your child's grade level."
+  },
+  {
+    question: "How much does BrightPair cost?",
+    answer: "Our pricing plans are available in the Pricing section above. We offer different tiers based on how much human tutoring and AI support your child needs. All plans start with a 14-day free trial with no credit card required."
+  },
+  {
+    question: "Is my child's data secure with BrightPair?",
+    answer: "Absolutely. We're COPPA and FERPA compliant, and SOC 2 certified. We never sell user data to third parties, and all information is encrypted end-to-end. Parents can access their child's learning data while keeping it private from others."
+  },
+  {
+    question: "How personalized is the AI tutor?",
+    answer: "Very personalized! The AI tutor is created based on your child's learning preferences, pace, strengths, and areas for improvement. It knows when to provide more examples, when to challenge them, and adapts as they progress."
+  }
+];
 
 const LandingPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-white">
       <NavBar />
+      <StickyCTA />
       
       {/* Hero Section */}
       <section className="bg-gradient-to-b from-white to-brightpair-50 pt-16 md:pt-24 pb-20 md:pb-32 px-4">
         <div className="container max-w-7xl mx-auto">
           <div className="flex flex-col lg:flex-row items-center">
             <div className="lg:w-1/2 mb-12 lg:mb-0">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-display leading-tight mb-6">
+              <h1 className="text-4xl md:text-5xl font-bold font-display leading-tight mb-6 max-w-3xl">
                 Your Child's Personal AI Tutor—
                 <span className="text-brightpair">Trained by a Real Human Tutor</span>
               </h1>
@@ -31,9 +60,9 @@ const LandingPage: React.FC = () => {
               </p>
               <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
                 <Link to="/signup">
-                  <Button size="lg" className="bg-brightpair hover:bg-brightpair-600 text-white">
+                  <ButtonPrimary size="lg">
                     Start Free Trial
-                  </Button>
+                  </ButtonPrimary>
                 </Link>
                 <Button size="lg" variant="outline">
                   Learn More
@@ -138,12 +167,25 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
       
+      {/* Video Section */}
+      <section className="py-12 md:py-16 px-4 bg-white">
+        <div className="container max-w-5xl mx-auto">
+          <VideoModal 
+            thumbnailUrl="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&h=450&fit=crop"
+            videoUrl="https://www.youtube.com/embed/dQw4w9WgXcQ"
+            title="See how BrightPair transforms learning"
+          />
+        </div>
+      </section>
+      
       <HowItWorksSection />
       <ComparisonSection />
       <TestimonialsSection />
       <TutorsSection />
       <PricingSection />
+      <FaqSection faqs={faqs} />
       <CTASection />
+      <TrustBar />
       <Footer />
     </div>
   );

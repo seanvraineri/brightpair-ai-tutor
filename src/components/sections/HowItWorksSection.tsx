@@ -1,37 +1,37 @@
 
 import React from "react";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, Handshake, Robot, BookOpen, BarChart3 } from "lucide-react";
 
 const steps = [
   {
     number: 1,
     title: "Onboard with a Human Tutor",
     description: "We meet 1-on-1 (via Zoom) to understand how your child learns",
-    icon: "👩‍🏫"
+    icon: Handshake
   },
   {
     number: 2,
     title: "AI Tutor Is Created",
     description: "Based on the session, we build your child a personal AI tutor trained to match their needs",
-    icon: "🤖"
+    icon: Robot
   },
   {
     number: 3,
     title: "Learn, Practice, Review",
     description: "The AI tutor gives practice, quizzes, flashcards, and feedback 24/7",
-    icon: "📚"
+    icon: BookOpen
   },
   {
     number: 4,
     title: "Weekly Progress Review",
     description: "The tutor and parent get insights and adjust learning each week",
-    icon: "📊"
+    icon: BarChart3
   }
 ];
 
 const HowItWorksSection: React.FC = () => {
   return (
-    <section id="how-it-works" className="py-16 md:py-24 px-4 bg-white">
+    <section id="how-it-works" className="py-24 md:py-32 px-4 bg-white">
       <div className="container max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold font-display mb-6">
@@ -47,8 +47,8 @@ const HowItWorksSection: React.FC = () => {
               key={step.number}
               className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300"
             >
-              <div className="bg-brightpair-50 w-14 h-14 rounded-full flex items-center justify-center mb-6 text-2xl">
-                {step.icon}
+              <div className="bg-brightpair-50 w-14 h-14 rounded-full flex items-center justify-center mb-6">
+                <step.icon className="h-7 w-7 text-brightpair" />
               </div>
               <div className="inline-flex items-center mb-3">
                 <div className="bg-brightpair text-white text-sm font-medium rounded-full w-6 h-6 flex items-center justify-center mr-2">

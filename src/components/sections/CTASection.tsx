@@ -2,6 +2,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import ButtonPrimary from "@/components/ButtonPrimary";
 
 const CTASection: React.FC = () => {
   return <section className="py-16 md:py-20 px-4 bg-brightpair-600">
@@ -15,9 +16,9 @@ const CTASection: React.FC = () => {
         </p>
         <div className="flex flex-col sm:flex-row justify-center gap-4">
           <Link to="/signup">
-            <Button size="lg" className="bg-white text-brightpair-600 hover:bg-gray-100">
+            <ButtonPrimary size="lg">
               Start Free Trial
-            </Button>
+            </ButtonPrimary>
           </Link>
           <Link to="/contact">
             <Button size="lg" variant="outline" className="border-white text-white hover:bg-brightpair-700">
