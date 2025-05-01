@@ -21,7 +21,11 @@ const CTASection: React.FC = () => {
             </ButtonPrimary>
           </Link>
           <Link to="/contact">
-            <Button size="lg" variant="outline" className="border-white text-white hover:bg-brightpair-700">
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="border-white text-white hover:bg-white hover:text-brightpair-600 font-medium transition-colors"
+            >
               Contact Sales
             </Button>
           </Link>
