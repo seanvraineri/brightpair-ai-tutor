@@ -1,6 +1,6 @@
 
 import React from "react";
-import { CheckCircle, Handshake, Robot, BookOpen, BarChart3 } from "lucide-react";
+import { CheckCircle, Handshake, Bot, BookOpen, BarChart3 } from "lucide-react";
 
 const steps = [
   {
@@ -13,7 +13,7 @@ const steps = [
     number: 2,
     title: "AI Tutor Is Created",
     description: "Based on the session, we build your child a personal AI tutor trained to match their needs",
-    icon: Robot
+    icon: Bot
   },
   {
     number: 3,
