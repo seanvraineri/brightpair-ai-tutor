@@ -1,6 +1,8 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+
 const CTASection: React.FC = () => {
   return <section className="py-16 md:py-20 px-4 bg-brightpair">
       <div className="container max-w-4xl mx-auto text-center">
@@ -26,4 +28,5 @@ const CTASection: React.FC = () => {
       </div>
     </section>;
 };
+
 export default CTASection;
