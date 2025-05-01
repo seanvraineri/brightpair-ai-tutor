@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
   SelectContent,
@@ -15,12 +16,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
+import { Palette, Settings as SettingsIcon, Bell, CreditCard } from "lucide-react";
 
 const Settings: React.FC = () => {
   const { toast } = useToast();
   const [savingProfile, setSavingProfile] = useState(false);
+  const [savingPersonalization, setSavingPersonalization] = useState(false);
   const [savingNotifications, setSavingNotifications] = useState(false);
   const [cancelingSubscription, setCancelingSubscription] = useState(false);
+  
+  // Profile data
   const [profileData, setProfileData] = useState({
     studentName: "Emma Johnson",
     email: "parent@example.com",
@@ -32,6 +37,24 @@ const Settings: React.FC = () => {
     preferredTone: "calm",
   });
   
+  // Personalization data
+  const [personalizationData, setPersonalizationData] = useState({
+    colorScheme: "brightpair",
+    contentDensity: "balanced",
+    uiSize: "medium",
+    contentFormat: "mixed",
+    examplePreference: "detailed",
+    stepDetail: "medium",
+    highlightStyle: "highlight",
+    feedbackStyle: "encouraging",
+    pacePreference: "adaptive",
+    distractionsLevel: "minimal",
+    gamification: true,
+    aiTutorPersonality: "friendly",
+    emoji: "moderate",
+  });
+  
+  // Notification settings
   const [notificationSettings, setNotificationSettings] = useState({
     emailSummaries: true,
     sessionReminders: true,
@@ -53,6 +76,13 @@ const Settings: React.FC = () => {
     });
   };
   
+  const handlePersonalizationChange = (name: string, value: any) => {
+    setPersonalizationData({
+      ...personalizationData,
+      [name]: value,
+    });
+  };
+  
   const handleNotificationChange = (name: string, checked: boolean) => {
     setNotificationSettings({
       ...notificationSettings,
@@ -70,6 +100,19 @@ const Settings: React.FC = () => {
         description: "Your student profile has been successfully updated.",
       });
       setSavingProfile(false);
+    }, 1000);
+  };
+  
+  const handleSavePersonalization = () => {
+    setSavingPersonalization(true);
+    
+    // Simulate API call
+    setTimeout(() => {
+      toast({
+        title: "Personalization Settings Updated",
+        description: "Your learning experience preferences have been saved.",
+      });
+      setSavingPersonalization(false);
     }, 1000);
   };
   
@@ -110,10 +153,23 @@ const Settings: React.FC = () => {
         </div>
         
         <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid grid-cols-3 w-full">
-            <TabsTrigger value="profile">Student Profile</TabsTrigger>
-            <TabsTrigger value="notifications">Notifications</TabsTrigger>
-            <TabsTrigger value="subscription">Subscription</TabsTrigger>
+          <TabsList className="grid grid-cols-4 w-full">
+            <TabsTrigger value="profile" className="flex items-center gap-2">
+              <SettingsIcon className="h-4 w-4" />
+              <span className="hidden sm:inline">Profile</span>
+            </TabsTrigger>
+            <TabsTrigger value="personalization" className="flex items-center gap-2">
+              <Palette className="h-4 w-4" />
+              <span className="hidden sm:inline">Personalization</span>
+            </TabsTrigger>
+            <TabsTrigger value="notifications" className="flex items-center gap-2">
+              <Bell className="h-4 w-4" />
+              <span className="hidden sm:inline">Notifications</span>
+            </TabsTrigger>
+            <TabsTrigger value="subscription" className="flex items-center gap-2">
+              <CreditCard className="h-4 w-4" />
+              <span className="hidden sm:inline">Subscription</span>
+            </TabsTrigger>
           </TabsList>
           
           <TabsContent value="profile">
@@ -256,6 +312,283 @@ const Settings: React.FC = () => {
                   className="bg-brightpair hover:bg-brightpair-600"
                 >
                   {savingProfile ? "Saving..." : "Save Changes"}
+                </Button>
+              </CardFooter>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="personalization">
+            <Card>
+              <CardHeader>
+                <CardTitle>Personalization Factors</CardTitle>
+                <CardDescription>
+                  Customize your learning experience and interface preferences
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium">Interface Preferences</h3>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="colorScheme">Color Scheme</Label>
+                    <Select
+                      value={personalizationData.colorScheme}
+                      onValueChange={(value) => handlePersonalizationChange("colorScheme", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select color scheme" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="brightpair">BrightPair (Default Purple)</SelectItem>
+                        <SelectItem value="ocean">Ocean Blue</SelectItem>
+                        <SelectItem value="forest">Forest Green</SelectItem>
+                        <SelectItem value="sunset">Sunset Orange</SelectItem>
+                        <SelectItem value="berry">Berry Pink</SelectItem>
+                        <SelectItem value="grayscale">Grayscale</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="contentDensity">Content Density</Label>
+                    <RadioGroup 
+                      value={personalizationData.contentDensity}
+                      onValueChange={(value) => handlePersonalizationChange("contentDensity", value)}
+                      className="flex gap-4"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="compact" id="density-compact" />
+                        <Label htmlFor="density-compact">Compact</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="balanced" id="density-balanced" />
+                        <Label htmlFor="density-balanced">Balanced</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="spacious" id="density-spacious" />
+                        <Label htmlFor="density-spacious">Spacious</Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="uiSize">UI Text Size</Label>
+                    <RadioGroup 
+                      value={personalizationData.uiSize}
+                      onValueChange={(value) => handlePersonalizationChange("uiSize", value)}
+                      className="flex gap-4"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="small" id="size-small" />
+                        <Label htmlFor="size-small">Small</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="medium" id="size-medium" />
+                        <Label htmlFor="size-medium">Medium</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="large" id="size-large" />
+                        <Label htmlFor="size-large">Large</Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium">Learning Experience</h3>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="contentFormat">Content Format Preference</Label>
+                    <Select
+                      value={personalizationData.contentFormat}
+                      onValueChange={(value) => handlePersonalizationChange("contentFormat", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select content format" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="visual">Highly Visual</SelectItem>
+                        <SelectItem value="text">Text-Focused</SelectItem>
+                        <SelectItem value="interactive">Interactive Elements</SelectItem>
+                        <SelectItem value="mixed">Balanced Mix (Default)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="examplePreference">Example Preference</Label>
+                    <Select
+                      value={personalizationData.examplePreference}
+                      onValueChange={(value) => handlePersonalizationChange("examplePreference", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select example preference" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="minimal">Minimal Examples</SelectItem>
+                        <SelectItem value="basic">Basic Examples</SelectItem>
+                        <SelectItem value="detailed">Detailed Examples</SelectItem>
+                        <SelectItem value="multiple">Multiple Examples</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="stepDetail">Step-by-Step Detail</Label>
+                    <Select
+                      value={personalizationData.stepDetail}
+                      onValueChange={(value) => handlePersonalizationChange("stepDetail", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select step detail" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="minimal">Minimal (Key Steps Only)</SelectItem>
+                        <SelectItem value="medium">Medium (Standard Detail)</SelectItem>
+                        <SelectItem value="high">High (Every Step Explained)</SelectItem>
+                        <SelectItem value="adaptive">Adaptive (Based on Difficulty)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="highlightStyle">Highlight Style</Label>
+                    <Select
+                      value={personalizationData.highlightStyle}
+                      onValueChange={(value) => handlePersonalizationChange("highlightStyle", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select highlight style" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="highlight">Color Highlighting</SelectItem>
+                        <SelectItem value="bold">Bold Text</SelectItem>
+                        <SelectItem value="underline">Underlined</SelectItem>
+                        <SelectItem value="minimal">Minimal</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium">Interaction Style</h3>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="feedbackStyle">Feedback Style</Label>
+                    <Select
+                      value={personalizationData.feedbackStyle}
+                      onValueChange={(value) => handlePersonalizationChange("feedbackStyle", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select feedback style" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="encouraging">Encouraging</SelectItem>
+                        <SelectItem value="direct">Direct & Factual</SelectItem>
+                        <SelectItem value="growth">Growth-Oriented</SelectItem>
+                        <SelectItem value="minimal">Minimal</SelectItem>
+                        <SelectItem value="detailed">Detailed Analysis</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="pacePreference">Learning Pace</Label>
+                    <Select
+                      value={personalizationData.pacePreference}
+                      onValueChange={(value) => handlePersonalizationChange("pacePreference", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select learning pace" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="accelerated">Accelerated</SelectItem>
+                        <SelectItem value="standard">Standard</SelectItem>
+                        <SelectItem value="deliberate">Deliberate & Thorough</SelectItem>
+                        <SelectItem value="adaptive">Adaptive (Default)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="distractionsLevel">Distractions Level</Label>
+                    <Select
+                      value={personalizationData.distractionsLevel}
+                      onValueChange={(value) => handlePersonalizationChange("distractionsLevel", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select distractions level" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="minimal">Minimal (Focus Mode)</SelectItem>
+                        <SelectItem value="low">Low</SelectItem>
+                        <SelectItem value="balanced">Balanced</SelectItem>
+                        <SelectItem value="enriched">Enriched (More Context)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">Gamification Elements</p>
+                      <p className="text-sm text-gray-500">Points, badges, streaks, and achievement systems</p>
+                    </div>
+                    <Switch 
+                      checked={personalizationData.gamification}
+                      onCheckedChange={(checked) => handlePersonalizationChange("gamification", checked)}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="aiTutorPersonality">AI Tutor Personality</Label>
+                    <Select
+                      value={personalizationData.aiTutorPersonality}
+                      onValueChange={(value) => handlePersonalizationChange("aiTutorPersonality", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select AI tutor personality" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="friendly">Friendly & Supportive</SelectItem>
+                        <SelectItem value="scholarly">Scholarly & Informative</SelectItem>
+                        <SelectItem value="socratic">Socratic & Questioning</SelectItem>
+                        <SelectItem value="enthusiastic">Enthusiastic & Energetic</SelectItem>
+                        <SelectItem value="patient">Patient & Calm</SelectItem>
+                        <SelectItem value="coaching">Coaching & Motivational</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="emoji">Emoji Usage</Label>
+                    <RadioGroup 
+                      value={personalizationData.emoji}
+                      onValueChange={(value) => handlePersonalizationChange("emoji", value)}
+                      className="flex gap-4"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="minimal" id="emoji-minimal" />
+                        <Label htmlFor="emoji-minimal">Minimal</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="moderate" id="emoji-moderate" />
+                        <Label htmlFor="emoji-moderate">Moderate</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="abundant" id="emoji-abundant" />
+                        <Label htmlFor="emoji-abundant">Abundant</Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button 
+                  onClick={handleSavePersonalization} 
+                  disabled={savingPersonalization}
+                  className="bg-brightpair hover:bg-brightpair-600"
+                >
+                  {savingPersonalization ? "Saving..." : "Save Preferences"}
                 </Button>
               </CardFooter>
             </Card>
