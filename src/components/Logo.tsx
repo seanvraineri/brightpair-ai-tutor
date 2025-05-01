@@ -14,7 +14,7 @@ const Logo: React.FC<LogoProps> = ({ className = "", size = "md" }) => {
   };
   
   return (
-    <div className={`font-display font-bold flex items-center ${className}`}>
+    <div className={`font-display font-bold flex items-center justify-center ${className}`}>
       <img 
         src="/lovable-uploads/7f63bfa0-be25-4a8a-ad89-6492e4b629e1.png" 
         alt="BrightPair Owl Logo" 
