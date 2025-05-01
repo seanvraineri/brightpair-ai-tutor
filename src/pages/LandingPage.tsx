@@ -13,6 +13,7 @@ import StickyCTA from "@/components/StickyCTA";
 import TrustBar from "@/components/TrustBar";
 import ButtonPrimary from "@/components/ButtonPrimary";
 import FaqSection from "@/components/sections/FaqSection";
+import PersonalizationSection from "@/components/sections/PersonalizationSection";
 
 const faqs = [
   {
@@ -166,6 +167,7 @@ const LandingPage: React.FC = () => {
       </section>
       
       <HowItWorksSection />
+      <PersonalizationSection />
       <ComparisonSection />
       <TestimonialsSection />
       <TutorsSection />
