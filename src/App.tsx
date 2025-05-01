@@ -16,6 +16,8 @@ import Quizzes from "./pages/Quizzes";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import DashboardLayout from "./components/dashboard/DashboardLayout";
+import TutorSignup from "./pages/TutorSignup";
+import TutorFAQ from "./pages/TutorFAQ";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +32,8 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/onboarding" element={<OnboardingForm />} />
+          <Route path="/tutor-signup" element={<TutorSignup />} />
+          <Route path="/tutor-faq" element={<TutorFAQ />} />
           
           {/* Dashboard Routes */}
           <Route element={<DashboardLayout />}>

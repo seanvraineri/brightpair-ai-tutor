@@ -72,9 +72,11 @@ const TutorsSection: React.FC = () => {
                 Apply to Join
               </Button>
             </Link>
-            <Button size="lg" variant="outline">
-              Learn More
-            </Button>
+            <Link to="/tutor-faq">
+              <Button size="lg" variant="outline">
+                Learn More
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
