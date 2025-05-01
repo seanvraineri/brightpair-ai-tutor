@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
+import ConsultationScheduling from "./pages/ConsultationScheduling";
 import OnboardingForm from "./pages/OnboardingForm";
 import Dashboard from "./pages/Dashboard";
 import TutorChat from "./pages/TutorChat";
@@ -33,6 +34,7 @@ const App = () => (
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
+          <Route path="/consultation" element={<ConsultationScheduling />} />
           <Route path="/onboarding" element={<OnboardingForm />} />
           <Route path="/tutor-signup" element={<TutorSignup />} />
           <Route path="/tutor-faq" element={<TutorFAQ />} />

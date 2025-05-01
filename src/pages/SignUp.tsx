@@ -56,7 +56,7 @@ const SignUp: React.FC = () => {
           title: "Account created!",
           description: "You've successfully created your account.",
         });
-        navigate("/onboarding");
+        navigate("/consultation");
       }, 1500);
     } catch (error) {
       console.error("Signup error:", error);
