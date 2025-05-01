@@ -4,13 +4,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Clock, BookMarked, Award, Bell } from "lucide-react";
 
-const WelcomeBanner: React.FC = () => {
+interface WelcomeBannerProps {
+  userName?: string;
+}
+
+const WelcomeBanner: React.FC<WelcomeBannerProps> = ({ userName = "Student" }) => {
   return (
     <Card className="mb-8 bg-gradient-to-r from-brightpair-50 to-white border-brightpair-100">
       <CardContent className="p-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold font-display mb-1">Welcome back, Emma!</h1>
+            <h1 className="text-2xl md:text-3xl font-bold font-display mb-1">Welcome back, {userName}!</h1>
             <p className="text-gray-600">Let's continue your learning journey.</p>
           </div>
           <div className="mt-4 md:mt-0 flex items-center">

@@ -21,10 +21,12 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import Logo from "@/components/Logo";
+import { useUser } from "../contexts/UserContext";
 
 const ConsultationScheduling: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { setConsultationDate } = useUser();
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [timeSlot, setTimeSlot] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -53,17 +55,25 @@ const ConsultationScheduling: React.FC = () => {
     setIsSubmitting(true);
     
     try {
-      // We'll integrate with a backend here in the future
-      console.log("Scheduling consultation for:", { date, timeSlot });
+      // Format the date for display
+      const formattedDate = date.toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+      });
+      const consultationDateTime = `${formattedDate} at ${timeSlot}`;
       
-      // Simulate successful scheduling
-      setTimeout(() => {
-        toast({
-          title: "Consultation scheduled!",
-          description: `Your consultation has been scheduled for ${date.toLocaleDateString()} at ${timeSlot}.`,
-        });
-        navigate("/onboarding");
-      }, 1500);
+      // Update user context with consultation date
+      setConsultationDate(consultationDateTime);
+      
+      // Show success toast
+      toast({
+        title: "Consultation scheduled!",
+        description: `Your consultation has been scheduled for ${consultationDateTime}.`,
+      });
+      
+      // Navigate to onboarding
+      navigate("/onboarding");
     } catch (error) {
       console.error("Scheduling error:", error);
       toast({

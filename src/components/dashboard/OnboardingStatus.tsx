@@ -11,9 +11,10 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle } from "lucide-react";
 import { Link } from "react-router-dom";
+import { OnboardingStatus as OnboardingStatusType } from "@/contexts/UserContext";
 
 interface OnboardingStatusProps {
-  status: "pending" | "consultation-complete" | "onboarding-complete" | "active";
+  status: OnboardingStatusType;
   nextConsultationDate?: string;
 }
 
@@ -26,15 +27,20 @@ const OnboardingStatus: React.FC<OnboardingStatusProps> = ({
     case "pending":
       progressValue = 25;
       break;
+    case "consultation-scheduled":
+      progressValue = 40;
+      break;
     case "consultation-complete":
-      progressValue = 50;
+      progressValue = 60;
       break;
     case "onboarding-complete":
-      progressValue = 75;
+      progressValue = 80;
       break;
     case "active":
       progressValue = 100;
       break;
+    default:
+      progressValue = 25;
   }
 
   return (
@@ -68,10 +74,25 @@ const OnboardingStatus: React.FC<OnboardingStatusProps> = ({
               </div>
               <div>
                 <p className="font-medium text-sm text-gray-700">Initial Consultation</p>
+                <p className="text-sm text-gray-500">Schedule your consultation with a tutor</p>
+                <Link to="/consultation">
+                  <Button size="sm" variant="outline" className="mt-2">
+                    Schedule Now
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          ) : status === "consultation-scheduled" ? (
+            <div className="flex items-start gap-3">
+              <div className="text-gray-400 mt-0.5">
+                <CheckCircle size={18} />
+              </div>
+              <div>
+                <p className="font-medium text-sm text-gray-700">Initial Consultation</p>
                 <p className="text-sm text-gray-500">
                   {nextConsultationDate ? 
                     `Your consultation is scheduled for ${nextConsultationDate}` : 
-                    "Your consultation with a tutor needs to be completed"}
+                    "Your consultation is scheduled"}
                 </p>
               </div>
             </div>
@@ -87,7 +108,7 @@ const OnboardingStatus: React.FC<OnboardingStatusProps> = ({
             </div>
           )}
           
-          {(status === "pending" || status === "consultation-complete") ? (
+          {(status === "pending" || status === "consultation-scheduled") ? (
             <div className="flex items-start gap-3">
               <div className="text-gray-400 mt-0.5">
                 <CheckCircle size={18} />
@@ -95,13 +116,21 @@ const OnboardingStatus: React.FC<OnboardingStatusProps> = ({
               <div>
                 <p className="font-medium text-sm text-gray-700">Student Profiling</p>
                 <p className="text-sm text-gray-500">Complete student information for personalization</p>
-                {status === "consultation-complete" && (
-                  <Link to="/onboarding">
-                    <Button size="sm" variant="outline" className="mt-2">
-                      Complete Profile
-                    </Button>
-                  </Link>
-                )}
+              </div>
+            </div>
+          ) : status === "consultation-complete" ? (
+            <div className="flex items-start gap-3">
+              <div className="text-gray-400 mt-0.5">
+                <CheckCircle size={18} />
+              </div>
+              <div>
+                <p className="font-medium text-sm text-gray-700">Student Profiling</p>
+                <p className="text-sm text-gray-500">Complete student information for personalization</p>
+                <Link to="/onboarding">
+                  <Button size="sm" variant="outline" className="mt-2">
+                    Complete Profile
+                  </Button>
+                </Link>
               </div>
             </div>
           ) : (

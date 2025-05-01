@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { useToast } from "@/components/ui/use-toast";
 import WelcomeBanner from "@/components/dashboard/WelcomeBanner";
 import WeeklyProgress from "@/components/dashboard/WeeklyProgress";
@@ -8,12 +8,11 @@ import RecentActivity from "@/components/dashboard/RecentActivity";
 import RecommendedTasks from "@/components/dashboard/RecommendedTasks";
 import HomeworkAssignments from "@/components/dashboard/HomeworkAssignments";
 import OnboardingStatus from "@/components/dashboard/OnboardingStatus";
+import { useUser } from "@/contexts/UserContext";
 
 const Dashboard: React.FC = () => {
   const { toast } = useToast();
-  // This would come from your authentication/user state in a real app
-  const [onboardingStatus, setOnboardingStatus] = useState<"pending" | "consultation-complete" | "onboarding-complete" | "active">("pending");
-  const [nextConsultationDate, setNextConsultationDate] = useState<string>("May 5, 2025 at 2:30 PM");
+  const { user } = useUser();
   
   const showNotification = (message: string) => {
     toast({
@@ -26,13 +25,13 @@ const Dashboard: React.FC = () => {
     <div className="p-6 md:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Welcome Banner */}
-        <WelcomeBanner />
+        <WelcomeBanner userName={user?.name || "Student"} />
 
         {/* Onboarding Status - for new users */}
-        {onboardingStatus !== "active" && (
+        {user?.onboardingStatus !== "active" && (
           <OnboardingStatus 
-            status={onboardingStatus} 
-            nextConsultationDate={nextConsultationDate}
+            status={user?.onboardingStatus || "pending"} 
+            nextConsultationDate={user?.nextConsultationDate}
           />
         )}
 
