@@ -115,7 +115,7 @@ const PricingSection: React.FC = () => {
             <ul className="space-y-3 mb-8">
               <li className="flex items-start">
                 <Check className="h-5 w-5 text-brightpair mt-0.5 mr-2 flex-shrink-0" />
-                <span>45-minute 1-on-1 sessions</span>
+                <span>60-minute 1-on-1 sessions</span>
               </li>
               <li className="flex items-start">
                 <Check className="h-5 w-5 text-brightpair mt-0.5 mr-2 flex-shrink-0" />
