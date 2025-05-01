@@ -6,6 +6,7 @@ import WeeklyProgress from "@/components/dashboard/WeeklyProgress";
 import UpcomingSchedule from "@/components/dashboard/UpcomingSchedule";
 import RecentActivity from "@/components/dashboard/RecentActivity";
 import RecommendedTasks from "@/components/dashboard/RecommendedTasks";
+import HomeworkAssignments from "@/components/dashboard/HomeworkAssignments";
 
 const Dashboard: React.FC = () => {
   const { toast } = useToast();
@@ -32,6 +33,11 @@ const Dashboard: React.FC = () => {
           <div className="md:col-span-4">
             <UpcomingSchedule />
           </div>
+        </div>
+
+        {/* Homework Assignments */}
+        <div className="mb-8">
+          <HomeworkAssignments />
         </div>
 
         {/* Recent Activity and Recommended Next Tasks */}
