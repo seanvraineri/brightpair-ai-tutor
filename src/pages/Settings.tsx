@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { Palette, Settings as SettingsIcon, Bell, CreditCard } from "lucide-react";
+import { Palette, Settings as SettingsIcon, Bell, CreditCard, FileText } from "lucide-react";
 
 const Settings: React.FC = () => {
   const { toast } = useToast();
@@ -24,6 +23,7 @@ const Settings: React.FC = () => {
   const [savingPersonalization, setSavingPersonalization] = useState(false);
   const [savingNotifications, setSavingNotifications] = useState(false);
   const [cancelingSubscription, setCancelingSubscription] = useState(false);
+  const [savingSpecialNotes, setSavingSpecialNotes] = useState(false);
   
   // Profile data
   const [profileData, setProfileData] = useState({
@@ -62,6 +62,17 @@ const Settings: React.FC = () => {
     marketingEmails: false,
   });
 
+  // Special notes for student
+  const [specialNotes, setSpecialNotes] = useState({
+    learningChallenges: "",
+    strengths: "",
+    areasForImprovement: "",
+    preferredApproaches: "",
+    triggers: "",
+    accommodations: "",
+    additionalNotes: ""
+  });
+
   const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setProfileData({
       ...profileData,
@@ -87,6 +98,13 @@ const Settings: React.FC = () => {
     setNotificationSettings({
       ...notificationSettings,
       [name]: checked,
+    });
+  };
+
+  const handleSpecialNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setSpecialNotes({
+      ...specialNotes,
+      [e.target.name]: e.target.value,
     });
   };
 
@@ -144,6 +162,19 @@ const Settings: React.FC = () => {
     }
   };
 
+  const handleSaveSpecialNotes = () => {
+    setSavingSpecialNotes(true);
+    
+    // Simulate API call
+    setTimeout(() => {
+      toast({
+        title: "Special Notes Updated",
+        description: "Your student's special notes have been successfully saved.",
+      });
+      setSavingSpecialNotes(false);
+    }, 1000);
+  };
+
   return (
     <div className="p-6 md:p-8">
       <div className="max-w-3xl mx-auto">
@@ -153,7 +184,7 @@ const Settings: React.FC = () => {
         </div>
         
         <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid grid-cols-4 w-full">
+          <TabsList className="grid grid-cols-5 w-full">
             <TabsTrigger value="profile" className="flex items-center gap-2">
               <SettingsIcon className="h-4 w-4" />
               <span className="hidden sm:inline">Profile</span>
@@ -161,6 +192,10 @@ const Settings: React.FC = () => {
             <TabsTrigger value="personalization" className="flex items-center gap-2">
               <Palette className="h-4 w-4" />
               <span className="hidden sm:inline">Personalization</span>
+            </TabsTrigger>
+            <TabsTrigger value="special-notes" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              <span className="hidden sm:inline">Special Notes</span>
             </TabsTrigger>
             <TabsTrigger value="notifications" className="flex items-center gap-2">
               <Bell className="h-4 w-4" />
@@ -589,6 +624,107 @@ const Settings: React.FC = () => {
                   className="bg-brightpair hover:bg-brightpair-600"
                 >
                   {savingPersonalization ? "Saving..." : "Save Preferences"}
+                </Button>
+              </CardFooter>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="special-notes">
+            <Card>
+              <CardHeader>
+                <CardTitle>Special Notes</CardTitle>
+                <CardDescription>
+                  Add important details about the student to personalize their learning experience
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="learningChallenges">Learning Challenges</Label>
+                    <Textarea
+                      id="learningChallenges"
+                      name="learningChallenges"
+                      value={specialNotes.learningChallenges}
+                      onChange={handleSpecialNotesChange}
+                      placeholder="ADHD, dyslexia, processing delays, etc."
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="strengths">Strengths & Interests</Label>
+                    <Textarea
+                      id="strengths"
+                      name="strengths"
+                      value={specialNotes.strengths}
+                      onChange={handleSpecialNotesChange}
+                      placeholder="Visual learning, storytelling, music, sports, etc."
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="areasForImprovement">Areas for Improvement</Label>
+                    <Textarea
+                      id="areasForImprovement"
+                      name="areasForImprovement"
+                      value={specialNotes.areasForImprovement}
+                      onChange={handleSpecialNotesChange}
+                      placeholder="Math fluency, reading comprehension, focus during lessons, etc."
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="preferredApproaches">Preferred Learning Approaches</Label>
+                    <Textarea
+                      id="preferredApproaches"
+                      name="preferredApproaches"
+                      value={specialNotes.preferredApproaches}
+                      onChange={handleSpecialNotesChange}
+                      placeholder="Needs frequent breaks, prefers visual explanations, learns well through examples, etc."
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="triggers">Potential Triggers</Label>
+                    <Textarea
+                      id="triggers"
+                      name="triggers"
+                      value={specialNotes.triggers}
+                      onChange={handleSpecialNotesChange}
+                      placeholder="Time pressure, being called on unexpectedly, etc."
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="accommodations">Accommodations</Label>
+                    <Textarea
+                      id="accommodations"
+                      name="accommodations"
+                      value={specialNotes.accommodations}
+                      onChange={handleSpecialNotesChange}
+                      placeholder="Extra time for tests, text-to-speech tools, frequent breaks, etc."
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="additionalNotes">Additional Notes</Label>
+                    <Textarea
+                      id="additionalNotes"
+                      name="additionalNotes"
+                      value={specialNotes.additionalNotes}
+                      onChange={handleSpecialNotesChange}
+                      placeholder="Any other information that would help personalize the learning experience..."
+                      className="min-h-[120px]"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button 
+                  onClick={handleSaveSpecialNotes} 
+                  disabled={savingSpecialNotes}
+                  className="bg-brightpair hover:bg-brightpair-600"
+                >
+                  {savingSpecialNotes ? "Saving..." : "Save Special Notes"}
                 </Button>
               </CardFooter>
             </Card>
