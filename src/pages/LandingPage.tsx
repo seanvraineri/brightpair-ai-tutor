@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -11,7 +10,6 @@ import TestimonialsSection from "@/components/sections/TestimonialsSection";
 import TutorsSection from "@/components/sections/TutorsSection";
 import CTASection from "@/components/sections/CTASection";
 import StickyCTA from "@/components/StickyCTA";
-import VideoModal from "@/components/VideoModal";
 import TrustBar from "@/components/TrustBar";
 import ButtonPrimary from "@/components/ButtonPrimary";
 import FaqSection from "@/components/sections/FaqSection";
@@ -164,17 +162,6 @@ const LandingPage: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
-      </section>
-      
-      {/* Video Section */}
-      <section className="py-12 md:py-16 px-4 bg-white">
-        <div className="container max-w-5xl mx-auto">
-          <VideoModal 
-            thumbnailUrl="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&h=450&fit=crop"
-            videoUrl="https://www.youtube.com/embed/dQw4w9WgXcQ"
-            title="See how BrightPair transforms learning"
-          />
         </div>
       </section>
       
