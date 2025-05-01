@@ -1,12 +1,9 @@
-
 import React from "react";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-
 const PricingSection: React.FC = () => {
-  return (
-    <section id="pricing" className="py-16 md:py-24 px-4 bg-white">
+  return <section id="pricing" className="py-16 md:py-24 px-4 bg-white">
       <div className="container max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold font-display mb-4">
@@ -108,7 +105,7 @@ const PricingSection: React.FC = () => {
             <div className="mb-6">
               <h3 className="text-xl font-bold font-display mb-2">Additional Tutoring</h3>
               <div className="mb-4">
-                <span className="text-3xl font-bold">$60</span>
+                <span className="text-3xl font-bold">$100</span>
                 <span className="text-gray-500"> / session</span>
               </div>
               <p className="text-gray-600 mb-6">
@@ -152,8 +149,6 @@ const PricingSection: React.FC = () => {
           </Link>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default PricingSection;
