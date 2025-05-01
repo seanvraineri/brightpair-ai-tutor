@@ -7,8 +7,10 @@ const DashboardLayout: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <DashboardNav />
-      <main className="md:ml-64 pt-16 md:pt-0">
-        <Outlet />
+      <main className="md:ml-64 pt-16 md:pt-6 pb-20">
+        <div className="max-w-7xl mx-auto px-4">
+          <Outlet />
+        </div>
       </main>
     </div>
   );

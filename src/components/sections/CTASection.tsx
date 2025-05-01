@@ -5,7 +5,8 @@ import { Link } from "react-router-dom";
 import ButtonPrimary from "@/components/ButtonPrimary";
 
 const CTASection: React.FC = () => {
-  return <section className="py-16 md:py-20 px-4 bg-brightpair-600">
+  return (
+    <section className="py-16 md:py-20 px-4 bg-gradient-to-r from-brightpair-600 to-brightpair-700">
       <div className="container max-w-4xl mx-auto text-center">
         <h2 className="text-3xl md:text-4xl font-bold font-display text-white mb-6">
           Ready to Transform Your Child's Learning Experience?
@@ -16,7 +17,7 @@ const CTASection: React.FC = () => {
         </p>
         <div className="flex flex-col sm:flex-row justify-center gap-4">
           <Link to="/signup">
-            <ButtonPrimary size="lg">
+            <ButtonPrimary size="lg" className="shadow-lg hover:shadow-xl transition-shadow">
               Free Consultation
             </ButtonPrimary>
           </Link>
@@ -24,14 +25,15 @@ const CTASection: React.FC = () => {
             <Button 
               size="lg" 
               variant="outline" 
-              className="border-white text-white hover:bg-white hover:text-brightpair-600 font-medium transition-colors"
+              className="border-white text-white hover:bg-white hover:text-brightpair-600 font-medium transition-colors shadow-lg hover:shadow-xl"
             >
               Contact Sales
             </Button>
           </Link>
         </div>
       </div>
-    </section>;
+    </section>
+  );
 };
 
 export default CTASection;

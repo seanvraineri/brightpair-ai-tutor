@@ -1,11 +1,12 @@
 
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import ButtonPrimary from "./ButtonPrimary";
 import { Button } from "./ui/button";
 
 const StickyCTA: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -13,9 +14,21 @@ const StickyCTA: React.FC = () => {
       setIsVisible(scrollPosition > 300);
     };
 
+    // Don't show in dashboard area
+    const isDashboard = location.pathname.includes('/dashboard') || 
+                        location.pathname.includes('/tutor-chat') || 
+                        location.pathname.includes('/flashcards') || 
+                        location.pathname.includes('/quizzes') || 
+                        location.pathname.includes('/settings');
+
+    if (isDashboard) {
+      setIsVisible(false);
+      return;
+    }
+
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [location]);
 
   if (!isVisible) return null;
 

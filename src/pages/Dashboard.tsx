@@ -2,34 +2,97 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Calendar, Clock, BookOpen, Award, ArrowRight } from "lucide-react";
+import { Calendar, Clock, BookOpen, Award, ArrowRight, BookMarked, Bookmark, Bell } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 const Dashboard: React.FC = () => {
+  const { toast } = useToast();
+  
+  const showNotification = (message: string) => {
+    toast({
+      title: "Notification",
+      description: message,
+    });
+  };
+
   return (
     <div className="p-6 md:p-8">
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold font-display mb-1">Welcome back, Emma!</h1>
-            <p className="text-gray-600">Let's continue your learning journey.</p>
-          </div>
-          <div className="mt-4 md:mt-0 flex items-center">
-            <div className="bg-green-100 text-green-800 text-xs font-medium px-3 py-1.5 rounded-full flex items-center mr-4">
-              <div className="w-2 h-2 bg-green-500 rounded-full mr-1.5"></div>
-              <span>7 Day Streak!</span>
+        {/* Welcome Banner */}
+        <Card className="mb-8 bg-gradient-to-r from-brightpair-50 to-white border-brightpair-100">
+          <CardContent className="p-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold font-display mb-1">Welcome back, Emma!</h1>
+                <p className="text-gray-600">Let's continue your learning journey.</p>
+              </div>
+              <div className="mt-4 md:mt-0 flex items-center">
+                <div className="bg-green-100 text-green-800 text-xs font-medium px-3 py-1.5 rounded-full flex items-center mr-4">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mr-1.5"></div>
+                  <span>7 Day Streak!</span>
+                </div>
+                <Button size="sm" className="bg-brightpair hover:bg-brightpair-600">
+                  Start Studying
+                </Button>
+              </div>
             </div>
-            <Button size="sm" className="bg-brightpair hover:bg-brightpair-600">
-              Start Studying
-            </Button>
-          </div>
-        </div>
+            
+            {/* Quick Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+              <div className="bg-white/60 rounded-lg p-4 shadow-sm border border-gray-100">
+                <div className="flex items-center">
+                  <div className="bg-brightpair-100 p-2 rounded-full mr-3">
+                    <Clock className="h-5 w-5 text-brightpair-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Hours Studied</p>
+                    <p className="text-xl font-bold">12.5</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white/60 rounded-lg p-4 shadow-sm border border-gray-100">
+                <div className="flex items-center">
+                  <div className="bg-brightpair-100 p-2 rounded-full mr-3">
+                    <BookMarked className="h-5 w-5 text-brightpair-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Lessons</p>
+                    <p className="text-xl font-bold">24</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white/60 rounded-lg p-4 shadow-sm border border-gray-100">
+                <div className="flex items-center">
+                  <div className="bg-brightpair-100 p-2 rounded-full mr-3">
+                    <Award className="h-5 w-5 text-brightpair-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Quizzes Completed</p>
+                    <p className="text-xl font-bold">8</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white/60 rounded-lg p-4 shadow-sm border border-gray-100">
+                <div className="flex items-center">
+                  <div className="bg-brightpair-100 p-2 rounded-full mr-3">
+                    <Bell className="h-5 w-5 text-brightpair-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Upcoming Sessions</p>
+                    <p className="text-xl font-bold">3</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Weekly Progress Overview */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mb-8">
           <div className="md:col-span-8">
-            <Card>
+            <Card className="h-full">
               <CardHeader>
                 <CardTitle>Weekly Progress</CardTitle>
                 <CardDescription>Your learning activities this week</CardDescription>
@@ -49,23 +112,31 @@ const Dashboard: React.FC = () => {
                         </div>
                         <span className="text-sm font-medium">{item.progress}%</span>
                       </div>
-                      <Progress value={item.progress} className="h-2" />
+                      <Progress value={item.progress} className={`h-2 ${
+                        item.progress > 75 ? "bg-green-100" : 
+                        item.progress > 40 ? "bg-yellow-100" : "bg-red-100"
+                      }`} />
                     </div>
                   ))}
                 </div>
               </CardContent>
+              <CardFooter>
+                <Button variant="ghost" size="sm" className="text-brightpair hover:text-brightpair-600" onClick={() => showNotification("Weekly report downloaded!")}>
+                  Download Weekly Report
+                </Button>
+              </CardFooter>
             </Card>
           </div>
           
           <div className="md:col-span-4">
-            <Card className="h-full">
+            <Card className="h-full hover:shadow-md transition-shadow duration-200">
               <CardHeader>
                 <CardTitle>Upcoming Schedule</CardTitle>
                 <CardDescription>Your next learning sessions</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="rounded-lg border border-gray-200 p-3">
+                  <div className="rounded-lg border border-gray-200 p-3 hover:border-brightpair-300 hover:bg-brightpair-50 transition-colors cursor-pointer" onClick={() => showNotification("Math session details opened")}>
                     <div className="flex items-center mb-2">
                       <Calendar size={16} className="text-brightpair mr-2" />
                       <span className="text-sm font-medium">Today, 4:00 PM</span>
@@ -77,7 +148,7 @@ const Dashboard: React.FC = () => {
                     </div>
                   </div>
                   
-                  <div className="rounded-lg border border-gray-200 p-3">
+                  <div className="rounded-lg border border-gray-200 p-3 hover:border-brightpair-300 hover:bg-brightpair-50 transition-colors cursor-pointer" onClick={() => showNotification("Biology quiz details opened")}>
                     <div className="flex items-center mb-2">
                       <Calendar size={16} className="text-brightpair mr-2" />
                       <span className="text-sm font-medium">Tomorrow, 5:30 PM</span>
@@ -90,13 +161,18 @@ const Dashboard: React.FC = () => {
                   </div>
                 </div>
               </CardContent>
+              <CardFooter>
+                <Button variant="outline" size="sm" className="w-full">
+                  View Full Schedule
+                </Button>
+              </CardFooter>
             </Card>
           </div>
         </div>
 
         {/* Recent Activity and Recommended Next Tasks */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card>
+          <Card className="hover:shadow-md transition-shadow duration-200">
             <CardHeader>
               <CardTitle>Recent Activity</CardTitle>
             </CardHeader>
@@ -142,7 +218,7 @@ const Dashboard: React.FC = () => {
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="hover:shadow-md transition-shadow duration-200">
             <CardHeader>
               <CardTitle>Recommended Next Tasks</CardTitle>
               <CardDescription>AI-suggested learning activities</CardDescription>
