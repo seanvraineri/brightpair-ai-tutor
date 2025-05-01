@@ -1,23 +1,22 @@
 
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Brain, Zap, Gauge, Target } from "lucide-react";
 
 interface PersonalizationCardProps {
-  icon: React.ElementType;
+  emoji: string;
   title: string;
   description: string;
 }
 
 const PersonalizationCard: React.FC<PersonalizationCardProps> = ({
-  icon: Icon,
+  emoji,
   title,
   description
 }) => (
   <Card className="border-0 shadow-md hover:shadow-lg transition-all">
     <CardContent className="p-6 flex flex-col items-start">
-      <div className="bg-brightpair-50 p-3 rounded-full mb-4">
-        <Icon className="h-6 w-6 text-brightpair" />
+      <div className="bg-brightpair-50 p-3 rounded-full mb-4 flex items-center justify-center text-2xl">
+        {emoji}
       </div>
       <h3 className="font-display font-semibold text-lg mb-2">{title}</h3>
       <p className="text-gray-600">{description}</p>
@@ -28,22 +27,22 @@ const PersonalizationCard: React.FC<PersonalizationCardProps> = ({
 const PersonalizationSection: React.FC = () => {
   const benefits = [
     {
-      icon: Brain,
+      emoji: "🧠",
       title: "Learning Style Matched",
       description: "We adapt to visual, auditory, or hands-on learning preferences with personalized content formats."
     },
     {
-      icon: Zap,
+      emoji: "⚡️",
       title: "Interest-Driven Examples",
       description: "Content incorporates your child's interests—from sports to gaming—making learning relevant and engaging."
     },
     {
-      icon: Gauge,
+      emoji: "🏎️",
       title: "Adaptive Pacing",
       description: "Our system adjusts to your child's optimal pace, slowing down for difficult concepts and accelerating through mastered ones."
     },
     {
-      icon: Target,
+      emoji: "🎯",
       title: "Precision Gap Filling",
       description: "We identify and target specific knowledge gaps with tailored practice that builds confidence and mastery."
     }
@@ -66,7 +65,7 @@ const PersonalizationSection: React.FC = () => {
           {benefits.map((benefit, index) => (
             <PersonalizationCard
               key={index}
-              icon={benefit.icon}
+              emoji={benefit.emoji}
               title={benefit.title}
               description={benefit.description}
             />
