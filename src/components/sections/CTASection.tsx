@@ -1,11 +1,8 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-
 const CTASection: React.FC = () => {
-  return (
-    <section className="py-16 md:py-20 px-4 bg-brightpair">
+  return <section className="py-16 md:py-20 px-4 bg-brightpair">
       <div className="container max-w-4xl mx-auto text-center">
         <h2 className="text-3xl md:text-4xl font-bold font-display text-white mb-6">
           Ready to Transform Your Child's Learning Experience?
@@ -21,14 +18,12 @@ const CTASection: React.FC = () => {
             </Button>
           </Link>
           <Link to="/contact">
-            <Button size="lg" variant="outline" className="text-white border-white hover:bg-brightpair-600">
+            <Button size="lg" variant="outline" className="border-white hover:bg-brightpair-600 text-slate-50">
               Contact Sales
             </Button>
           </Link>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default CTASection;
