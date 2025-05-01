@@ -1,31 +1,31 @@
 
 import React from "react";
-import { CheckCircle, Handshake, Bot, BookOpen, BarChart3 } from "lucide-react";
+import { CheckCircle } from "lucide-react";
 
 const steps = [
   {
     number: 1,
     title: "Onboard with a Human Tutor",
     description: "We meet 1-on-1 (via Zoom) to understand how your child learns",
-    icon: Handshake
+    emoji: "🤝"
   },
   {
     number: 2,
     title: "AI Tutor Is Created",
     description: "Based on the session, we build your child a personal AI tutor trained to match their needs",
-    icon: Bot
+    emoji: "🤖"
   },
   {
     number: 3,
     title: "Learn, Practice, Review",
     description: "The AI tutor gives practice, quizzes, flashcards, and feedback 24/7",
-    icon: BookOpen
+    emoji: "📚"
   },
   {
     number: 4,
     title: "Weekly Progress Review",
     description: "The tutor and parent get insights and adjust learning each week",
-    icon: BarChart3
+    emoji: "📊"
   }
 ];
 
@@ -48,7 +48,7 @@ const HowItWorksSection: React.FC = () => {
               className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300"
             >
               <div className="bg-brightpair-50 w-14 h-14 rounded-full flex items-center justify-center mb-6">
-                <step.icon className="h-7 w-7 text-brightpair" />
+                <span className="text-2xl">{step.emoji}</span>
               </div>
               <div className="inline-flex items-center mb-3">
                 <div className="bg-brightpair text-white text-sm font-medium rounded-full w-6 h-6 flex items-center justify-center mr-2">
