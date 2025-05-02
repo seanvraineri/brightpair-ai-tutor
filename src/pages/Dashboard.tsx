@@ -1,6 +1,7 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import WelcomeBanner from "@/components/dashboard/WelcomeBanner";
 import WeeklyProgress from "@/components/dashboard/WeeklyProgress";
 import UpcomingSchedule from "@/components/dashboard/UpcomingSchedule";
@@ -8,11 +9,14 @@ import RecentActivity from "@/components/dashboard/RecentActivity";
 import RecommendedTasks from "@/components/dashboard/RecommendedTasks";
 import HomeworkAssignments from "@/components/dashboard/HomeworkAssignments";
 import OnboardingStatus from "@/components/dashboard/OnboardingStatus";
+import SubjectList from "@/components/subjects/SubjectList";
+import DocumentUpload from "@/components/documents/DocumentUpload";
 import { useUser } from "@/contexts/UserContext";
 
 const Dashboard: React.FC = () => {
   const { toast } = useToast();
   const { user } = useUser();
+  const [activeTab, setActiveTab] = useState("overview");
   
   const showNotification = (message: string) => {
     toast({
@@ -35,26 +39,47 @@ const Dashboard: React.FC = () => {
           />
         )}
 
-        {/* Weekly Progress Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mb-8">
-          <div className="md:col-span-8">
-            <WeeklyProgress />
-          </div>
-          
-          <div className="md:col-span-4">
-            <UpcomingSchedule />
-          </div>
-        </div>
+        {/* Dashboard Tabs */}
+        <div className="mt-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid grid-cols-3 mb-6">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="subjects">Subjects</TabsTrigger>
+              <TabsTrigger value="documents">Documents</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="overview">
+              {/* Weekly Progress Overview */}
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mb-8">
+                <div className="md:col-span-8">
+                  <WeeklyProgress />
+                </div>
+                
+                <div className="md:col-span-4">
+                  <UpcomingSchedule />
+                </div>
+              </div>
 
-        {/* Homework Assignments */}
-        <div className="mb-8">
-          <HomeworkAssignments />
-        </div>
+              {/* Homework Assignments */}
+              <div className="mb-8">
+                <HomeworkAssignments />
+              </div>
 
-        {/* Recent Activity and Recommended Next Tasks */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <RecentActivity />
-          <RecommendedTasks />
+              {/* Recent Activity and Recommended Next Tasks */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <RecentActivity />
+                <RecommendedTasks />
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="subjects">
+              <SubjectList />
+            </TabsContent>
+            
+            <TabsContent value="documents">
+              <DocumentUpload />
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>

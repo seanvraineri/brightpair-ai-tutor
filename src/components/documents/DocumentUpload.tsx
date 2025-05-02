@@ -1,0 +1,197 @@
+
+import React, { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/components/ui/use-toast";
+import { Upload, FileText, Trash2 } from "lucide-react";
+import { Subject } from "../subjects/SubjectList";
+
+// Mock data for subjects - would come from backend in production
+const mockSubjects = [
+  { id: "1", name: "Mathematics", description: "Algebra, Calculus, Geometry" },
+  { id: "2", name: "Science", description: "Physics, Chemistry, Biology" },
+  { id: "3", name: "English", description: "Literature, Grammar, Composition" }
+];
+
+export interface Document {
+  id: string;
+  name: string;
+  subjectId: string;
+  fileName: string;
+  uploadDate: string;
+  size: string;
+}
+
+const DocumentUpload: React.FC = () => {
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [documentName, setDocumentName] = useState("");
+  const [selectedSubject, setSelectedSubject] = useState("");
+  const { toast } = useToast();
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      const file = event.target.files[0];
+      setSelectedFile(file);
+      if (!documentName) {
+        setDocumentName(file.name.split('.')[0]); // Set document name to file name by default
+      }
+    }
+  };
+
+  const handleUpload = () => {
+    if (!selectedFile || !documentName || !selectedSubject) {
+      toast({
+        title: "Missing information",
+        description: "Please fill out all required fields.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const newDocument: Document = {
+      id: Date.now().toString(),
+      name: documentName,
+      subjectId: selectedSubject,
+      fileName: selectedFile.name,
+      uploadDate: new Date().toISOString(),
+      size: formatFileSize(selectedFile.size)
+    };
+
+    setDocuments([...documents, newDocument]);
+    resetForm();
+    
+    toast({
+      title: "Document uploaded",
+      description: "Your document has been successfully uploaded."
+    });
+  };
+
+  const handleDelete = (id: string) => {
+    setDocuments(documents.filter(doc => doc.id !== id));
+    toast({
+      title: "Document deleted",
+      description: "The document has been successfully removed."
+    });
+  };
+
+  const resetForm = () => {
+    setSelectedFile(null);
+    setDocumentName("");
+    setSelectedSubject("");
+    // Reset the file input
+    const fileInput = document.getElementById("file-upload") as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = "";
+    }
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return bytes + " bytes";
+    else if (bytes < 1048576) return (bytes / 1024).toFixed(2) + " KB";
+    else return (bytes / 1048576).toFixed(2) + " MB";
+  };
+
+  const getSubjectNameById = (id: string): string => {
+    const subject = mockSubjects.find(s => s.id === id);
+    return subject ? subject.name : "Unknown";
+  };
+
+  const formatDate = (dateString: string): string => {
+    return new Date(dateString).toLocaleDateString();
+  };
+
+  return (
+    <div className="space-y-6">
+      <Card className="shadow-sm">
+        <CardHeader>
+          <CardTitle>Upload Document</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="document-name">Document Name</Label>
+              <Input
+                id="document-name"
+                value={documentName}
+                onChange={(e) => setDocumentName(e.target.value)}
+                placeholder="Enter document name"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="subject">Subject</Label>
+              <Select value={selectedSubject} onValueChange={setSelectedSubject}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a subject" />
+                </SelectTrigger>
+                <SelectContent>
+                  {mockSubjects.map(subject => (
+                    <SelectItem key={subject.id} value={subject.id}>
+                      {subject.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <Label htmlFor="file-upload">Upload File</Label>
+              <div className="mt-1 flex items-center">
+                <Input
+                  id="file-upload"
+                  type="file"
+                  onChange={handleFileChange}
+                  className="flex-1"
+                />
+              </div>
+              {selectedFile && (
+                <p className="mt-1 text-sm text-gray-500">
+                  Selected: {selectedFile.name} ({formatFileSize(selectedFile.size)})
+                </p>
+              )}
+            </div>
+            
+            <Button onClick={handleUpload} className="w-full">
+              <Upload size={18} className="mr-2" />
+              Upload Document
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {documents.length > 0 && (
+        <div>
+          <h3 className="text-lg font-medium mb-3">Uploaded Documents</h3>
+          <div className="space-y-3">
+            {documents.map(doc => (
+              <Card key={doc.id} className="shadow-sm">
+                <CardContent className="p-4">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center">
+                      <FileText className="mr-3 text-gray-400" size={24} />
+                      <div>
+                        <p className="font-medium">{doc.name}</p>
+                        <p className="text-sm text-gray-500">
+                          {getSubjectNameById(doc.subjectId)} • {formatDate(doc.uploadDate)} • {doc.size}
+                        </p>
+                      </div>
+                    </div>
+                    <Button variant="ghost" size="sm" onClick={() => handleDelete(doc.id)}>
+                      <Trash2 size={18} />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default DocumentUpload;
