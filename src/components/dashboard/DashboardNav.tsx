@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
@@ -49,14 +48,6 @@ const NavItem: React.FC<NavItemProps> = ({ to, icon, label, active, onClick, bad
         )}
       </span>
       <span>{label}</span>
-      {badge && badge > 0 && (
-        <Badge 
-          variant="default" 
-          className="ml-auto bg-red-500 text-white"
-        >
-          {badge}
-        </Badge>
-      )}
     </Link>
   );
 };
