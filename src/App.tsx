@@ -27,6 +27,7 @@ import Homework from "./pages/Homework";
 import AboutUs from "./pages/AboutUs";
 import Careers from "./pages/Careers";
 import Scheduling from "./pages/Scheduling";
+import Progress from "./pages/Progress";
 
 const queryClient = new QueryClient();
 
@@ -99,6 +100,7 @@ const App = () => {
                 {/* Shared routes that all roles can access */}
                 <Route path="/homework" element={<Homework />} />
                 <Route path="/scheduling" element={<Scheduling />} />
+                <Route path="/progress" element={<Progress />} />
                 <Route path="/tutor-chat" element={<TutorChat />} />
                 <Route path="/flashcards" element={<Flashcards />} />
                 <Route path="/quizzes" element={<Quizzes />} />

@@ -3,6 +3,8 @@ import React, { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import DocumentUpload from "@/components/documents/DocumentUpload";
 import { Progress } from "@/components/ui/progress";
 import { useUser } from "@/contexts/UserContext";
@@ -67,6 +69,12 @@ const ParentDashboard: React.FC = () => {
                       </div>
                       <Progress value={childProgress.overallProgress} className="h-2" />
                     </div>
+
+                    <div className="mt-4 text-right">
+                      <Link to="/progress">
+                        <Button>View Detailed Progress</Button>
+                      </Link>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -79,8 +87,13 @@ const ParentDashboard: React.FC = () => {
                   <p className="text-gray-500 mb-4">
                     View upcoming tutoring sessions for your child.
                   </p>
-                  <div className="bg-gray-100 p-4 rounded-md text-center">
+                  <div className="mb-4 bg-gray-100 p-4 rounded-md text-center">
                     <p>Your child's upcoming sessions will appear here</p>
+                  </div>
+                  <div className="text-right">
+                    <Link to="/scheduling">
+                      <Button variant="outline">View Schedule</Button>
+                    </Link>
                   </div>
                 </CardContent>
               </Card>

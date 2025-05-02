@@ -71,6 +71,19 @@ const Dashboard: React.FC = () => {
                 </div>
               </div>
 
+              {/* Detailed Progress Link */}
+              <div className="mb-8 bg-gray-50 p-4 rounded-lg border border-gray-100">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-medium text-lg">Track Your Learning Progress</h3>
+                    <p className="text-gray-600">View detailed metrics and charts about your academic progress</p>
+                  </div>
+                  <Link to="/progress">
+                    <Button>View Progress Dashboard</Button>
+                  </Link>
+                </div>
+              </div>
+
               {/* Homework Assignments */}
               <div className="mb-8">
                 <HomeworkAssignments />
