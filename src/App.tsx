@@ -22,6 +22,8 @@ import TutorSignup from "./pages/TutorSignup";
 import TutorFAQ from "./pages/TutorFAQ";
 import Contact from "./pages/Contact";
 import Homework from "./pages/Homework";
+import AboutUs from "./pages/AboutUs";
+import Careers from "./pages/Careers";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +44,8 @@ const App = () => {
               <Route path="/tutor-signup" element={<TutorSignup />} />
               <Route path="/tutor-faq" element={<TutorFAQ />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/about" element={<AboutUs />} />
+              <Route path="/careers" element={<Careers />} />
               
               {/* Dashboard Routes */}
               <Route element={<DashboardLayout />}>
