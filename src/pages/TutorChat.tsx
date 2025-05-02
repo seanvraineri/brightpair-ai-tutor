@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send, Plus, Trash, Download, Upload, FileText, MessageSquare, Mic } from "lucide-react";
+import { Send, Plus, Trash, Download, Upload, FileText, MessageSquare, Mic, Sparkles, BookOpen } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
@@ -58,30 +58,30 @@ const TutorChat: React.FC = () => {
     preferredTone: "calm",
   };
 
-  // Predefined tutor functions
+  // Predefined tutor functions with improved icons and descriptions
   const tutorFunctions: TutorFunction[] = [
     {
       id: "upload-notes",
       name: "Upload Notes",
-      description: "Upload your notes for the AI tutor to analyze",
+      description: "Share your notes for personalized help",
       icon: <Upload className="h-5 w-5" />,
     },
     {
       id: "quiz-me",
       name: "Quiz Me",
-      description: "Get quizzed on your recent topics",
+      description: "Test your knowledge with interactive quizzes",
       icon: <FileText className="h-5 w-5" />,
     },
     {
       id: "talk",
-      name: "Talk",
-      description: "Have a conversation about a topic",
+      name: "Discussion",
+      description: "Have an in-depth conversation about a topic",
       icon: <MessageSquare className="h-5 w-5" />,
     },
     {
       id: "voice-chat",
       name: "Voice Chat",
-      description: "Use voice for learning",
+      description: "Learn through voice conversation",
       icon: <Mic className="h-5 w-5" />,
     },
   ];
@@ -310,43 +310,67 @@ const TutorChat: React.FC = () => {
     }
   };
 
+  // Format message with improved handling of formatting
   const formatMessage = (content: string) => {
-    // Replace line breaks with <br> tags
-    return content.split('\n').map((line, i) => (
-      <React.Fragment key={i}>
-        {line}
-        {i < content.split('\n').length - 1 && <br />}
-      </React.Fragment>
-    ));
+    // Enhanced formatting for different content types (lists, equations, etc)
+    return content.split('\n').map((line, i) => {
+      // Highlight equations or formulas with special styling
+      if (line.match(/^\d*[+\-*/=][^a-zA-Z]*$/)) {
+        return (
+          <div key={i} className="bg-brightpair-50 px-2 py-1 rounded my-1 font-mono text-brightpair-700">
+            {line}
+          </div>
+        );
+      }
+      // Highlight numbered steps with emphasis
+      else if (line.match(/^\d+[\.\)].*$/)) {
+        return (
+          <div key={i} className="font-medium">
+            {line}
+            {i < content.split('\n').length - 1 && <br />}
+          </div>
+        );
+      }
+      // Regular text
+      return (
+        <React.Fragment key={i}>
+          {line}
+          {i < content.split('\n').length - 1 && <br />}
+        </React.Fragment>
+      );
+    });
   };
 
   return (
-    <div className="h-screen flex flex-col pt-6 md:pt-8 px-4 md:px-8 bg-gray-50">
-      <div className="max-w-4xl mx-auto w-full flex flex-col flex-1">
-        <div className="flex items-center justify-between mb-6">
+    <div className="h-screen flex flex-col bg-gradient-to-br from-gray-50 to-brightpair-50 overflow-hidden">
+      <div className="max-w-4xl mx-auto w-full flex flex-col flex-1 p-4 md:p-6">
+        <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold font-display">Your AI Tutor</h1>
+            <h1 className="text-2xl md:text-3xl font-bold font-display flex items-center text-brightpair-700">
+              <Sparkles className="mr-2 h-6 w-6 text-brightpair" />
+              Your AI Tutor
+            </h1>
             <p className="text-gray-600">Personalized for Emma's visual learning style</p>
           </div>
           <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm" onClick={clearChat}>
-              <Trash size={16} className="mr-2" />
-              Clear Chat
+            <Button variant="outline" size="sm" onClick={clearChat} className="text-xs">
+              <Trash size={14} className="mr-1" />
+              Clear
             </Button>
-            <Button variant="outline" size="sm">
-              <Download size={16} className="mr-2" />
-              Save Notes
+            <Button variant="outline" size="sm" className="text-xs">
+              <Download size={14} className="mr-1" />
+              Save
             </Button>
           </div>
         </div>
         
-        {/* Quick Action Buttons */}
+        {/* Quick Action Buttons - Improved layout and visual style */}
         <div className="flex flex-wrap gap-2 mb-4">
           {tutorFunctions.map((func) => (
             <Button
               key={func.id}
               variant="outline"
-              className="border-brightpair text-brightpair hover:bg-brightpair/10"
+              className="border-brightpair text-brightpair hover:bg-brightpair/10 transition-colors duration-200 shadow-sm"
               size="sm"
               onClick={() => handleTutorFunctionClick(func.id)}
             >
@@ -356,8 +380,9 @@ const TutorChat: React.FC = () => {
           ))}
         </div>
         
-        <div className="flex-1 overflow-hidden flex flex-col">
-          <ScrollArea className="flex-1 pb-4 pr-4">
+        {/* Chat container with improved visuals */}
+        <div className="flex-1 overflow-hidden flex flex-col bg-white rounded-lg shadow-md border border-gray-100">
+          <ScrollArea className="flex-1 p-4">
             <div className="space-y-4">
               {messages.map((message) => (
                 <div
@@ -367,22 +392,27 @@ const TutorChat: React.FC = () => {
                   }`}
                 >
                   <div
-                    className={`max-w-[80%] rounded-lg p-4 ${
+                    className={`max-w-[85%] rounded-2xl p-4 shadow-sm transition-all duration-200 animate-fade-in ${
                       message.role === "user"
-                        ? "bg-brightpair text-white"
+                        ? "bg-gradient-to-r from-brightpair-500 to-brightpair-600 text-white"
                         : "bg-white border border-gray-200"
                     }`}
                   >
-                    <div className="text-sm">{formatMessage(message.content)}</div>
+                    <div className="text-sm leading-relaxed">{formatMessage(message.content)}</div>
                     <div
-                      className={`text-xs mt-2 ${
-                        message.role === "user" ? "text-white/70" : "text-gray-400"
+                      className={`text-xs mt-2 flex justify-between items-center ${
+                        message.role === "user" ? "text-white/80" : "text-gray-400"
                       }`}
                     >
-                      {message.timestamp.toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                      <span className="font-medium">
+                        {message.role === "assistant" ? "AI Tutor" : "You"}
+                      </span>
+                      <span>
+                        {message.timestamp.toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -390,11 +420,12 @@ const TutorChat: React.FC = () => {
               
               {isLoading && (
                 <div className="flex justify-start">
-                  <div className="max-w-[80%] rounded-lg p-4 bg-white border border-gray-200">
+                  <div className="max-w-[85%] rounded-2xl p-4 bg-white border border-gray-200 shadow-sm">
                     <div className="flex space-x-2 items-center">
                       <div className="w-2 h-2 rounded-full bg-brightpair-300 animate-pulse"></div>
                       <div className="w-2 h-2 rounded-full bg-brightpair-500 animate-pulse delay-150"></div>
                       <div className="w-2 h-2 rounded-full bg-brightpair-700 animate-pulse delay-300"></div>
+                      <span className="text-sm text-gray-400 ml-2">AI Tutor is thinking...</span>
                     </div>
                   </div>
                 </div>
@@ -404,13 +435,14 @@ const TutorChat: React.FC = () => {
             </div>
           </ScrollArea>
           
-          <div className="mt-4">
+          {/* Input area with improved styling and usability */}
+          <div className="p-3 border-t border-gray-100 bg-gray-50 rounded-b-lg">
             <form onSubmit={handleSendMessage} className="relative">
               <Input
                 placeholder="Ask your AI tutor a question..."
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                className="pr-24 py-6"
+                className="pr-24 py-6 bg-white rounded-full shadow-sm border-gray-200 focus:border-brightpair focus:ring-brightpair"
                 disabled={isLoading}
               />
               <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex space-x-1">
@@ -420,24 +452,24 @@ const TutorChat: React.FC = () => {
                       type="button"
                       size="icon"
                       variant="ghost"
-                      className="h-8 w-8"
+                      className="h-8 w-8 rounded-full hover:bg-brightpair-50"
                       disabled={isLoading}
                     >
                       <Plus size={18} />
                       <span className="sr-only">Add attachment</span>
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-64 p-2">
+                  <PopoverContent className="w-64 p-2" align="end">
                     <div className="space-y-1">
-                      <h4 className="text-sm font-medium">Learning Tools</h4>
+                      <h4 className="text-sm font-medium px-2 py-1">Learning Tools</h4>
                       {tutorFunctions.map((func) => (
                         <Button
                           key={func.id}
                           variant="ghost"
-                          className="w-full justify-start text-left"
+                          className="w-full justify-start text-left hover:bg-brightpair-50 hover:text-brightpair"
                           onClick={() => handleTutorFunctionClick(func.id)}
                         >
-                          <div className="mr-2">{func.icon}</div>
+                          <div className="mr-3 text-brightpair">{func.icon}</div>
                           <div>
                             <div className="font-medium">{func.name}</div>
                             <div className="text-xs text-gray-500">{func.description}</div>
@@ -450,26 +482,30 @@ const TutorChat: React.FC = () => {
                 <Button
                   type="submit"
                   size="icon"
-                  className="h-8 w-8 bg-brightpair hover:bg-brightpair-600"
+                  className="h-8 w-8 rounded-full bg-brightpair hover:bg-brightpair-600 transition-colors"
                   disabled={!input.trim() || isLoading}
                 >
-                  <Send size={16} />
+                  <Send size={14} />
                   <span className="sr-only">Send message</span>
                 </Button>
               </div>
             </form>
-            <div className="mt-2 text-xs text-gray-500 text-center">
-              Your AI tutor is personalized for your learning style and goals
+            <div className="mt-2 text-xs text-gray-500 text-center flex items-center justify-center">
+              <BookOpen size={12} className="mr-1 text-brightpair" />
+              <span>Personalized for your learning style and goals</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Notes Upload Dialog */}
+      {/* Notes Upload Dialog with improved styling */}
       <Dialog open={notesDialogOpen} onOpenChange={setNotesDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Upload Your Notes</DialogTitle>
+            <DialogTitle className="flex items-center">
+              <Upload className="mr-2 h-5 w-5 text-brightpair" />
+              Upload Your Notes
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <p className="text-sm text-gray-600">
@@ -479,13 +515,13 @@ const TutorChat: React.FC = () => {
               value={noteContent}
               onChange={(e) => setNoteContent(e.target.value)}
               placeholder="Paste or type your notes here..."
-              className="min-h-[200px]"
+              className="min-h-[200px] focus:border-brightpair focus:ring-brightpair"
             />
             <div className="flex justify-end space-x-2">
               <Button variant="outline" onClick={() => setNotesDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleSubmitNotes}>
+              <Button onClick={handleSubmitNotes} className="bg-brightpair hover:bg-brightpair-600">
                 Submit Notes
               </Button>
             </div>
