@@ -3,53 +3,35 @@ import React from "react";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Briefcase } from "lucide-react";
+import { Briefcase, GraduationCap, Users, Megaphone } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-interface JobPosition {
+interface OpportunityPosition {
   title: string;
-  department: string;
-  location: string;
   type: string;
+  icon: React.ReactNode;
   description: string;
 }
 
-const jobPositions: JobPosition[] = [
+const opportunityPositions: OpportunityPosition[] = [
   {
-    title: "AI Learning Engineer",
-    department: "Engineering",
-    location: "Remote",
-    type: "Full-time",
-    description: "Design and develop advanced AI systems that can adapt to individual students' learning styles and needs."
+    title: "Student Ambassadors",
+    type: "Marketing Department",
+    icon: <Megaphone className="h-6 w-6 text-brightpair" />,
+    description: "Help spread the word about BrightPair on your campus. Organize events, share resources, and earn rewards while building your marketing and leadership skills."
   },
   {
-    title: "Senior Full Stack Developer",
-    department: "Engineering",
-    location: "San Francisco, CA",
-    type: "Full-time",
-    description: "Build and maintain the BrightPair platform infrastructure, focusing on scalability, reliability, and user experience."
+    title: "Student Tutors",
+    type: "Education",
+    icon: <GraduationCap className="h-6 w-6 text-brightpair" />,
+    description: "Help your fellow students excel in subjects you're passionate about. Flexible hours that work with your academic schedule and valuable teaching experience."
   },
   {
-    title: "Educational Content Specialist",
-    department: "Curriculum",
-    location: "Remote",
-    type: "Full-time",
-    description: "Create engaging, standards-aligned learning content across K-12 subjects for our AI tutoring system."
-  },
-  {
-    title: "UX Researcher",
-    department: "Product",
-    location: "New York, NY",
-    type: "Full-time",
-    description: "Conduct user research with students, parents, and educators to inform product development and improvements."
-  },
-  {
-    title: "Lead Tutor Recruitment Specialist",
-    department: "Operations",
-    location: "Remote",
-    type: "Full-time",
-    description: "Source, interview, and onboard exceptional tutors for our platform, ensuring high quality educational experiences."
-  },
+    title: "Experienced Tutors",
+    type: "Education",
+    icon: <Users className="h-6 w-6 text-brightpair" />,
+    description: "Join our network of professional tutors and leverage our AI platform to enhance your tutoring practice while building a sustainable business."
+  }
 ];
 
 const Careers: React.FC = () => {
@@ -63,13 +45,13 @@ const Careers: React.FC = () => {
           <div className="container max-w-6xl mx-auto px-4">
             <div className="text-center max-w-3xl mx-auto">
               <h1 className="text-4xl md:text-5xl font-bold font-display mb-6">
-                Join Our Team at <span className="text-brightpair">BrightPair</span>
+                Join Our <span className="text-brightpair">BrightPair</span> Community
               </h1>
               <p className="text-lg text-gray-700 mb-8">
-                Help us build the future of personalized education by combining human expertise with cutting-edge AI technology.
+                We're looking for passionate individuals to help us transform education through the power of AI and human connection.
               </p>
-              <Button size="lg" className="bg-brightpair hover:bg-brightpair-600">
-                View Open Positions
+              <Button size="lg" className="bg-brightpair hover:bg-brightpair-600" asChild>
+                <a href="#opportunities">View Opportunities</a>
               </Button>
             </div>
           </div>
@@ -78,7 +60,7 @@ const Careers: React.FC = () => {
         {/* Why Join Us */}
         <section className="py-16 md:py-24 px-4">
           <div className="container max-w-6xl mx-auto">
-            <h2 className="text-3xl font-bold font-display mb-12 text-center">Why Work at BrightPair</h2>
+            <h2 className="text-3xl font-bold font-display mb-12 text-center">Why Work With BrightPair</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="text-center">
                 <div className="w-16 h-16 bg-brightpair-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -106,7 +88,7 @@ const Careers: React.FC = () => {
                 </div>
                 <h3 className="text-xl font-semibold mb-3">Growth</h3>
                 <p className="text-gray-700">
-                  Join a fast-growing startup with plenty of opportunities for professional development and advancement.
+                  Join our growing community with plenty of opportunities for professional development and advancement.
                 </p>
               </div>
             </div>
@@ -119,67 +101,67 @@ const Careers: React.FC = () => {
             <h2 className="text-3xl font-bold font-display mb-12 text-center">Our Benefits</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="bg-white p-8 rounded-xl shadow">
-                <h3 className="text-xl font-semibold mb-4">Health & Wellness</h3>
+                <h3 className="text-xl font-semibold mb-4">For Tutors</h3>
                 <ul className="space-y-3 text-gray-700">
                   <li className="flex items-center">
                     <span className="text-green-500 mr-2">✓</span>
-                    Comprehensive health, dental, and vision insurance
+                    Flexible scheduling that works for you
                   </li>
                   <li className="flex items-center">
                     <span className="text-green-500 mr-2">✓</span>
-                    Mental health support and resources
+                    AI-powered tools to enhance your tutoring
                   </li>
                   <li className="flex items-center">
                     <span className="text-green-500 mr-2">✓</span>
-                    Wellness stipend for gym memberships or fitness classes
+                    Commission on BrightPair subscriptions
                   </li>
                   <li className="flex items-center">
                     <span className="text-green-500 mr-2">✓</span>
-                    Flexible time off policy
+                    Ongoing professional development resources
                   </li>
                 </ul>
               </div>
               
               <div className="bg-white p-8 rounded-xl shadow">
-                <h3 className="text-xl font-semibold mb-4">Work & Life</h3>
+                <h3 className="text-xl font-semibold mb-4">For Student Ambassadors</h3>
                 <ul className="space-y-3 text-gray-700">
                   <li className="flex items-center">
                     <span className="text-green-500 mr-2">✓</span>
-                    Flexible remote work options
+                    Referral bonuses for new signups
                   </li>
                   <li className="flex items-center">
                     <span className="text-green-500 mr-2">✓</span>
-                    Generous parental leave
+                    BrightPair swag and merchandise
                   </li>
                   <li className="flex items-center">
                     <span className="text-green-500 mr-2">✓</span>
-                    Home office setup stipend
+                    Resume-building marketing experience
                   </li>
                   <li className="flex items-center">
                     <span className="text-green-500 mr-2">✓</span>
-                    Professional development budget
+                    Networking opportunities with educators
                   </li>
                 </ul>
               </div>
               
               <div className="bg-white p-8 rounded-xl shadow">
-                <h3 className="text-xl font-semibold mb-4">Financial Benefits</h3>
+                <h3 className="text-xl font-semibold mb-4">For Student Tutors</h3>
                 <ul className="space-y-3 text-gray-700">
                   <li className="flex items-center">
                     <span className="text-green-500 mr-2">✓</span>
-                    Competitive salary packages
+                    Earn while helping your peers
                   </li>
                   <li className="flex items-center">
                     <span className="text-green-500 mr-2">✓</span>
-                    Equity options for all employees
+                    Deepen your own understanding of subjects
                   </li>
                   <li className="flex items-center">
                     <span className="text-green-500 mr-2">✓</span>
-                    401(k) retirement plan with company matching
+                    Build teaching skills for your future career
                   </li>
                   <li className="flex items-center">
                     <span className="text-green-500 mr-2">✓</span>
-                    Twice-yearly performance reviews with raise opportunities
+                    Flexible hours that work with your course load
                   </li>
                 </ul>
               </div>
@@ -189,19 +171,19 @@ const Careers: React.FC = () => {
                 <ul className="space-y-3 text-gray-700">
                   <li className="flex items-center">
                     <span className="text-green-500 mr-2">✓</span>
-                    Regular team retreats and social events
+                    Community of passionate educators
                   </li>
                   <li className="flex items-center">
                     <span className="text-green-500 mr-2">✓</span>
-                    Inclusive and diverse workplace culture
+                    Inclusive and diverse environment
                   </li>
                   <li className="flex items-center">
                     <span className="text-green-500 mr-2">✓</span>
-                    Volunteer time off for community service
+                    Regular training and development workshops
                   </li>
                   <li className="flex items-center">
                     <span className="text-green-500 mr-2">✓</span>
-                    Continuous learning opportunities
+                    Opportunities to shape the future of BrightPair
                   </li>
                 </ul>
               </div>
@@ -209,27 +191,39 @@ const Careers: React.FC = () => {
           </div>
         </section>
         
-        {/* Open Positions */}
-        <section className="py-16 md:py-24 px-4" id="open-positions">
+        {/* Open Opportunities */}
+        <section className="py-16 md:py-24 px-4" id="opportunities">
           <div className="container max-w-6xl mx-auto">
-            <h2 className="text-3xl font-bold font-display mb-12 text-center">Open Positions</h2>
+            <h2 className="text-3xl font-bold font-display mb-12 text-center">Current Opportunities</h2>
             <div className="space-y-6">
-              {jobPositions.map((job, index) => (
+              {opportunityPositions.map((position, index) => (
                 <Card key={index}>
                   <CardHeader>
                     <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle className="text-xl mb-1">{job.title}</CardTitle>
-                        <CardDescription>{job.department} · {job.location} · {job.type}</CardDescription>
+                      <div className="flex items-center gap-4">
+                        {position.icon}
+                        <div>
+                          <CardTitle className="text-xl mb-1">{position.title}</CardTitle>
+                          <CardDescription>{position.type}</CardDescription>
+                        </div>
                       </div>
                       <Button className="bg-brightpair hover:bg-brightpair-600">Apply Now</Button>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-gray-700">{job.description}</p>
+                    <p className="text-gray-700">{position.description}</p>
                   </CardContent>
                 </Card>
               ))}
+            </div>
+            
+            <div className="mt-12 text-center">
+              <p className="text-lg text-gray-700 mb-6">
+                Don't see a role that fits your skills? We're always looking for passionate people to join our mission!
+              </p>
+              <Button variant="outline" asChild>
+                <a href="/contact">Contact Us</a>
+              </Button>
             </div>
           </div>
         </section>
