@@ -12,6 +12,8 @@ import SignUp from "./pages/SignUp";
 import ConsultationScheduling from "./pages/ConsultationScheduling";
 import OnboardingForm from "./pages/OnboardingForm";
 import Dashboard from "./pages/Dashboard";
+import TeacherDashboard from "./pages/TeacherDashboard";
+import ParentDashboard from "./pages/ParentDashboard";
 import TutorChat from "./pages/TutorChat";
 import Flashcards from "./pages/Flashcards";
 import Quizzes from "./pages/Quizzes";
@@ -50,6 +52,8 @@ const App = () => {
               {/* Dashboard Routes */}
               <Route element={<DashboardLayout />}>
                 <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
+                <Route path="/parent-dashboard" element={<ParentDashboard />} />
                 <Route path="/homework" element={<Homework />} />
                 <Route path="/tutor-chat" element={<TutorChat />} />
                 <Route path="/flashcards" element={<Flashcards />} />
