@@ -41,7 +41,7 @@ const NavItem: React.FC<NavItemProps> = ({ to, icon, label, active, onClick, bad
         {icon}
       </span>
       <span>{label}</span>
-      {badge && badge > 0 && (
+      {badge !== undefined && badge > 0 && (
         <Badge 
           variant="default" 
           className="ml-auto h-5 min-w-[20px] flex items-center justify-center text-xs bg-red-500 text-white"
@@ -55,7 +55,7 @@ const NavItem: React.FC<NavItemProps> = ({ to, icon, label, active, onClick, bad
 
 const MessageNavItem = () => {
   const location = useLocation();
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadCount, setUnreadCount] = useState<number | undefined>(undefined);
   
   // Use a safer approach to get unread count
   React.useEffect(() => {
@@ -63,13 +63,14 @@ const MessageNavItem = () => {
       // Import and use the context inside the effect to avoid rendering issues
       import("@/contexts/MessageContext").then(({ useMessages }) => {
         const { getUnreadCount } = useMessages();
-        setUnreadCount(getUnreadCount());
+        const count = getUnreadCount();
+        setUnreadCount(count > 0 ? count : undefined);
       }).catch(() => {
-        // If context is not available or fails, default to 0
-        setUnreadCount(0);
+        // If context is not available or fails, default to undefined
+        setUnreadCount(undefined);
       });
     } catch (error) {
-      setUnreadCount(0);
+      setUnreadCount(undefined);
     }
   }, [location.pathname]);
 
