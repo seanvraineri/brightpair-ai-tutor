@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
@@ -36,18 +37,18 @@ const NavItem: React.FC<NavItemProps> = ({ to, icon, label, active, onClick, bad
       }`}
       onClick={onClick}
     >
-      <span className="mr-3 relative">
+      <span className="mr-3">
         {icon}
-        {badge && badge > 0 && (
-          <Badge 
-            variant="default" 
-            className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs bg-red-500 text-white"
-          >
-            {badge}
-          </Badge>
-        )}
       </span>
       <span>{label}</span>
+      {badge && badge > 0 && (
+        <Badge 
+          variant="default" 
+          className="ml-auto h-5 min-w-[20px] flex items-center justify-center text-xs bg-red-500 text-white"
+        >
+          {badge}
+        </Badge>
+      )}
     </Link>
   );
 };
