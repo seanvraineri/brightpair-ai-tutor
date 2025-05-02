@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import QuizModal from "@/components/tutor/QuizModal";
 
 interface Message {
   id: string;
@@ -42,6 +43,10 @@ const TutorChat: React.FC = () => {
   const [notesDialogOpen, setNotesDialogOpen] = useState<boolean>(false);
   const [noteContent, setNoteContent] = useState<string>("");
   const [tutorFunctionOpen, setTutorFunctionOpen] = useState<boolean>(false);
+  
+  // Quiz modal state
+  const [quizModalOpen, setQuizModalOpen] = useState<boolean>(false);
+  const [quizTopic, setQuizTopic] = useState<string>("Algebra");
   
   // Mock student profile data - in a real app, this would come from your Supabase database
   const studentProfile = {
@@ -170,7 +175,8 @@ const TutorChat: React.FC = () => {
         setNotesDialogOpen(true);
         break;
       case "quiz-me":
-        handlePresetMessage("Can you quiz me on recent algebra concepts we've covered?");
+        setQuizTopic(determineQuizTopic());
+        setQuizModalOpen(true);
         break;
       case "talk":
         handlePresetMessage("Let's talk about the biology concepts I'm currently studying.");
@@ -184,6 +190,20 @@ const TutorChat: React.FC = () => {
       default:
         break;
     }
+  };
+
+  // Determine quiz topic based on recent messages or student profile
+  const determineQuizTopic = (): string => {
+    // Check recent messages for subject mentions
+    const recentMessages = messages.slice(-5);
+    for (const message of recentMessages) {
+      if (message.content.toLowerCase().includes("algebra")) return "Algebra";
+      if (message.content.toLowerCase().includes("biology")) return "Biology";
+      if (message.content.toLowerCase().includes("geometry")) return "Geometry";
+    }
+    
+    // Default to first subject in student profile
+    return studentProfile.subjects[0].charAt(0).toUpperCase() + studentProfile.subjects[0].slice(1);
   };
 
   const handlePresetMessage = (message: string) => {
@@ -443,6 +463,13 @@ const TutorChat: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Quiz Modal */}
+      <QuizModal 
+        open={quizModalOpen}
+        onOpenChange={setQuizModalOpen}
+        topic={quizTopic}
+      />
     </div>
   );
 };
