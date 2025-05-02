@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { UserProvider, useUser } from "./contexts/UserContext";
+import { MessageProvider } from "./contexts/MessageContext";
 
 import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
@@ -28,6 +29,7 @@ import AboutUs from "./pages/AboutUs";
 import Careers from "./pages/Careers";
 import Scheduling from "./pages/Scheduling";
 import Progress from "./pages/Progress";
+import Messages from "./pages/Messages";
 
 const queryClient = new QueryClient();
 
@@ -101,6 +103,11 @@ const App = () => {
                 <Route path="/homework" element={<Homework />} />
                 <Route path="/scheduling" element={<Scheduling />} />
                 <Route path="/progress" element={<Progress />} />
+                <Route path="/messages" element={
+                  <MessageProvider>
+                    <Messages />
+                  </MessageProvider>
+                } />
                 <Route path="/tutor-chat" element={<TutorChat />} />
                 <Route path="/flashcards" element={<Flashcards />} />
                 <Route path="/quizzes" element={<Quizzes />} />

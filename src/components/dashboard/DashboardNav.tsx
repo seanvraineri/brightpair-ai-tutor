@@ -15,7 +15,9 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Logo from "@/components/Logo";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
+import { useMessages } from "@/contexts/MessageContext";
+import { Badge } from "@/components/ui/badge";
 
 interface NavItemProps {
   to: string;
@@ -23,9 +25,10 @@ interface NavItemProps {
   label: string;
   active?: boolean;
   onClick?: () => void;
+  badge?: number;
 }
 
-const NavItem: React.FC<NavItemProps> = ({ to, icon, label, active, onClick }) => {
+const NavItem: React.FC<NavItemProps> = ({ to, icon, label, active, onClick, badge }) => {
   return (
     <Link 
       to={to}
@@ -34,8 +37,26 @@ const NavItem: React.FC<NavItemProps> = ({ to, icon, label, active, onClick }) =
       }`}
       onClick={onClick}
     >
-      <span className="mr-3">{icon}</span>
-      {label}
+      <span className="mr-3 relative">
+        {icon}
+        {badge && badge > 0 && (
+          <Badge 
+            variant="default" 
+            className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs bg-red-500 text-white"
+          >
+            {badge}
+          </Badge>
+        )}
+      </span>
+      <span>{label}</span>
+      {badge && badge > 0 && (
+        <Badge 
+          variant="default" 
+          className="ml-auto bg-red-500 text-white"
+        >
+          {badge}
+        </Badge>
+      )}
     </Link>
   );
 };
@@ -44,6 +65,15 @@ const DashboardNav: React.FC = () => {
   const location = useLocation();
   const { toast } = useToast();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  // Conditionally use the messages context only if it's available
+  let unreadCount = 0;
+  try {
+    const messagesContext = require("@/contexts/MessageContext").useMessages;
+    const { getUnreadCount } = messagesContext();
+    unreadCount = getUnreadCount();
+  } catch (error) {
+    // MessageContext might not be available on all routes
+  }
 
   const handleLogout = () => {
     // Will integrate with Supabase Auth
@@ -84,6 +114,13 @@ const DashboardNav: React.FC = () => {
       icon: <Calendar size={20} />,
       label: "Scheduling",
       active: isActive("/scheduling")
+    },
+    {
+      to: "/messages",
+      icon: <MessageSquare size={20} />,
+      label: "Messages",
+      active: isActive("/messages"),
+      badge: unreadCount
     },
     { 
       to: "/tutor-chat", 
