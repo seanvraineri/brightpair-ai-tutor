@@ -3,8 +3,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { UserProvider } from "./contexts/UserContext";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { UserProvider, useUser } from "./contexts/UserContext";
 
 import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
@@ -29,6 +29,29 @@ import Careers from "./pages/Careers";
 
 const queryClient = new QueryClient();
 
+// Protected Route component to check role
+const ProtectedRoute = ({ children, allowedRole }: { children: React.ReactNode, allowedRole: string }) => {
+  const { user } = useUser();
+  
+  if (!user) {
+    return <Navigate to="/login" />;
+  }
+  
+  if (user.role !== allowedRole) {
+    // Redirect to appropriate dashboard based on role
+    switch(user.role) {
+      case "teacher":
+        return <Navigate to="/teacher-dashboard" />;
+      case "parent":
+        return <Navigate to="/parent-dashboard" />;
+      default:
+        return <Navigate to="/dashboard" />;
+    }
+  }
+  
+  return <>{children}</>;
+};
+
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
@@ -51,9 +74,28 @@ const App = () => {
               
               {/* Dashboard Routes */}
               <Route element={<DashboardLayout />}>
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
-                <Route path="/parent-dashboard" element={<ParentDashboard />} />
+                {/* Student routes */}
+                <Route path="/dashboard" element={
+                  <ProtectedRoute allowedRole="student">
+                    <Dashboard />
+                  </ProtectedRoute>
+                } />
+                
+                {/* Teacher routes */}
+                <Route path="/teacher-dashboard" element={
+                  <ProtectedRoute allowedRole="teacher">
+                    <TeacherDashboard />
+                  </ProtectedRoute>
+                } />
+                
+                {/* Parent routes */}
+                <Route path="/parent-dashboard" element={
+                  <ProtectedRoute allowedRole="parent">
+                    <ParentDashboard />
+                  </ProtectedRoute>
+                } />
+                
+                {/* Shared routes that all roles can access */}
                 <Route path="/homework" element={<Homework />} />
                 <Route path="/tutor-chat" element={<TutorChat />} />
                 <Route path="/flashcards" element={<Flashcards />} />

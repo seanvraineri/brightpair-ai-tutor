@@ -13,15 +13,19 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Logo from "@/components/Logo";
+import { useUser, UserRole } from "@/contexts/UserContext";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { updateUser, updateRole } = useUser();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
+    role: "student" as UserRole,
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -31,21 +35,44 @@ const Login: React.FC = () => {
     });
   };
 
+  const handleRoleChange = (value: string) => {
+    setFormData({
+      ...formData,
+      role: value as UserRole,
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     
     try {
       // We'll integrate Supabase Auth here
-      console.log("Logging in with:", formData.email);
+      console.log("Logging in with:", formData.email, "as", formData.role);
       
-      // Simulate successful login
+      // Update user role
+      updateRole(formData.role);
+      updateUser({ name: formData.email.split('@')[0], email: formData.email, role: formData.role });
+      
+      // Navigate based on role
       setTimeout(() => {
         toast({
           title: "Login successful",
           description: "Welcome back to BrightPair!",
         });
-        navigate("/dashboard");
+        
+        // Navigate to the appropriate dashboard based on role
+        switch(formData.role) {
+          case "teacher":
+            navigate("/teacher-dashboard");
+            break;
+          case "parent":
+            navigate("/parent-dashboard");
+            break;
+          default:
+            navigate("/dashboard");
+            break;
+        }
       }, 1500);
     } catch (error) {
       console.error("Login error:", error);
@@ -107,6 +134,22 @@ const Login: React.FC = () => {
                     value={formData.password}
                     onChange={handleChange}
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="role">I am a</Label>
+                  <Select
+                    value={formData.role}
+                    onValueChange={handleRoleChange}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select your role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="student">Student</SelectItem>
+                      <SelectItem value="teacher">Teacher</SelectItem>
+                      <SelectItem value="parent">Parent</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 

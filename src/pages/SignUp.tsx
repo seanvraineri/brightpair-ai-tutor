@@ -12,23 +12,34 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import Logo from "@/components/Logo";
+import { useUser, UserRole } from "@/contexts/UserContext";
 
 const SignUp: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { updateUser, updateRole } = useUser();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     confirmPassword: "",
+    role: "student" as UserRole,
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleRoleChange = (value: string) => {
+    setFormData({
+      ...formData,
+      role: value as UserRole,
     });
   };
 
@@ -48,7 +59,11 @@ const SignUp: React.FC = () => {
 
     try {
       // We'll integrate Supabase Auth here
-      console.log("Signing up with:", formData.email);
+      console.log("Signing up with:", formData.email, "as", formData.role);
+      
+      // Update user context with role
+      updateRole(formData.role);
+      updateUser({ name: formData.email.split('@')[0], email: formData.email, role: formData.role });
       
       // Simulate successful signup
       setTimeout(() => {
@@ -125,6 +140,22 @@ const SignUp: React.FC = () => {
                     value={formData.confirmPassword}
                     onChange={handleChange}
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="role">I am a</Label>
+                  <Select
+                    value={formData.role}
+                    onValueChange={handleRoleChange}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select your role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="student">Student</SelectItem>
+                      <SelectItem value="teacher">Teacher</SelectItem>
+                      <SelectItem value="parent">Parent</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
