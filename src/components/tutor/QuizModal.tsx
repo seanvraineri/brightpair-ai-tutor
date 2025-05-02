@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { toast } from "@/components/ui/use-toast";
 import { CheckCircle, BookText, Trophy } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
 
 interface QuizQuestion {
   question: string;
@@ -243,10 +244,10 @@ const QuizModal: React.FC<QuizModalProps> = ({ open, onOpenChange, topic }) => {
                 <div className="mt-3">
                   <Progress 
                     value={calculateScore().percentage} 
-                    className="h-2" 
-                    indicatorClassName={`${
-                      calculateScore().percentage >= 70 ? "bg-green-500" : "bg-brightpair"
-                    }`} 
+                    className={cn(
+                      "h-2",
+                      calculateScore().percentage >= 70 ? "bg-secondary [&>div]:bg-green-500" : "bg-secondary [&>div]:bg-brightpair"
+                    )}
                   />
                 </div>
                 
