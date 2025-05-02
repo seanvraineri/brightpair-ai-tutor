@@ -7,7 +7,7 @@ const Footer: React.FC = () => {
   return (
     <footer className="bg-gray-50 py-12 px-4">
       <div className="container max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="col-span-1 md:col-span-2">
             <Logo className="mb-4" />
             <p className="text-gray-600 mb-4 max-w-md">
@@ -51,26 +51,6 @@ const Footer: React.FC = () => {
               <li>
                 <Link to="/contact" className="text-gray-600 hover:text-brightpair">
                   Contact
-                </Link>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="font-display font-semibold text-gray-900 mb-4">Resources</h3>
-            <ul className="space-y-3">
-              <li>
-                <Link to="/blog" className="text-gray-600 hover:text-brightpair">
-                  Blog
-                </Link>
-              </li>
-              <li>
-                <Link to="/help" className="text-gray-600 hover:text-brightpair">
-                  Help Center
-                </Link>
-              </li>
-              <li>
-                <Link to="/faq" className="text-gray-600 hover:text-brightpair">
-                  FAQ
                 </Link>
               </li>
             </ul>
