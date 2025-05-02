@@ -16,8 +16,8 @@ import {
 import { Button } from "@/components/ui/button";
 import Logo from "@/components/Logo";
 import { useToast } from "@/hooks/use-toast";
-import { useMessages } from "@/contexts/MessageContext";
 import { Badge } from "@/components/ui/badge";
+import { MessageProvider, useMessages } from "@/contexts/MessageContext";
 
 interface NavItemProps {
   to: string;
@@ -61,19 +61,41 @@ const NavItem: React.FC<NavItemProps> = ({ to, icon, label, active, onClick, bad
   );
 };
 
+const MessageNavItem = () => {
+  const location = useLocation();
+  const [unreadCount, setUnreadCount] = useState(0);
+  
+  // Use a safer approach to get unread count
+  React.useEffect(() => {
+    try {
+      // Import and use the context inside the effect to avoid rendering issues
+      import("@/contexts/MessageContext").then(({ useMessages }) => {
+        const { getUnreadCount } = useMessages();
+        setUnreadCount(getUnreadCount());
+      }).catch(() => {
+        // If context is not available or fails, default to 0
+        setUnreadCount(0);
+      });
+    } catch (error) {
+      setUnreadCount(0);
+    }
+  }, [location.pathname]);
+
+  return (
+    <NavItem
+      to="/messages"
+      icon={<MessageSquare size={20} />}
+      label="Messages"
+      active={location.pathname === "/messages"}
+      badge={unreadCount}
+    />
+  );
+};
+
 const DashboardNav: React.FC = () => {
   const location = useLocation();
   const { toast } = useToast();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  // Conditionally use the messages context only if it's available
-  let unreadCount = 0;
-  try {
-    const messagesContext = require("@/contexts/MessageContext").useMessages;
-    const { getUnreadCount } = messagesContext();
-    unreadCount = getUnreadCount();
-  } catch (error) {
-    // MessageContext might not be available on all routes
-  }
 
   const handleLogout = () => {
     // Will integrate with Supabase Auth
@@ -96,58 +118,6 @@ const DashboardNav: React.FC = () => {
     setMobileNavOpen(false);
   };
 
-  const navItems = [
-    { 
-      to: "/dashboard", 
-      icon: <User size={20} />, 
-      label: "Dashboard",
-      active: isActive("/dashboard")
-    },
-    { 
-      to: "/homework", 
-      icon: <ListTodo size={20} />, 
-      label: "Homework",
-      active: isActive("/homework")
-    },
-    {
-      to: "/scheduling",
-      icon: <Calendar size={20} />,
-      label: "Scheduling",
-      active: isActive("/scheduling")
-    },
-    {
-      to: "/messages",
-      icon: <MessageSquare size={20} />,
-      label: "Messages",
-      active: isActive("/messages"),
-      badge: unreadCount
-    },
-    { 
-      to: "/tutor-chat", 
-      icon: <MessageSquare size={20} />, 
-      label: "AI Tutor Chat",
-      active: isActive("/tutor-chat")
-    },
-    { 
-      to: "/flashcards", 
-      icon: <BookOpen size={20} />, 
-      label: "Flashcards", 
-      active: isActive("/flashcards")
-    },
-    { 
-      to: "/quizzes", 
-      icon: <HelpCircle size={20} />, 
-      label: "Quizzes",
-      active: isActive("/quizzes")
-    },
-    { 
-      to: "/settings", 
-      icon: <Settings size={20} />, 
-      label: "Settings",
-      active: isActive("/settings")
-    }
-  ];
-
   return (
     <>
       {/* Mobile Header */}
@@ -166,9 +136,59 @@ const DashboardNav: React.FC = () => {
         
         <div className="flex-grow px-2 py-4 flex flex-col justify-between">
           <nav className="flex-1 space-y-2">
-            {navItems.map((item, index) => (
-              <NavItem key={index} {...item} />
-            ))}
+            <NavItem 
+              to="/dashboard" 
+              icon={<User size={20} />} 
+              label="Dashboard"
+              active={isActive("/dashboard")}
+              onClick={closeMobileNav}
+            />
+            <NavItem 
+              to="/homework" 
+              icon={<ListTodo size={20} />} 
+              label="Homework"
+              active={isActive("/homework")}
+              onClick={closeMobileNav}
+            />
+            <NavItem
+              to="/scheduling"
+              icon={<Calendar size={20} />}
+              label="Scheduling"
+              active={isActive("/scheduling")}
+              onClick={closeMobileNav}
+            />
+            
+            {/* Use MessageNavItem instead of directly using NavItem for messages */}
+            <MessageNavItem />
+            
+            <NavItem 
+              to="/tutor-chat" 
+              icon={<MessageSquare size={20} />} 
+              label="AI Tutor Chat"
+              active={isActive("/tutor-chat")}
+              onClick={closeMobileNav}
+            />
+            <NavItem 
+              to="/flashcards" 
+              icon={<BookOpen size={20} />} 
+              label="Flashcards" 
+              active={isActive("/flashcards")}
+              onClick={closeMobileNav}
+            />
+            <NavItem 
+              to="/quizzes" 
+              icon={<HelpCircle size={20} />} 
+              label="Quizzes"
+              active={isActive("/quizzes")}
+              onClick={closeMobileNav}
+            />
+            <NavItem 
+              to="/settings" 
+              icon={<Settings size={20} />} 
+              label="Settings"
+              active={isActive("/settings")}
+              onClick={closeMobileNav}
+            />
           </nav>
           
           <div className="mt-auto">
@@ -197,13 +217,59 @@ const DashboardNav: React.FC = () => {
             
             <div className="flex-grow p-4">
               <nav className="space-y-2">
-                {navItems.map((item, index) => (
-                  <NavItem 
-                    key={index} 
-                    {...item} 
-                    onClick={closeMobileNav} 
-                  />
-                ))}
+                <NavItem 
+                  to="/dashboard" 
+                  icon={<User size={20} />} 
+                  label="Dashboard"
+                  active={isActive("/dashboard")}
+                  onClick={closeMobileNav}
+                />
+                <NavItem 
+                  to="/homework" 
+                  icon={<ListTodo size={20} />} 
+                  label="Homework"
+                  active={isActive("/homework")}
+                  onClick={closeMobileNav}
+                />
+                <NavItem
+                  to="/scheduling"
+                  icon={<Calendar size={20} />}
+                  label="Scheduling"
+                  active={isActive("/scheduling")}
+                  onClick={closeMobileNav}
+                />
+                
+                {/* Use MessageNavItem in mobile menu as well */}
+                <MessageNavItem />
+                
+                <NavItem 
+                  to="/tutor-chat" 
+                  icon={<MessageSquare size={20} />} 
+                  label="AI Tutor Chat"
+                  active={isActive("/tutor-chat")}
+                  onClick={closeMobileNav}
+                />
+                <NavItem 
+                  to="/flashcards" 
+                  icon={<BookOpen size={20} />} 
+                  label="Flashcards" 
+                  active={isActive("/flashcards")}
+                  onClick={closeMobileNav}
+                />
+                <NavItem 
+                  to="/quizzes" 
+                  icon={<HelpCircle size={20} />} 
+                  label="Quizzes"
+                  active={isActive("/quizzes")}
+                  onClick={closeMobileNav}
+                />
+                <NavItem 
+                  to="/settings" 
+                  icon={<Settings size={20} />} 
+                  label="Settings"
+                  active={isActive("/settings")}
+                  onClick={closeMobileNav}
+                />
               </nav>
             </div>
             
