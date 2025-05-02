@@ -2,6 +2,8 @@
 import React, { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import WelcomeBanner from "@/components/dashboard/WelcomeBanner";
 import WeeklyProgress from "@/components/dashboard/WeeklyProgress";
 import UpcomingSchedule from "@/components/dashboard/UpcomingSchedule";
@@ -56,7 +58,16 @@ const Dashboard: React.FC = () => {
                 </div>
                 
                 <div className="md:col-span-4">
-                  <UpcomingSchedule />
+                  <div className="flex flex-col h-full">
+                    <UpcomingSchedule />
+                    <div className="mt-3 text-right">
+                      <Link to="/scheduling">
+                        <Button variant="link" className="text-brightpair">
+                          View Full Calendar
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
                 </div>
               </div>
 
