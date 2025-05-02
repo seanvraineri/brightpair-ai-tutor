@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -175,7 +174,9 @@ const TutorChat: React.FC = () => {
         setNotesDialogOpen(true);
         break;
       case "quiz-me":
-        setQuizTopic(determineQuizTopic());
+        // Get more specific topic from recent messages or prompt user
+        const specificTopic = determineSpecificTopic();
+        setQuizTopic(specificTopic);
         setQuizModalOpen(true);
         break;
       case "talk":
@@ -190,6 +191,34 @@ const TutorChat: React.FC = () => {
       default:
         break;
     }
+  };
+
+  // Determine a more specific quiz topic based on recent messages
+  const determineSpecificTopic = (): string => {
+    // Check recent messages for specific topic mentions
+    const recentMessages = messages.slice(-8);
+    const topicKeywords = {
+      "algebra": ["equation", "solve", "algebra", "variable", "expression", "factor"],
+      "biology": ["cell", "biology", "organism", "dna", "protein"],
+      "geometry": ["geometry", "triangle", "circle", "angle", "theorem"]
+    };
+    
+    // Search for the most recent specific topic mentioned
+    for (const message of recentMessages) {
+      const content = message.content.toLowerCase();
+      
+      for (const [topic, keywords] of Object.entries(topicKeywords)) {
+        for (const keyword of keywords) {
+          if (content.includes(keyword)) {
+            // Capitalize first letter
+            return topic.charAt(0).toUpperCase() + topic.slice(1);
+          }
+        }
+      }
+    }
+    
+    // If no specific topic is found in messages, check student profile subjects
+    return studentProfile.subjects[0].charAt(0).toUpperCase() + studentProfile.subjects[0].slice(1);
   };
 
   // Determine quiz topic based on recent messages or student profile

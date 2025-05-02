@@ -1,12 +1,12 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "@/components/ui/use-toast";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, BookText } from "lucide-react";
 
 interface QuizQuestion {
   question: string;
@@ -27,43 +27,115 @@ const QuizModal: React.FC<QuizModalProps> = ({ open, onOpenChange, topic }) => {
   const [userAnswers, setUserAnswers] = useState<(number | null)[]>([]);
   const [quizCompleted, setQuizCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   
-  // Mock quiz data - in a real app, this would come from the AI
-  const [questions, setQuestions] = useState<QuizQuestion[]>([
-    {
-      question: "What is the slope of the line passing through points (2, 5) and (4, 9)?",
-      options: ["1", "2", "3", "4"],
-      correctAnswer: 1
-    },
-    {
-      question: "Solve for x: 3x + 7 = 22",
-      options: ["x = 3", "x = 5", "x = 7", "x = 15"],
-      correctAnswer: 1
-    },
-    {
-      question: "Factor the expression: x² + 7x + 12",
-      options: ["(x + 3)(x + 4)", "(x + 6)(x + 2)", "(x - 3)(x - 4)", "(x - 6)(x - 2)"],
-      correctAnswer: 0
-    }
-  ]);
-
-  // Simulate loading quiz questions
-  React.useEffect(() => {
+  // Generate quiz questions based on the topic
+  useEffect(() => {
     if (open) {
       setIsLoading(true);
       // Reset state when the modal opens
       setCurrentQuestionIndex(0);
       setSelectedAnswer(null);
       setIsAnswerSubmitted(false);
-      setUserAnswers(Array(questions.length).fill(null));
       setQuizCompleted(false);
+      
+      // Generate questions based on topic
+      const generatedQuestions = generateQuizQuestions(topic);
+      setQuestions(generatedQuestions);
+      setUserAnswers(Array(generatedQuestions.length).fill(null));
       
       // Simulate API call delay
       setTimeout(() => {
         setIsLoading(false);
       }, 1500);
     }
-  }, [open, questions.length]);
+  }, [open, topic]);
+
+  // Function to generate questions based on topic
+  const generateQuizQuestions = (topic: string): QuizQuestion[] => {
+    // In a real implementation, this would call an AI API to generate questions
+    // For now, we'll use topic-specific mock questions
+    
+    const topicLower = topic.toLowerCase();
+    
+    if (topicLower === "algebra") {
+      return [
+        {
+          question: "What is the slope of the line passing through points (2, 5) and (4, 9)?",
+          options: ["1", "2", "3", "4"],
+          correctAnswer: 1
+        },
+        {
+          question: "Solve for x: 3x + 7 = 22",
+          options: ["x = 3", "x = 5", "x = 7", "x = 15"],
+          correctAnswer: 1
+        },
+        {
+          question: "Factor the expression: x² + 7x + 12",
+          options: ["(x + 3)(x + 4)", "(x + 6)(x + 2)", "(x - 3)(x - 4)", "(x - 6)(x - 2)"],
+          correctAnswer: 0
+        }
+      ];
+    } 
+    else if (topicLower === "biology") {
+      return [
+        {
+          question: "Which organelle is known as the 'powerhouse' of the cell?",
+          options: ["Nucleus", "Mitochondria", "Golgi apparatus", "Endoplasmic reticulum"],
+          correctAnswer: 1
+        },
+        {
+          question: "What is the process by which plants convert light energy to chemical energy?",
+          options: ["Respiration", "Fermentation", "Photosynthesis", "Transpiration"],
+          correctAnswer: 2
+        },
+        {
+          question: "Which of these is NOT a part of the central dogma of molecular biology?",
+          options: ["DNA replication", "DNA transcription to RNA", "RNA translation to proteins", "Protein folding to DNA"],
+          correctAnswer: 3
+        }
+      ];
+    }
+    else if (topicLower === "geometry") {
+      return [
+        {
+          question: "What is the formula for the area of a circle?",
+          options: ["πr", "2πr", "πr²", "2πr²"],
+          correctAnswer: 2
+        },
+        {
+          question: "The sum of the angles in a triangle is:",
+          options: ["90 degrees", "180 degrees", "270 degrees", "360 degrees"],
+          correctAnswer: 1
+        },
+        {
+          question: "What is the Pythagorean theorem?",
+          options: ["a² + b² = c²", "a + b = c", "a² - b² = c²", "a × b = c²"],
+          correctAnswer: 0
+        }
+      ];
+    }
+    else {
+      // Generic questions if topic isn't recognized
+      return [
+        {
+          question: `What is a key concept in ${topic}?`,
+          options: ["Concept A", "Concept B", "Concept C", "Concept D"],
+          correctAnswer: 1
+        },
+        {
+          question: `Which of these is NOT typically studied in ${topic}?`,
+          options: ["Element 1", "Element 2", "Element 3", "Element 4"],
+          correctAnswer: 3
+        },
+        {
+          question: `Who is considered the founder of modern ${topic}?`,
+          options: ["Scientist A", "Scientist B", "Scientist C", "Scientist D"],
+          correctAnswer: 2
+        }
+      ];
+    }
+  };
 
   const handleAnswerSelect = (index: number) => {
     if (!isAnswerSubmitted) {
@@ -136,7 +208,7 @@ const QuizModal: React.FC<QuizModalProps> = ({ open, onOpenChange, topic }) => {
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-8">
             <div className="w-16 h-16 border-4 border-t-brightpair border-brightpair-200 border-solid rounded-full animate-spin"></div>
-            <p className="mt-4 text-gray-500">Generating quiz questions...</p>
+            <p className="mt-4 text-gray-500">Generating quiz questions about {topic}...</p>
           </div>
         ) : quizCompleted ? (
           <div className="py-4">
