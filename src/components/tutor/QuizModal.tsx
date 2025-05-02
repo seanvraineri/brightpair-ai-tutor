@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
@@ -200,40 +200,46 @@ const QuizModal: React.FC<QuizModalProps> = ({ open, onOpenChange, topic }) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>{topic} Quiz</DialogTitle>
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="space-y-1">
+          <DialogTitle className="flex items-center">
+            <BookText className="mr-2 h-5 w-5 text-brightpair" />
+            {topic} Quiz
+          </DialogTitle>
+          <DialogDescription>
+            Test your knowledge on {topic} concepts
+          </DialogDescription>
         </DialogHeader>
         
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-8">
-            <div className="w-16 h-16 border-4 border-t-brightpair border-brightpair-200 border-solid rounded-full animate-spin"></div>
-            <p className="mt-4 text-gray-500">Generating quiz questions about {topic}...</p>
+          <div className="flex flex-col items-center justify-center py-6">
+            <div className="w-12 h-12 border-4 border-t-brightpair border-brightpair-200 border-solid rounded-full animate-spin"></div>
+            <p className="mt-3 text-sm text-gray-500">Generating questions about {topic}...</p>
           </div>
         ) : quizCompleted ? (
-          <div className="py-4">
-            <div className="text-center mb-6">
-              <div className="inline-flex items-center justify-center h-20 w-20 rounded-full bg-brightpair-50 mb-4">
-                <CheckCircle size={32} className="text-brightpair" />
+          <div className="py-3">
+            <div className="text-center mb-4">
+              <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-brightpair-50 mb-3">
+                <CheckCircle size={28} className="text-brightpair" />
               </div>
-              <h3 className="text-xl font-bold">Quiz Completed!</h3>
+              <h3 className="text-lg font-bold">Quiz Completed!</h3>
               
               {/* Score display */}
-              <div className="mt-4">
-                <div className="text-3xl font-bold text-brightpair">
+              <div className="mt-3">
+                <div className="text-2xl font-bold text-brightpair">
                   {calculateScore().percentage}%
                 </div>
-                <p className="text-gray-600">
+                <p className="text-sm text-gray-600">
                   {calculateScore().correct} of {calculateScore().total} correct
                 </p>
               </div>
               
-              <div className="mt-4">
+              <div className="mt-3">
                 <Progress value={calculateScore().percentage} className="h-2" />
               </div>
             </div>
             
-            <div className="mt-6 flex justify-center">
+            <div className="mt-4 flex justify-center">
               <Button 
                 onClick={handleFinishQuiz}
                 className="bg-brightpair hover:bg-brightpair-600"
@@ -243,23 +249,23 @@ const QuizModal: React.FC<QuizModalProps> = ({ open, onOpenChange, topic }) => {
             </div>
           </div>
         ) : (
-          <div className="py-4">
+          <div className="py-2">
             {/* Quiz progress */}
-            <div className="flex justify-between text-sm text-gray-500 mb-2">
+            <div className="flex justify-between text-xs text-gray-500 mb-1">
               <span>Question {currentQuestionIndex + 1} of {questions.length}</span>
               <span>{Math.round(((currentQuestionIndex + 1) / questions.length) * 100)}% complete</span>
             </div>
-            <Progress value={((currentQuestionIndex + 1) / questions.length) * 100} className="h-1 mb-6" />
+            <Progress value={((currentQuestionIndex + 1) / questions.length) * 100} className="h-1 mb-4" />
             
             {/* Question */}
-            <div className="mb-6">
-              <h3 className="text-lg font-medium mb-4">{questions[currentQuestionIndex].question}</h3>
+            <div className="mb-4">
+              <h3 className="text-base font-medium mb-3">{questions[currentQuestionIndex].question}</h3>
               
-              <RadioGroup value={selectedAnswer?.toString()} className="space-y-3">
+              <RadioGroup value={selectedAnswer?.toString()} className="space-y-2">
                 {questions[currentQuestionIndex].options.map((option, idx) => (
                   <div 
                     key={idx}
-                    className={`flex items-center space-x-2 p-3 rounded-lg border cursor-pointer
+                    className={`flex items-center space-x-2 p-2 rounded-md border cursor-pointer
                     ${selectedAnswer === idx 
                       ? isAnswerSubmitted 
                         ? idx === questions[currentQuestionIndex].correctAnswer 
@@ -277,12 +283,12 @@ const QuizModal: React.FC<QuizModalProps> = ({ open, onOpenChange, topic }) => {
                     />
                     <Label 
                       htmlFor={`option-${idx}`} 
-                      className="flex-1 cursor-pointer"
+                      className="flex-1 cursor-pointer text-sm"
                     >
                       {option}
                     </Label>
                     {isAnswerSubmitted && idx === questions[currentQuestionIndex].correctAnswer && (
-                      <CheckCircle size={16} className="text-green-500" />
+                      <CheckCircle size={14} className="text-green-500" />
                     )}
                   </div>
                 ))}
@@ -295,6 +301,7 @@ const QuizModal: React.FC<QuizModalProps> = ({ open, onOpenChange, topic }) => {
                 <Button 
                   onClick={handleNextQuestion}
                   className="bg-brightpair hover:bg-brightpair-600"
+                  size="sm"
                 >
                   {currentQuestionIndex < questions.length - 1 ? "Next Question" : "See Results"}
                 </Button>
@@ -303,6 +310,7 @@ const QuizModal: React.FC<QuizModalProps> = ({ open, onOpenChange, topic }) => {
                   onClick={handleSubmitAnswer}
                   disabled={selectedAnswer === null}
                   className="bg-brightpair hover:bg-brightpair-600"
+                  size="sm"
                 >
                   Submit Answer
                 </Button>
