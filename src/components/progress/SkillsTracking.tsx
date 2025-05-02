@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -148,7 +147,7 @@ const SkillsTracking: React.FC = () => {
   }));
 
   const chartConfig = {
-    level: { theme: { light: "#8B5CF6" } }
+    level: { theme: { light: "#8B5CF6", dark: "#8B5CF6" } }
   };
 
   return (

@@ -52,12 +52,12 @@ const ProgressOverview: React.FC = () => {
   ];
 
   const chartConfig = {
-    mathematics: { label: "Mathematics", theme: { light: "#8B5CF6" } },
-    science: { label: "Science", theme: { light: "#0EA5E9" } },
-    english: { label: "English", theme: { light: "#F97316" } },
-    history: { label: "History", theme: { light: "#D946EF" } },
-    progress: { label: "Progress", theme: { light: "#8B5CF6" } },
-    target: { label: "Target", theme: { light: "#9CA3AF" } }
+    mathematics: { label: "Mathematics", theme: { light: "#8B5CF6", dark: "#8B5CF6" } },
+    science: { label: "Science", theme: { light: "#0EA5E9", dark: "#0EA5E9" } },
+    english: { label: "English", theme: { light: "#F97316", dark: "#F97316" } },
+    history: { label: "History", theme: { light: "#D946EF", dark: "#D946EF" } },
+    progress: { label: "Progress", theme: { light: "#8B5CF6", dark: "#8B5CF6" } },
+    target: { label: "Target", theme: { light: "#9CA3AF", dark: "#9CA3AF" } }
   };
 
   return (

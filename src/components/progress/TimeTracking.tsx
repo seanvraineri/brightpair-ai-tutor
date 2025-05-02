@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -84,8 +83,8 @@ const TimeTracking: React.FC = () => {
   const [timeRange, setTimeRange] = useState("week");
 
   const chartConfig = {
-    hours: { theme: { light: "#8B5CF6" } },
-    target: { theme: { light: "#9CA3AF" } }
+    hours: { theme: { light: "#8B5CF6", dark: "#8B5CF6" } },
+    target: { theme: { light: "#9CA3AF", dark: "#9CA3AF" } }
   };
   
   // Get total hours

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -99,7 +98,7 @@ const SubjectProgress: React.FC = () => {
   }));
 
   const chartConfig = {
-    progress: { theme: { light: "#8B5CF6" } }
+    progress: { theme: { light: "#8B5CF6", dark: "#8B5CF6" } }
   };
 
   return (

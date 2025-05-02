@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -111,7 +110,7 @@ const GoalsManagement: React.FC = () => {
   ];
 
   const chartConfig = {
-    value: { theme: { light: "#8B5CF6" } }
+    value: { theme: { light: "#8B5CF6", dark: "#8B5CF6" } }
   };
   
   // Handler for toggling milestone completion
