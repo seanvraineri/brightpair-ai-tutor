@@ -9,15 +9,32 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { format } from "date-fns";
 import TutoringSessionModal from "./TutoringSessionModal";
+
+// Mock tutors - in a real app, this would come from an API
+const TUTORS = [
+  { id: "1", name: "Dr. Alex Johnson", subjects: ["Mathematics", "Physics"] },
+  { id: "2", name: "Sarah Williams", subjects: ["English Literature", "Writing"] },
+  { id: "3", name: "Michael Chen", subjects: ["Computer Science", "Programming"] },
+  { id: "4", name: "Dr. Emily Rodriguez", subjects: ["Biology", "Chemistry"] },
+  { id: "5", name: "James Wilson", subjects: ["History", "Political Science"] },
+];
 
 const Calendar = () => {
   const { toast } = useToast();
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [isSessionModalOpen, setIsSessionModalOpen] = useState(false);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | null>(null);
+  const [selectedTutorId, setSelectedTutorId] = useState<string>("");
 
   // Mock tutoring sessions
   const sessions = [
@@ -63,6 +80,12 @@ const Calendar = () => {
     });
   };
 
+  // Get the selected tutor name based on the ID
+  const getSelectedTutorName = () => {
+    const tutor = TUTORS.find(t => t.id === selectedTutorId);
+    return tutor ? tutor.name : "";
+  };
+
   // Filter sessions for the selected date
   const selectedDateSessions = sessions.filter(
     (session) => date && session.date.toDateString() === date.toDateString()
@@ -97,6 +120,25 @@ const Calendar = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Select Tutor (Optional)
+              </label>
+              <Select value={selectedTutorId} onValueChange={setSelectedTutorId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose a tutor" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Any Available Tutor</SelectItem>
+                  {TUTORS.map(tutor => (
+                    <SelectItem key={tutor.id} value={tutor.id}>
+                      {tutor.name} - {tutor.subjects.join(", ")}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
             {date ? (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {timeSlots.map((timeSlot) => (
@@ -167,6 +209,8 @@ const Calendar = () => {
         onSchedule={handleSessionSchedule}
         selectedDate={date}
         selectedTimeSlot={selectedTimeSlot}
+        selectedTutorId={selectedTutorId || undefined}
+        selectedTutorName={selectedTutorId ? getSelectedTutorName() : undefined}
       />
     </div>
   );

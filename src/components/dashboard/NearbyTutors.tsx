@@ -3,10 +3,10 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import TutorCard, { TutorCardProps } from "../tutor/TutorCard";
+import BookSessionButton from "../tutor/BookSessionButton";
 
 // Mock data for nearby tutors - in a real app, this would come from an API
-const NEARBY_TUTORS: TutorCardProps[] = [
+const NEARBY_TUTORS = [
   {
     id: "1",
     name: "Dr. Alex Johnson",
@@ -53,7 +53,7 @@ const NearbyTutors: React.FC = () => {
       <CardContent>
         <div className="grid grid-cols-1 gap-4">
           {NEARBY_TUTORS.slice(0, 3).map((tutor) => (
-            <div key={tutor.id} className="p-2 rounded-lg hover:bg-gray-50 transition-colors">
+            <div key={tutor.id} className="p-3 rounded-lg hover:bg-gray-50 transition-colors border border-gray-100">
               <div className="flex items-center gap-3">
                 <div className="h-12 w-12 rounded-full bg-brightpair-50 flex items-center justify-center text-xl font-medium text-brightpair flex-shrink-0">
                   {tutor.name.charAt(0)}
@@ -62,9 +62,17 @@ const NearbyTutors: React.FC = () => {
                   <h4 className="font-medium">{tutor.name}</h4>
                   <p className="text-sm text-gray-600">{tutor.subjects.join(", ")}</p>
                 </div>
-                <Link to={`/tutor-search?tutorId=${tutor.id}`}>
-                  <Button variant="outline" size="sm">View Profile</Button>
-                </Link>
+                <div className="flex flex-col gap-2">
+                  <Link to={`/tutor-search?tutorId=${tutor.id}`}>
+                    <Button variant="outline" size="sm">View Profile</Button>
+                  </Link>
+                  <BookSessionButton 
+                    tutorId={tutor.id} 
+                    tutorName={tutor.name} 
+                    variant="secondary" 
+                    size="sm"
+                  />
+                </div>
               </div>
             </div>
           ))}
