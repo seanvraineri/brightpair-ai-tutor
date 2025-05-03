@@ -11,6 +11,7 @@ import RecentActivity from "@/components/dashboard/RecentActivity";
 import RecommendedTasks from "@/components/dashboard/RecommendedTasks";
 import HomeworkAssignments from "@/components/dashboard/HomeworkAssignments";
 import OnboardingStatus from "@/components/dashboard/OnboardingStatus";
+import GamificationWidget from "@/components/dashboard/GamificationWidget";
 import SubjectList from "@/components/subjects/SubjectList";
 import DocumentUpload from "@/components/documents/DocumentUpload";
 import { useUser } from "@/contexts/UserContext";
@@ -51,7 +52,7 @@ const Dashboard: React.FC = () => {
             </TabsList>
             
             <TabsContent value="overview">
-              {/* Weekly Progress Overview */}
+              {/* Weekly Progress and Gamification */}
               <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mb-8">
                 <div className="md:col-span-8">
                   <WeeklyProgress />
@@ -59,15 +60,20 @@ const Dashboard: React.FC = () => {
                 
                 <div className="md:col-span-4">
                   <div className="flex flex-col h-full">
-                    <UpcomingSchedule />
-                    <div className="mt-3 text-right">
-                      <Link to="/scheduling">
-                        <Button variant="link" className="text-brightpair">
-                          View Full Calendar
-                        </Button>
-                      </Link>
-                    </div>
+                    <GamificationWidget />
                   </div>
+                </div>
+              </div>
+
+              {/* Upcoming Schedule */}
+              <div className="mb-8">
+                <UpcomingSchedule />
+                <div className="mt-3 text-right">
+                  <Link to="/scheduling">
+                    <Button variant="link" className="text-brightpair">
+                      View Full Calendar
+                    </Button>
+                  </Link>
                 </div>
               </div>
 
