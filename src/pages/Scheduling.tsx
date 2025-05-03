@@ -8,16 +8,18 @@ const Scheduling: React.FC = () => {
   const [activeTab, setActiveTab] = useState("calendar");
 
   return (
-    <div className="p-6 md:p-8">
+    <div className="p-4 md:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold mb-2">Scheduling</h1>
+        <h1 className="text-2xl md:text-3xl font-bold mb-2">Scheduling</h1>
         <p className="text-gray-600 mb-6">Manage your tutoring sessions</p>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-2 mb-6 w-[400px]">
-            <TabsTrigger value="calendar">Calendar</TabsTrigger>
-            <TabsTrigger value="list">List View</TabsTrigger>
-          </TabsList>
+          <div className="mb-6">
+            <TabsList className="grid w-full max-w-md grid-cols-2">
+              <TabsTrigger value="calendar">Calendar</TabsTrigger>
+              <TabsTrigger value="list">List View</TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="calendar">
             <Calendar />

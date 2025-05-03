@@ -8,15 +8,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { format } from "date-fns";
-import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import TutoringSessionModal from "./TutoringSessionModal";
 
 const Calendar = () => {
@@ -76,24 +70,26 @@ const Calendar = () => {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="md:col-span-1">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card className="lg:col-span-1">
           <CardHeader>
             <CardTitle>Select Date</CardTitle>
             <CardDescription>Choose a date for your tutoring session</CardDescription>
           </CardHeader>
           <CardContent>
-            <CalendarUI
-              mode="single"
-              selected={date}
-              onSelect={handleDateSelect}
-              className="pointer-events-auto"
-              initialFocus
-            />
+            <div className="flex justify-center">
+              <CalendarUI
+                mode="single"
+                selected={date}
+                onSelect={handleDateSelect}
+                className="rounded-md border shadow-sm"
+                initialFocus
+              />
+            </div>
           </CardContent>
         </Card>
 
-        <Card className="md:col-span-2">
+        <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Available Time Slots</CardTitle>
             <CardDescription>
@@ -107,7 +103,7 @@ const Calendar = () => {
                   <Button
                     key={timeSlot}
                     variant="outline"
-                    className="text-center"
+                    className="text-center hover:bg-brightpair/10 hover:text-brightpair"
                     onClick={() => handleTimeSlotSelect(timeSlot)}
                   >
                     {timeSlot}
