@@ -38,6 +38,24 @@ const LessonModal: React.FC<LessonModalProps> = ({
   const [currentStep, setCurrentStep] = useState(0);
   const [isCompleted, setIsCompleted] = useState(lesson.progress === 100);
 
+  // Define all handler functions before any JSX or references
+  const handleComplete = () => {
+    setIsCompleted(true);
+    onComplete();
+  };
+
+  const handleNextStep = () => {
+    if (currentStep < lessonContent.length - 1) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const handlePreviousStep = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
   // This would come from an API in a real implementation
   const lessonContent = [
     {
@@ -141,24 +159,6 @@ const LessonModal: React.FC<LessonModalProps> = ({
       )
     }
   ];
-
-  // Define handleComplete before it's used in JSX
-  const handleComplete = () => {
-    setIsCompleted(true);
-    onComplete();
-  };
-
-  const handleNextStep = () => {
-    if (currentStep < lessonContent.length - 1) {
-      setCurrentStep(currentStep + 1);
-    }
-  };
-
-  const handlePreviousStep = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
