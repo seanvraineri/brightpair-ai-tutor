@@ -8,7 +8,8 @@ import {
   Settings,
   ListTodo,
   Calendar,
-  MessageSquare 
+  MessageSquare,
+  GraduationCap
 } from "lucide-react";
 import NavItem from "./NavItem";
 import MessageNavItem from "./MessageNavItem";
@@ -45,6 +46,13 @@ const NavLinks: React.FC<NavLinksProps> = ({ onItemClick }) => {
         icon={<Calendar size={20} />}
         label="Scheduling"
         active={isActive("/scheduling")}
+        onClick={onItemClick}
+      />
+      <NavItem 
+        to="/lessons" 
+        icon={<GraduationCap size={20} />} 
+        label="Lessons"
+        active={isActive("/lessons")}
         onClick={onItemClick}
       />
       
