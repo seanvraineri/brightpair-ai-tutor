@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
@@ -9,6 +10,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
+import { MapPin } from "lucide-react";
+
 const TutorSignup: React.FC = () => {
   const navigate = useNavigate();
   const {
@@ -23,20 +26,25 @@ const TutorSignup: React.FC = () => {
     experience: "",
     education: "",
     availability: "",
-    referralSource: ""
+    referralSource: "",
+    location: "",
+    tutorMode: "both"
   });
+  
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
   };
+  
   const handleSelectChange = (value: string, name: string) => {
     setFormData({
       ...formData,
       [name]: value
     });
   };
+  
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
@@ -63,6 +71,7 @@ const TutorSignup: React.FC = () => {
       setIsLoading(false);
     }
   };
+  
   return <div className="min-h-screen flex flex-col bg-gray-50">
       <NavBar />
       
@@ -101,6 +110,41 @@ const TutorSignup: React.FC = () => {
                   <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number</Label>
                     <Input id="phone" name="phone" placeholder="(123) 456-7890" value={formData.phone} onChange={handleChange} required />
+                  </div>
+                  
+                  {/* Location field */}
+                  <div className="space-y-2">
+                    <Label htmlFor="location">Location</Label>
+                    <div className="relative">
+                      <Input 
+                        id="location" 
+                        name="location" 
+                        placeholder="City, State or ZIP Code" 
+                        value={formData.location} 
+                        onChange={handleChange} 
+                        required 
+                        className="pl-10"
+                      />
+                      <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-brightpair text-opacity-70" />
+                    </div>
+                    <p className="text-sm text-gray-500">
+                      Enter your primary tutoring location to help students find you
+                    </p>
+                  </div>
+                  
+                  {/* Tutoring mode */}
+                  <div className="space-y-2">
+                    <Label htmlFor="tutorMode">Tutoring Mode</Label>
+                    <Select onValueChange={value => handleSelectChange(value, "tutorMode")} defaultValue={formData.tutorMode}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select tutoring mode" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="remote">Remote Only</SelectItem>
+                        <SelectItem value="in-person">In-Person Only</SelectItem>
+                        <SelectItem value="both">Both Remote and In-Person</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   
                   <div className="space-y-2">
@@ -179,4 +223,5 @@ const TutorSignup: React.FC = () => {
       <Footer />
     </div>;
 };
+
 export default TutorSignup;
