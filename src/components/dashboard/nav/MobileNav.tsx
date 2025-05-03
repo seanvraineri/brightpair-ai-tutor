@@ -4,6 +4,7 @@ import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Logo from "@/components/Logo";
 import NavLinks from "./NavLinks";
+import { cn } from "@/lib/utils";
 
 interface MobileNavProps {
   isOpen: boolean;
@@ -12,10 +13,13 @@ interface MobileNavProps {
 }
 
 const MobileNav: React.FC<MobileNavProps> = ({ isOpen, onClose, onLogout }) => {
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 bg-white md:hidden">
+    <div 
+      className={cn(
+        "fixed inset-0 z-50 bg-white md:hidden transition-all duration-300 ease-in-out",
+        isOpen ? "opacity-100 translate-x-0" : "opacity-0 translate-x-full pointer-events-none"
+      )}
+    >
       <div className="flex flex-col h-full">
         <div className="bg-white border-b py-3 px-4 flex items-center justify-between">
           <Logo size="sm" />
@@ -24,7 +28,7 @@ const MobileNav: React.FC<MobileNavProps> = ({ isOpen, onClose, onLogout }) => {
           </Button>
         </div>
         
-        <div className="flex-grow p-4">
+        <div className="flex-grow p-4 overflow-y-auto">
           <NavLinks onItemClick={onClose} />
         </div>
         
