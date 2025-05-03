@@ -2,9 +2,10 @@
 import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookOpen, BookText, GraduationCap } from "lucide-react";
+import { BookOpen, BookText, GraduationCap, HelpCircle, ListTodo } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@/contexts/UserContext";
+import { Link } from "react-router-dom";
 
 const Lessons: React.FC = () => {
   const { user } = useUser();
@@ -20,7 +21,10 @@ const Lessons: React.FC = () => {
         description: "Learn how to solve and graph quadratic equations and understand their real-world applications.",
         progress: 0,
         duration: "25 min",
-        level: "Intermediate"
+        level: "Intermediate",
+        relatedHomework: "Quadratic Equations Practice",
+        relatedFlashcards: "Algebra Fundamentals",
+        relatedQuiz: "Quadratic Equations Quiz"
       },
       {
         id: 2,
@@ -29,7 +33,10 @@ const Lessons: React.FC = () => {
         description: "Explore how plants convert light energy into chemical energy through the process of photosynthesis.",
         progress: 0,
         duration: "20 min",
-        level: "Beginner"
+        level: "Beginner",
+        relatedHomework: "Plant Biology Lab Report",
+        relatedFlashcards: "Cell Biology",
+        relatedQuiz: "Plant Processes Quiz"
       },
       {
         id: 3,
@@ -38,7 +45,10 @@ const Lessons: React.FC = () => {
         description: "Master the skills needed to analyze and interpret literature through various critical lenses.",
         progress: 0,
         duration: "30 min",
-        level: "Advanced"
+        level: "Advanced",
+        relatedHomework: "Short Story Analysis",
+        relatedFlashcards: "Literary Terms",
+        relatedQuiz: "Literature Interpretation"
       }
     ],
     inProgress: [
@@ -49,7 +59,10 @@ const Lessons: React.FC = () => {
         description: "Examine the causes, events, and consequences of the American Revolutionary War.",
         progress: 65,
         duration: "40 min",
-        level: "Intermediate"
+        level: "Intermediate",
+        relatedHomework: "Revolutionary War Timeline",
+        relatedFlashcards: "Historical Events",
+        relatedQuiz: "American Revolution Quiz"
       }
     ],
     completed: [
@@ -60,7 +73,10 @@ const Lessons: React.FC = () => {
         description: "Understand the fundamental principles governing motion in classical mechanics.",
         progress: 100,
         duration: "35 min",
-        level: "Intermediate"
+        level: "Intermediate",
+        relatedHomework: "Physics Problem Set",
+        relatedFlashcards: "Physics Formulas",
+        relatedQuiz: "Laws of Motion Quiz"
       },
       {
         id: 6,
@@ -69,7 +85,10 @@ const Lessons: React.FC = () => {
         description: "Learn essential conversational phrases and vocabulary for everyday situations.",
         progress: 100,
         duration: "45 min",
-        level: "Beginner"
+        level: "Beginner",
+        relatedHomework: "Spanish Dialogue Writing",
+        relatedFlashcards: "Spanish Vocabulary",
+        relatedQuiz: "Basic Spanish Quiz"
       }
     ]
   };
@@ -93,11 +112,45 @@ const Lessons: React.FC = () => {
     }
   };
 
+  // Component for related resources links
+  const RelatedResources = ({ homework, flashcards, quiz }: { homework: string, flashcards: string, quiz: string }) => (
+    <div className="mt-3 pt-3 border-t border-gray-100">
+      <p className="text-xs font-medium text-gray-500 mb-2">RELATED RESOURCES</p>
+      <div className="flex flex-wrap gap-2">
+        <Link to="/homework" className="flex items-center text-xs bg-gray-50 px-2 py-1 rounded-full hover:bg-gray-100">
+          <ListTodo size={12} className="mr-1" />
+          {homework}
+        </Link>
+        <Link to="/flashcards" className="flex items-center text-xs bg-gray-50 px-2 py-1 rounded-full hover:bg-gray-100">
+          <BookOpen size={12} className="mr-1" />
+          {flashcards}
+        </Link>
+        <Link to="/quizzes" className="flex items-center text-xs bg-gray-50 px-2 py-1 rounded-full hover:bg-gray-100">
+          <HelpCircle size={12} className="mr-1" />
+          {quiz}
+        </Link>
+      </div>
+    </div>
+  );
+
   return (
     <div className="p-4 md:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-2xl md:text-3xl font-bold mb-2">Lessons</h1>
-        <p className="text-gray-600 mb-6">Personalized learning materials tailored to your progress</p>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold mb-2">Lessons</h1>
+            <p className="text-gray-600">Personalized learning materials tailored to your progress</p>
+          </div>
+          
+          <div className="mt-4 md:mt-0 flex space-x-2">
+            <Button asChild variant="outline">
+              <Link to="/homework">View Homework</Link>
+            </Button>
+            <Button asChild className="bg-brightpair hover:bg-brightpair-600">
+              <Link to="/quizzes">Take a Quiz</Link>
+            </Button>
+          </div>
+        </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="mb-6">
@@ -148,6 +201,7 @@ const Lessons: React.FC = () => {
                             ></div>
                           </div>
                         </div>
+                        
                         <div className="mt-4">
                           <Button className="w-full bg-brightpair hover:bg-brightpair-600 text-white">
                             {lesson.progress === 0 ? "Start Lesson" : 
@@ -155,6 +209,12 @@ const Lessons: React.FC = () => {
                              "Continue Lesson"}
                           </Button>
                         </div>
+                        
+                        <RelatedResources 
+                          homework={lesson.relatedHomework} 
+                          flashcards={lesson.relatedFlashcards} 
+                          quiz={lesson.relatedQuiz} 
+                        />
                       </CardContent>
                     </Card>
                   ))}
