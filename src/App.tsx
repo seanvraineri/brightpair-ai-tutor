@@ -22,6 +22,7 @@ import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import DashboardLayout from "./components/dashboard/DashboardLayout";
 import TutorSignup from "./pages/TutorSignup";
+import TutorSearch from "./pages/TutorSearch";
 import TutorFAQ from "./pages/TutorFAQ";
 import Contact from "./pages/Contact";
 import Homework from "./pages/Homework";
@@ -72,6 +73,7 @@ const App = () => {
               <Route path="/consultation" element={<ConsultationScheduling />} />
               <Route path="/onboarding" element={<OnboardingForm />} />
               <Route path="/tutor-signup" element={<TutorSignup />} />
+              <Route path="/tutor-search" element={<TutorSearch />} />
               <Route path="/tutor-faq" element={<TutorFAQ />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/about" element={<AboutUs />} />

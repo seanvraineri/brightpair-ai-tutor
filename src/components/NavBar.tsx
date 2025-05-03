@@ -39,6 +39,11 @@ const NavBar = () => {
           >
             How It Works
           </button>
+          <Link to="/tutor-search"
+            className="text-gray-700 hover:text-brightpair transition-colors"
+          >
+            Find Tutors
+          </Link>
           <button 
             onClick={() => scrollToSection("pricing")} 
             className="text-gray-700 hover:text-brightpair transition-colors"
@@ -73,6 +78,13 @@ const NavBar = () => {
             >
               How It Works
             </button>
+            <Link
+              to="/tutor-search"
+              className="text-gray-700 hover:text-brightpair transition-colors"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Find Tutors
+            </Link>
             <button
               onClick={() => scrollToSection("pricing")}
               className="text-gray-700 hover:text-brightpair transition-colors"
