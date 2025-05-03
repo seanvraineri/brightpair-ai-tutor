@@ -1,11 +1,13 @@
 
 import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookOpen, BookText, GraduationCap, HelpCircle, ListTodo } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { BookOpen, BookText, GraduationCap, HelpCircle, ListTodo, Clock, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import ButtonPrimary from "@/components/ButtonPrimary";
 import { useUser } from "@/contexts/UserContext";
 import { Link } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
 
 const Lessons: React.FC = () => {
   const { user } = useUser();
@@ -112,52 +114,106 @@ const Lessons: React.FC = () => {
     }
   };
 
+  const getLevelBadgeColor = (level: string) => {
+    switch (level.toLowerCase()) {
+      case "beginner":
+        return "bg-green-100 text-green-800 hover:bg-green-200";
+      case "intermediate":
+        return "bg-blue-100 text-blue-800 hover:bg-blue-200";
+      case "advanced":
+        return "bg-purple-100 text-purple-800 hover:bg-purple-200";
+      default:
+        return "bg-gray-100 text-gray-800 hover:bg-gray-200";
+    }
+  };
+
   // Component for related resources links
   const RelatedResources = ({ homework, flashcards, quiz }: { homework: string, flashcards: string, quiz: string }) => (
-    <div className="mt-3 pt-3 border-t border-gray-100">
-      <p className="text-xs font-medium text-gray-500 mb-2">RELATED RESOURCES</p>
-      <div className="flex flex-wrap gap-2">
-        <Link to="/homework" className="flex items-center text-xs bg-gray-50 px-2 py-1 rounded-full hover:bg-gray-100">
-          <ListTodo size={12} className="mr-1" />
-          {homework}
+    <div className="mt-4 pt-4 border-t border-gray-100">
+      <p className="text-xs font-medium text-gray-500 mb-3">RELATED RESOURCES</p>
+      <div className="flex flex-col gap-2">
+        <Link 
+          to="/homework" 
+          className="flex items-center justify-between text-sm p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+        >
+          <div className="flex items-center">
+            <ListTodo size={16} className="mr-2 text-brightpair" />
+            <span>{homework}</span>
+          </div>
+          <span className="text-xs text-gray-500">Homework</span>
         </Link>
-        <Link to="/flashcards" className="flex items-center text-xs bg-gray-50 px-2 py-1 rounded-full hover:bg-gray-100">
-          <BookOpen size={12} className="mr-1" />
-          {flashcards}
+        
+        <Link 
+          to="/flashcards" 
+          className="flex items-center justify-between text-sm p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+        >
+          <div className="flex items-center">
+            <BookOpen size={16} className="mr-2 text-brightpair" />
+            <span>{flashcards}</span>
+          </div>
+          <span className="text-xs text-gray-500">Flashcards</span>
         </Link>
-        <Link to="/quizzes" className="flex items-center text-xs bg-gray-50 px-2 py-1 rounded-full hover:bg-gray-100">
-          <HelpCircle size={12} className="mr-1" />
-          {quiz}
+        
+        <Link 
+          to="/quizzes" 
+          className="flex items-center justify-between text-sm p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+        >
+          <div className="flex items-center">
+            <HelpCircle size={16} className="mr-2 text-brightpair" />
+            <span>{quiz}</span>
+          </div>
+          <span className="text-xs text-gray-500">Quiz</span>
         </Link>
       </div>
     </div>
   );
 
   return (
-    <div className="p-4 md:p-6 lg:p-8">
+    <div className="p-4 md:p-6 lg:p-8 bg-gray-50">
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold mb-2">Lessons</h1>
-            <p className="text-gray-600">Personalized learning materials tailored to your progress</p>
+            <h1 className="text-2xl md:text-3xl font-bold mb-2">My Lessons</h1>
+            <p className="text-gray-600 max-w-2xl">Complete your assigned lessons and explore recommended content tailored to your learning goals</p>
           </div>
           
-          <div className="mt-4 md:mt-0 flex space-x-2">
-            <Button asChild variant="outline">
-              <Link to="/homework">View Homework</Link>
+          <div className="mt-4 md:mt-0 flex space-x-3">
+            <Button asChild variant="outline" className="border-gray-300 shadow-sm">
+              <Link to="/homework" className="flex items-center">
+                <ListTodo className="mr-2 h-4 w-4" />
+                Homework
+              </Link>
             </Button>
-            <Button asChild className="bg-brightpair hover:bg-brightpair-600">
-              <Link to="/quizzes">Take a Quiz</Link>
-            </Button>
+            <ButtonPrimary asChild className="shadow-sm">
+              <Link to="/quizzes" className="flex items-center">
+                <HelpCircle className="mr-2 h-4 w-4" />
+                Take a Quiz
+              </Link>
+            </ButtonPrimary>
           </div>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="mb-6">
-            <TabsList className="grid w-full max-w-md grid-cols-3">
-              <TabsTrigger value="recommended">Recommended</TabsTrigger>
-              <TabsTrigger value="inProgress">In Progress</TabsTrigger>
-              <TabsTrigger value="completed">Completed</TabsTrigger>
+            <TabsList className="grid w-full max-w-md grid-cols-3 p-1 bg-gray-100 rounded-lg">
+              <TabsTrigger 
+                value="recommended"
+                className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md"
+              >
+                Recommended
+              </TabsTrigger>
+              <TabsTrigger 
+                value="inProgress"
+                className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md"
+              >
+                In Progress
+              </TabsTrigger>
+              <TabsTrigger 
+                value="completed"
+                className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md"
+              >
+                Completed
+              </TabsTrigger>
             </TabsList>
           </div>
 
@@ -166,65 +222,79 @@ const Lessons: React.FC = () => {
               {lessons.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {lessons.map((lesson) => (
-                    <Card key={lesson.id} className="overflow-hidden border border-gray-200 transition-all hover:shadow-md">
-                      <CardHeader className="pb-4">
-                        <div className="flex justify-between items-start">
+                    <Card 
+                      key={lesson.id} 
+                      className="overflow-hidden border border-gray-200 transition-all hover:shadow-md bg-white"
+                    >
+                      <CardHeader className="pb-4 border-b border-gray-50">
+                        <div className="flex justify-between items-center mb-3">
                           {getLessonIcon(lesson.subject)}
                           <div className="flex items-center gap-2">
-                            <span className="text-xs font-medium px-2 py-1 bg-gray-100 rounded-full">
+                            <Badge 
+                              variant="secondary" 
+                              className={getLevelBadgeColor(lesson.level)}
+                            >
                               {lesson.level}
-                            </span>
-                            <span className="text-xs font-medium px-2 py-1 bg-gray-100 rounded-full">
+                            </Badge>
+                            <Badge variant="outline" className="flex items-center gap-1">
+                              <Clock size={12} />
                               {lesson.duration}
-                            </span>
+                            </Badge>
                           </div>
                         </div>
-                        <div className="mt-2">
-                          <CardTitle className="text-lg">{lesson.title}</CardTitle>
-                          <CardDescription className="text-sm text-gray-500">{lesson.subject}</CardDescription>
+                        <div>
+                          <CardTitle className="text-lg font-semibold">{lesson.title}</CardTitle>
+                          <CardDescription className="text-sm text-gray-500 flex items-center gap-1 mt-1">
+                            <span className="inline-block w-2 h-2 rounded-full bg-brightpair mr-1"></span>
+                            {lesson.subject}
+                          </CardDescription>
                         </div>
                       </CardHeader>
-                      <CardContent>
+                      <CardContent className="pt-4">
                         <p className="text-sm text-gray-600 mb-4">{lesson.description}</p>
                         <div className="mt-4">
-                          <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center justify-between mb-1.5">
                             <span className="text-xs font-medium">
                               {lesson.progress === 0 ? "Not started" : 
-                               lesson.progress === 100 ? "Completed" : 
+                               lesson.progress === 100 ? (
+                                <span className="flex items-center gap-1 text-green-600">
+                                  <Award size={14} />
+                                  Completed
+                                </span>
+                               ) : 
                                `${lesson.progress}% complete`}
                             </span>
                           </div>
-                          <div className="w-full bg-gray-200 rounded-full h-1.5">
+                          <div className="w-full bg-gray-200 rounded-full h-2">
                             <div 
-                              className={`${getStatusColor(lesson.progress)} h-1.5 rounded-full`} 
+                              className={`${getStatusColor(lesson.progress)} h-2 rounded-full transition-all duration-500`} 
                               style={{ width: `${lesson.progress}%` }}
                             ></div>
                           </div>
                         </div>
-                        
-                        <div className="mt-4">
-                          <Button className="w-full bg-brightpair hover:bg-brightpair-600 text-white">
-                            {lesson.progress === 0 ? "Start Lesson" : 
-                             lesson.progress === 100 ? "Review Lesson" : 
-                             "Continue Lesson"}
-                          </Button>
-                        </div>
+                      </CardContent>
+                      <CardFooter className="flex flex-col">
+                        <ButtonPrimary className="w-full">
+                          {lesson.progress === 0 ? "Start Lesson" : 
+                           lesson.progress === 100 ? "Review Lesson" : 
+                           "Continue Lesson"}
+                        </ButtonPrimary>
                         
                         <RelatedResources 
                           homework={lesson.relatedHomework} 
                           flashcards={lesson.relatedFlashcards} 
                           quiz={lesson.relatedQuiz} 
                         />
-                      </CardContent>
+                      </CardFooter>
                     </Card>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-12">
-                  <BookOpen className="mx-auto h-12 w-12 text-gray-400" />
-                  <h3 className="mt-4 text-lg font-medium text-gray-900">No lessons found</h3>
-                  <p className="mt-2 text-sm text-gray-500">
-                    There are no lessons in this category yet.
+                <div className="text-center py-16 bg-white rounded-lg border border-dashed border-gray-300">
+                  <BookOpen className="mx-auto h-16 w-16 text-gray-300 mb-4" />
+                  <h3 className="mt-2 text-lg font-medium text-gray-900">No lessons found</h3>
+                  <p className="mt-1 text-sm text-gray-500 max-w-md mx-auto">
+                    There are no lessons in this category yet. Check back soon or explore other categories.
                   </p>
                 </div>
               )}
