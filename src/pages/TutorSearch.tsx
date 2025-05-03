@@ -5,10 +5,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { MapPin, Search, Filter } from "lucide-react";
+import { MapPin, Search, Filter, Grid, Map } from "lucide-react";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
 import TutorCard, { TutorCardProps } from "@/components/tutor/TutorCard";
+import TutorMapView from "@/components/tutor/TutorMapView";
 import { useNavigate } from "react-router-dom";
 
 // Hardcoded mock data for demo purposes
@@ -83,6 +84,7 @@ const TutorSearch: React.FC = () => {
   const [subject, setSubject] = useState("");
   const [filteredTutors, setFilteredTutors] = useState<TutorCardProps[]>(MOCK_TUTORS);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<"grid" | "map">("grid");
 
   // Filter tutors based on search criteria
   useEffect(() => {
@@ -222,6 +224,28 @@ const TutorSearch: React.FC = () => {
               <h2 className="text-xl font-semibold">
                 {filteredTutors.length} {filteredTutors.length === 1 ? "Tutor" : "Tutors"} Found
               </h2>
+              
+              {/* View toggle buttons */}
+              <div className="flex gap-2">
+                <Button 
+                  variant={viewMode === "grid" ? "default" : "outline"} 
+                  size="sm"
+                  onClick={() => setViewMode("grid")}
+                  className={viewMode === "grid" ? "bg-brightpair hover:bg-brightpair-600" : ""}
+                >
+                  <Grid className="h-4 w-4 mr-2" />
+                  Grid
+                </Button>
+                <Button 
+                  variant={viewMode === "map" ? "default" : "outline"} 
+                  size="sm"
+                  onClick={() => setViewMode("map")}
+                  className={viewMode === "map" ? "bg-brightpair hover:bg-brightpair-600" : ""}
+                >
+                  <Map className="h-4 w-4 mr-2" />
+                  Map
+                </Button>
+              </div>
             </div>
             
             {filteredTutors.length === 0 ? (
@@ -238,18 +262,29 @@ const TutorSearch: React.FC = () => {
                 </Button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredTutors.map((tutor) => (
-                  <TutorCard
-                    key={tutor.id}
-                    {...tutor}
-                    onClick={() => handleTutorClick(tutor.id)}
-                  />
-                ))}
-              </div>
+              <>
+                {/* Grid View */}
+                {viewMode === "grid" && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredTutors.map((tutor) => (
+                      <TutorCard
+                        key={tutor.id}
+                        {...tutor}
+                        onClick={() => handleTutorClick(tutor.id)}
+                      />
+                    ))}
+                  </div>
+                )}
+                
+                {/* Map View */}
+                {viewMode === "map" && (
+                  <div className="h-[70vh] bg-white rounded-xl shadow-sm overflow-hidden">
+                    <TutorMapView className="h-full" />
+                  </div>
+                )}
+              </>
             )}
           </div>
-          
         </div>
       </main>
       
