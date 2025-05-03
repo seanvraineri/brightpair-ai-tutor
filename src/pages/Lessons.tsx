@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -8,13 +7,17 @@ import ButtonPrimary from "@/components/ButtonPrimary";
 import { useUser } from "@/contexts/UserContext";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "@/components/ui/use-toast";
+import LessonModal from "@/components/lessons/LessonModal";
 
 const Lessons: React.FC = () => {
   const { user } = useUser();
   const [activeTab, setActiveTab] = useState("recommended");
+  const [selectedLesson, setSelectedLesson] = useState<any | null>(null);
+  const [isLessonModalOpen, setIsLessonModalOpen] = useState(false);
 
   // This would come from an API in a real implementation
-  const lessonsByCategory = {
+  const [lessonsByCategory, setLessonsByCategory] = useState({
     recommended: [
       {
         id: 1,
@@ -93,7 +96,7 @@ const Lessons: React.FC = () => {
         relatedQuiz: "Basic Spanish Quiz"
       }
     ]
-  };
+  });
 
   const getStatusColor = (progress: number) => {
     if (progress === 0) return "bg-gray-200";
@@ -125,6 +128,50 @@ const Lessons: React.FC = () => {
       default:
         return "bg-gray-100 text-gray-800 hover:bg-gray-200";
     }
+  };
+
+  // Handler for opening the lesson modal
+  const handleOpenLesson = (lesson: any) => {
+    setSelectedLesson(lesson);
+    setIsLessonModalOpen(true);
+  };
+
+  // Handler for completing a lesson
+  const handleLessonComplete = () => {
+    if (!selectedLesson) return;
+    
+    // Update the lesson progress
+    const updatedLessonsByCategory = { ...lessonsByCategory };
+    
+    // Find and remove the lesson from its current category
+    let foundLesson = false;
+    for (const category in updatedLessonsByCategory) {
+      if (foundLesson) break;
+      
+      const categoryLessons = updatedLessonsByCategory[category as keyof typeof lessonsByCategory];
+      const lessonIndex = categoryLessons.findIndex(lesson => lesson.id === selectedLesson.id);
+      
+      if (lessonIndex !== -1) {
+        // Update the lesson with 100% progress
+        const updatedLesson = {...categoryLessons[lessonIndex], progress: 100};
+        
+        // Remove from current category
+        updatedLessonsByCategory[category as keyof typeof lessonsByCategory] = 
+          categoryLessons.filter(lesson => lesson.id !== selectedLesson.id);
+        
+        // Add to completed category
+        updatedLessonsByCategory.completed = [...updatedLessonsByCategory.completed, updatedLesson];
+        
+        foundLesson = true;
+      }
+    }
+    
+    setLessonsByCategory(updatedLessonsByCategory);
+    
+    toast({
+      title: "Lesson Completed!",
+      description: `You've completed "${selectedLesson.title}". Great job!`,
+    });
   };
 
   // Component for related resources links
@@ -274,7 +321,10 @@ const Lessons: React.FC = () => {
                         </div>
                       </CardContent>
                       <CardFooter className="flex flex-col">
-                        <ButtonPrimary className="w-full">
+                        <ButtonPrimary 
+                          className="w-full"
+                          onClick={() => handleOpenLesson(lesson)}
+                        >
                           {lesson.progress === 0 ? "Start Lesson" : 
                            lesson.progress === 100 ? "Review Lesson" : 
                            "Continue Lesson"}
@@ -301,6 +351,16 @@ const Lessons: React.FC = () => {
             </TabsContent>
           ))}
         </Tabs>
+
+        {/* Lesson Modal */}
+        {selectedLesson && (
+          <LessonModal
+            open={isLessonModalOpen}
+            onOpenChange={setIsLessonModalOpen}
+            lesson={selectedLesson}
+            onComplete={handleLessonComplete}
+          />
+        )}
       </div>
     </div>
   );
