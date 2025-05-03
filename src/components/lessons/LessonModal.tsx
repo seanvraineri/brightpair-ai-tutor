@@ -142,6 +142,12 @@ const LessonModal: React.FC<LessonModalProps> = ({
     }
   ];
 
+  // Define handleComplete before it's used in JSX
+  const handleComplete = () => {
+    setIsCompleted(true);
+    onComplete();
+  };
+
   const handleNextStep = () => {
     if (currentStep < lessonContent.length - 1) {
       setCurrentStep(currentStep + 1);
@@ -152,11 +158,6 @@ const LessonModal: React.FC<LessonModalProps> = ({
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     }
-  };
-
-  const handleComplete = () => {
-    setIsCompleted(true);
-    onComplete();
   };
 
   return (
