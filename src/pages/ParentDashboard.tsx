@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import DocumentUpload from "@/components/documents/DocumentUpload";
 import { Progress } from "@/components/ui/progress";
 import { useUser } from "@/contexts/UserContext";
+import NearbyTutors from "@/components/dashboard/NearbyTutors";
 
 const ParentDashboard: React.FC = () => {
   const { toast } = useToast();
@@ -76,6 +77,16 @@ const ParentDashboard: React.FC = () => {
                       </Link>
                     </div>
                   </div>
+                </CardContent>
+              </Card>
+              
+              {/* Nearby Tutors Section */}
+              <Card className="mb-6">
+                <CardHeader>
+                  <CardTitle>Tutors Near You</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <NearbyTutors />
                 </CardContent>
               </Card>
               

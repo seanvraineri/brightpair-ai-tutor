@@ -12,6 +12,7 @@ import RecommendedTasks from "@/components/dashboard/RecommendedTasks";
 import HomeworkAssignments from "@/components/dashboard/HomeworkAssignments";
 import OnboardingStatus from "@/components/dashboard/OnboardingStatus";
 import GamificationWidget from "@/components/dashboard/GamificationWidget";
+import NearbyTutors from "@/components/dashboard/NearbyTutors";
 import SubjectList from "@/components/subjects/SubjectList";
 import DocumentUpload from "@/components/documents/DocumentUpload";
 import { useUser } from "@/contexts/UserContext";
@@ -63,6 +64,11 @@ const Dashboard: React.FC = () => {
                     <GamificationWidget />
                   </div>
                 </div>
+              </div>
+
+              {/* Nearby Tutors Section */}
+              <div className="mb-8">
+                <NearbyTutors />
               </div>
 
               {/* Upcoming Schedule */}
