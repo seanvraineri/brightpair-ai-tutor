@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -178,13 +179,13 @@ const Lessons: React.FC = () => {
   const RelatedResources = ({ homework, flashcards, quiz }: { homework: string, flashcards: string, quiz: string }) => (
     <div className="mt-4 pt-4 border-t border-gray-100">
       <p className="text-xs font-medium text-gray-500 mb-3">RELATED RESOURCES</p>
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-3">
         <Link 
           to="/homework" 
-          className="flex items-center justify-between text-sm p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+          className="flex items-center justify-between text-sm p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
         >
-          <div className="flex items-center">
-            <ListTodo size={16} className="mr-2 text-brightpair" />
+          <div className="flex items-center gap-3">
+            <ListTodo size={16} className="text-brightpair" />
             <span>{homework}</span>
           </div>
           <span className="text-xs text-gray-500">Homework</span>
@@ -192,10 +193,10 @@ const Lessons: React.FC = () => {
         
         <Link 
           to="/flashcards" 
-          className="flex items-center justify-between text-sm p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+          className="flex items-center justify-between text-sm p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
         >
-          <div className="flex items-center">
-            <BookOpen size={16} className="mr-2 text-brightpair" />
+          <div className="flex items-center gap-3">
+            <BookOpen size={16} className="text-brightpair" />
             <span>{flashcards}</span>
           </div>
           <span className="text-xs text-gray-500">Flashcards</span>
@@ -203,10 +204,10 @@ const Lessons: React.FC = () => {
         
         <Link 
           to="/quizzes" 
-          className="flex items-center justify-between text-sm p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+          className="flex items-center justify-between text-sm p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
         >
-          <div className="flex items-center">
-            <HelpCircle size={16} className="mr-2 text-brightpair" />
+          <div className="flex items-center gap-3">
+            <HelpCircle size={16} className="text-brightpair" />
             <span>{quiz}</span>
           </div>
           <span className="text-xs text-gray-500">Quiz</span>

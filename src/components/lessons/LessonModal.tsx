@@ -171,7 +171,7 @@ const LessonModal: React.FC<LessonModalProps> = ({
             >
               {lesson.subject}
             </Badge>
-            <Badge className="flex items-center gap-1 bg-gray-100 text-gray-600 hover:bg-gray-200">
+            <Badge className="flex items-center gap-2 bg-gray-100 text-gray-600 hover:bg-gray-200">
               <Clock className="h-3 w-3" />
               {lesson.duration}
             </Badge>
@@ -194,11 +194,11 @@ const LessonModal: React.FC<LessonModalProps> = ({
             <div className="p-6">
               {/* Progress indicator */}
               <div className="mb-6">
-                <div className="flex justify-between text-sm text-gray-600 mb-1.5">
+                <div className="flex justify-between text-sm text-gray-600 mb-2">
                   <span>Step {currentStep + 1} of {lessonContent.length}</span>
                   <span>{Math.round((currentStep + 1) / lessonContent.length * 100)}% complete</span>
                 </div>
-                <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
                   <div 
                     className="h-full bg-brightpair rounded-full"
                     style={{ width: `${((currentStep + 1) / lessonContent.length) * 100}%` }}
@@ -207,18 +207,18 @@ const LessonModal: React.FC<LessonModalProps> = ({
               </div>
               
               {/* Step title */}
-              <h3 className="text-lg font-semibold mb-4 text-brightpair-700">
+              <h3 className="text-lg font-semibold mb-5 text-brightpair-700">
                 {lessonContent[currentStep].title}
               </h3>
               
               {/* Step content */}
-              <div className="prose prose-gray max-w-none">
+              <div className="prose prose-gray max-w-none space-y-4">
                 {lessonContent[currentStep].content}
               </div>
               
               {/* Navigation buttons */}
               {!isCompleted && (
-                <div className="flex justify-between mt-8 pt-4 border-t border-gray-100">
+                <div className="flex justify-between mt-8 pt-5 border-t border-gray-100">
                   <Button 
                     variant="outline"
                     onClick={handlePreviousStep}
@@ -229,26 +229,26 @@ const LessonModal: React.FC<LessonModalProps> = ({
                   
                   {currentStep < lessonContent.length - 1 ? (
                     <ButtonPrimary onClick={handleNextStep}>
-                      Next <ArrowRight className="ml-1 h-4 w-4" />
+                      Next <ArrowRight className="ml-2 h-4 w-4" />
                     </ButtonPrimary>
                   ) : (
                     <ButtonPrimary onClick={handleComplete}>
-                      Complete Lesson <CheckCircle className="ml-1 h-4 w-4" />
+                      Complete Lesson <CheckCircle className="ml-2 h-4 w-4" />
                     </ButtonPrimary>
                   )}
                 </div>
               )}
               
               {isCompleted && (
-                <div className="mt-8 pt-4 border-t border-gray-100 bg-green-50 p-4 rounded-lg">
-                  <div className="flex items-center gap-2 text-green-700 mb-2">
+                <div className="mt-8 pt-5 border-t border-gray-100 bg-green-50 p-5 rounded-lg">
+                  <div className="flex items-center gap-3 text-green-700 mb-3">
                     <CheckCircle className="h-5 w-5 text-green-500" />
                     <span className="font-medium">Lesson Completed!</span>
                   </div>
                   <p className="text-sm text-gray-600 mb-4">
                     Great job! You've completed this lesson. Continue your learning journey with the related resources.
                   </p>
-                  <div className="flex gap-2">
+                  <div className="flex gap-3">
                     <Button variant="outline" onClick={() => onOpenChange(false)}>
                       Close
                     </Button>
@@ -269,12 +269,12 @@ const LessonModal: React.FC<LessonModalProps> = ({
                   Enhance your learning with these additional materials related to {lesson.title}.
                 </p>
                 
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <Link 
                     to="/homework" 
                     className="flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-4">
                       <div className="h-10 w-10 rounded-full bg-brightpair-50 flex items-center justify-center">
                         <BookOpen className="h-5 w-5 text-brightpair" />
                       </div>
@@ -290,7 +290,7 @@ const LessonModal: React.FC<LessonModalProps> = ({
                     to="/flashcards" 
                     className="flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-4">
                       <div className="h-10 w-10 rounded-full bg-brightpair-50 flex items-center justify-center">
                         <BookOpen className="h-5 w-5 text-brightpair" />
                       </div>
@@ -306,7 +306,7 @@ const LessonModal: React.FC<LessonModalProps> = ({
                     to="/quizzes" 
                     className="flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-4">
                       <div className="h-10 w-10 rounded-full bg-brightpair-50 flex items-center justify-center">
                         <BookOpen className="h-5 w-5 text-brightpair" />
                       </div>
@@ -322,10 +322,10 @@ const LessonModal: React.FC<LessonModalProps> = ({
               
               <div>
                 <h3 className="text-lg font-semibold mb-3">Additional Materials</h3>
-                <div className="space-y-2">
-                  <div className="p-3 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors cursor-pointer">
+                <div className="space-y-3">
+                  <div className="p-4 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors cursor-pointer">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-3">
                         <BookOpen className="h-4 w-4 text-gray-500" />
                         <span>Supplementary Reading</span>
                       </div>
@@ -333,9 +333,9 @@ const LessonModal: React.FC<LessonModalProps> = ({
                     </div>
                   </div>
                   
-                  <div className="p-3 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors cursor-pointer">
+                  <div className="p-4 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors cursor-pointer">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-3">
                         <BookOpen className="h-4 w-4 text-gray-500" />
                         <span>Downloadable Worksheet</span>
                       </div>
@@ -354,12 +354,12 @@ const LessonModal: React.FC<LessonModalProps> = ({
                 Take notes while studying to help reinforce your learning.
               </p>
               
-              <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+              <div className="border border-gray-200 rounded-lg p-5 bg-gray-50">
                 <textarea 
-                  className="w-full h-40 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brightpair focus:border-transparent"
+                  className="w-full h-40 p-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brightpair focus:border-transparent"
                   placeholder="Type your notes here..."
                 ></textarea>
-                <div className="flex justify-end mt-2">
+                <div className="flex justify-end mt-3">
                   <Button variant="outline" className="text-sm">Save Notes</Button>
                 </div>
               </div>
