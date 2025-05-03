@@ -63,7 +63,7 @@ const NearbyTutors: React.FC = () => {
                   <p className="text-sm text-gray-600">{tutor.subjects.join(", ")}</p>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <Link to={`/tutor-search?tutorId=${tutor.id}`}>
+                  <Link to={`/tutor-profile/${tutor.id}`}>
                     <Button variant="outline" size="sm">View Profile</Button>
                   </Link>
                   <BookSessionButton 

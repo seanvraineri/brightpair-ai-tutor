@@ -1,9 +1,9 @@
-
 import React from "react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MapPin, Calendar, GraduationCap, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
 
 export interface TutorCardProps {
   id: string;
@@ -15,10 +15,16 @@ export interface TutorCardProps {
   education: string;
   availability: string;
   tutorMode: "remote" | "in-person" | "both";
+  bio?: string;
+  hourlyRate?: number;
+  rating?: number;
+  reviewCount?: number;
+  languages?: string[];
   onClick?: () => void;
 }
 
 const TutorCard: React.FC<TutorCardProps> = ({
+  id,
   name,
   image,
   location,
@@ -29,6 +35,8 @@ const TutorCard: React.FC<TutorCardProps> = ({
   availability,
   onClick,
 }) => {
+  const navigate = useNavigate();
+  
   // Convert experience value to user-friendly text
   const experienceText = {
     "0-1": "Less than 1 year",
@@ -44,6 +52,14 @@ const TutorCard: React.FC<TutorCardProps> = ({
     "in-person": "In-Person Only",
     "both": "In-Person & Remote"
   }[tutorMode];
+
+  const handleViewProfile = () => {
+    if (onClick) {
+      onClick();
+    } else {
+      navigate(`/tutor-profile/${id}`);
+    }
+  };
 
   return (
     <Card className="h-full hover:shadow-md transition-shadow overflow-hidden">
@@ -114,7 +130,7 @@ const TutorCard: React.FC<TutorCardProps> = ({
         </div>
       </CardContent>
       <CardFooter>
-        <Button onClick={onClick} className="w-full bg-brightpair hover:bg-brightpair-600">
+        <Button onClick={handleViewProfile} className="w-full bg-brightpair hover:bg-brightpair-600">
           View Profile
         </Button>
       </CardFooter>

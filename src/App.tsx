@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -23,6 +22,7 @@ import NotFound from "./pages/NotFound";
 import DashboardLayout from "./components/dashboard/DashboardLayout";
 import TutorSignup from "./pages/TutorSignup";
 import TutorSearch from "./pages/TutorSearch";
+import TutorProfile from "./pages/TutorProfile";
 import TutorFAQ from "./pages/TutorFAQ";
 import Contact from "./pages/Contact";
 import Homework from "./pages/Homework";
@@ -74,6 +74,7 @@ const App = () => {
               <Route path="/onboarding" element={<OnboardingForm />} />
               <Route path="/tutor-signup" element={<TutorSignup />} />
               <Route path="/tutor-search" element={<TutorSearch />} />
+              <Route path="/tutor-profile/:id" element={<TutorProfile />} />
               <Route path="/tutor-faq" element={<TutorFAQ />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/about" element={<AboutUs />} />
