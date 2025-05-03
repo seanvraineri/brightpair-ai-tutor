@@ -1,8 +1,9 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { UserProvider, useUser } from "./contexts/UserContext";
 import { MessageProvider } from "./contexts/MessageContext";
 
@@ -32,17 +33,43 @@ import Scheduling from "./pages/Scheduling";
 import Progress from "./pages/Progress";
 import Messages from "./pages/Messages";
 import Lessons from "./pages/Lessons";
+import { useEffect, useState } from "react";
+import { supabase } from "./integrations/supabase/client";
 
 const queryClient = new QueryClient();
 
-// Protected Route component to check role
+// Protected Route component to check role and authentication
 const ProtectedRoute = ({ children, allowedRole }: { children: React.ReactNode, allowedRole: string }) => {
-  const { user } = useUser();
+  const { user, session } = useUser();
+  const location = useLocation();
+  const [isLoading, setIsLoading] = useState(true);
   
-  if (!user) {
-    return <Navigate to="/login" />;
+  useEffect(() => {
+    // Check authentication status when component mounts
+    const checkAuth = async () => {
+      const { data } = await supabase.auth.getSession();
+      setIsLoading(false);
+    };
+    
+    checkAuth();
+  }, []);
+  
+  // Show nothing while checking authentication
+  if (isLoading) {
+    return null;
   }
   
+  // If not authenticated, redirect to login
+  if (!session) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+  
+  // If authenticated but no user data yet, wait for it
+  if (!user) {
+    return null;
+  }
+  
+  // If user doesn't have the required role, redirect to appropriate dashboard
   if (user.role !== allowedRole) {
     // Redirect to appropriate dashboard based on role
     switch(user.role) {
@@ -55,6 +82,37 @@ const ProtectedRoute = ({ children, allowedRole }: { children: React.ReactNode, 
     }
   }
   
+  // User is authenticated and has the correct role
+  return <>{children}</>;
+};
+
+// Authentication check for routes that just require being logged in, regardless of role
+const AuthRoute = ({ children }: { children: React.ReactNode }) => {
+  const { session } = useUser();
+  const location = useLocation();
+  const [isLoading, setIsLoading] = useState(true);
+  
+  useEffect(() => {
+    // Check authentication status when component mounts
+    const checkAuth = async () => {
+      const { data } = await supabase.auth.getSession();
+      setIsLoading(false);
+    };
+    
+    checkAuth();
+  }, []);
+  
+  // Show nothing while checking authentication
+  if (isLoading) {
+    return null;
+  }
+  
+  // If not authenticated, redirect to login
+  if (!session) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+  
+  // User is authenticated
   return <>{children}</>;
 };
 
@@ -81,7 +139,7 @@ const App = () => {
               <Route path="/careers" element={<Careers />} />
               
               {/* Dashboard Routes */}
-              <Route element={<DashboardLayout />}>
+              <Route element={<AuthRoute><DashboardLayout /></AuthRoute>}>
                 {/* Student routes */}
                 <Route path="/dashboard" element={
                   <ProtectedRoute allowedRole="student">

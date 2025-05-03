@@ -1,5 +1,6 @@
-
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { Session } from '@supabase/supabase-js';
 
 // Define user onboarding status types
 export type OnboardingStatus = 'pending' | 'consultation-scheduled' | 'consultation-complete' | 'onboarding-complete' | 'active';
@@ -51,23 +52,27 @@ interface User {
 // Context interface
 interface UserContextType {
   user: User | null;
+  session: Session | null;
   updateUser: (data: Partial<User>) => void;
   updateOnboardingStatus: (status: OnboardingStatus) => void;
   setConsultationDate: (date: string) => void;
   updateRole: (role: UserRole) => void;
   unlockAchievement: (achievementId: string) => void;
   earnXP: (amount: number) => void;
+  signOut: () => Promise<void>;
 }
 
 // Create context with default values
 const UserContext = createContext<UserContextType>({
   user: null,
+  session: null,
   updateUser: () => {},
   updateOnboardingStatus: () => {},
   setConsultationDate: () => {},
   updateRole: () => {},
   unlockAchievement: () => {},
   earnXP: () => {},
+  signOut: async () => {},
 });
 
 // Hook for using the context
@@ -148,59 +153,182 @@ const getPersonalizedAchievements = (interests: string[], learningStyle: string)
 
 // Provider component
 export const UserProvider: React.FC<{children: ReactNode}> = ({ children }) => {
-  const [user, setUser] = useState<User | null>({
-    name: 'Emma', // Default name, would typically come from auth
-    email: 'emma@example.com',
-    onboardingStatus: 'pending',
-    role: 'student', // Default role
-    gamification: {
-      level: 3,
-      xp: 750,
-      xpToNextLevel: 1000,
-      streak: 7,
-      interests: ['math', 'science', 'art'],
-      learningStyle: 'visual',
-      favoriteSubjects: ['Algebra', 'Biology'],
-      achievements: getPersonalizedAchievements(['math', 'science', 'art'], 'visual'),
-      badges: [
-        {
-          id: 'math-1',
-          name: 'Math Enthusiast',
-          description: 'Completed your first math assignment',
-          icon: 'badge-plus',
-          level: 1,
-          isUnlocked: true
-        },
-        {
-          id: 'streak-3',
-          name: 'Consistency',
-          description: 'Maintained a 3-day study streak',
-          icon: 'trophy',
-          level: 2,
-          isUnlocked: true
-        }
-      ]
-    }
-  });
+  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
-  const updateUser = (data: Partial<User>) => {
+  useEffect(() => {
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session);
+        
+        if (session?.user) {
+          // When session changes, fetch user profile
+          setTimeout(() => {
+            fetchUserProfile(session.user.id);
+          }, 0);
+        } else {
+          setUser(null);
+        }
+      }
+    );
+
+    // Check for existing session on load
+    const initializeUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setSession(session);
+      
+      if (session?.user) {
+        await fetchUserProfile(session.user.id);
+      }
+    };
+
+    initializeUser();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+        
+      if (error) throw error;
+      
+      if (data) {
+        setUser({
+          name: data.name,
+          email: data.email,
+          role: data.role as UserRole,
+          onboardingStatus: data.onboarding_status as OnboardingStatus,
+          nextConsultationDate: data.next_consultation_date,
+          gamification: {
+            level: 3,
+            xp: 750,
+            xpToNextLevel: 1000,
+            streak: 7,
+            interests: ['math', 'science', 'art'],
+            learningStyle: 'visual',
+            favoriteSubjects: ['Algebra', 'Biology'],
+            achievements: getPersonalizedAchievements(['math', 'science', 'art'], 'visual'),
+            badges: [
+              {
+                id: 'math-1',
+                name: 'Math Enthusiast',
+                description: 'Completed your first math assignment',
+                icon: 'badge-plus',
+                level: 1,
+                isUnlocked: true
+              },
+              {
+                id: 'streak-3',
+                name: 'Consistency',
+                description: 'Maintained a 3-day study streak',
+                icon: 'trophy',
+                level: 2,
+                isUnlocked: true
+              }
+            ]
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
+  };
+
+  const updateUser = async (data: Partial<User>) => {
     setUser(prev => prev ? { ...prev, ...data } : null);
+    
+    // If there's a session, update the profile in Supabase
+    if (session?.user) {
+      try {
+        const updateData: any = {};
+        
+        if (data.name) updateData.name = data.name;
+        if (data.email) updateData.email = data.email;
+        if (data.role) updateData.role = data.role;
+        if (data.onboardingStatus) updateData.onboarding_status = data.onboardingStatus;
+        if (data.nextConsultationDate) updateData.next_consultation_date = data.nextConsultationDate;
+        
+        if (Object.keys(updateData).length > 0) {
+          const { error } = await supabase
+            .from('profiles')
+            .update(updateData)
+            .eq('id', session.user.id);
+            
+          if (error) throw error;
+        }
+      } catch (error) {
+        console.error('Error updating user profile:', error);
+      }
+    }
   };
   
-  const updateOnboardingStatus = (status: OnboardingStatus) => {
+  const updateOnboardingStatus = async (status: OnboardingStatus) => {
     setUser(prev => prev ? { ...prev, onboardingStatus: status } : null);
+    
+    // Update onboarding status in Supabase
+    if (session?.user) {
+      try {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ onboarding_status: status })
+          .eq('id', session.user.id);
+          
+        if (error) throw error;
+      } catch (error) {
+        console.error('Error updating onboarding status:', error);
+      }
+    }
   };
 
-  const setConsultationDate = (date: string) => {
+  const setConsultationDate = async (date: string) => {
     setUser(prev => prev ? { 
       ...prev, 
       nextConsultationDate: date,
       onboardingStatus: 'consultation-scheduled' as OnboardingStatus
     } : null);
+    
+    // Update consultation date in Supabase
+    if (session?.user) {
+      try {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ 
+            next_consultation_date: date,
+            onboarding_status: 'consultation-scheduled'
+          })
+          .eq('id', session.user.id);
+          
+        if (error) throw error;
+      } catch (error) {
+        console.error('Error updating consultation date:', error);
+      }
+    }
   };
   
-  const updateRole = (role: UserRole) => {
+  const updateRole = async (role: UserRole) => {
     setUser(prev => prev ? { ...prev, role } : null);
+    
+    // Update role in Supabase if session exists
+    if (session?.user) {
+      try {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ role })
+          .eq('id', session.user.id);
+          
+        if (error) throw error;
+      } catch (error) {
+        console.error('Error updating role:', error);
+      }
+    }
   };
   
   // Gamification functions
@@ -251,16 +379,28 @@ export const UserProvider: React.FC<{children: ReactNode}> = ({ children }) => {
     });
   };
   
+  const signOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+      setSession(null);
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+  
   return (
     <UserContext.Provider 
       value={{ 
         user, 
+        session,
         updateUser, 
         updateOnboardingStatus,
         setConsultationDate,
         updateRole,
         unlockAchievement,
-        earnXP
+        earnXP,
+        signOut
       }}
     >
       {children}

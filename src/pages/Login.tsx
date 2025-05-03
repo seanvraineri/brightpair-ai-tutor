@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +16,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Logo from "@/components/Logo";
 import { useUser, UserRole } from "@/contexts/UserContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -27,6 +28,35 @@ const Login: React.FC = () => {
     password: "",
     role: "student" as UserRole,
   });
+
+  useEffect(() => {
+    // Check if user is already logged in
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        // User is already logged in, redirect to appropriate dashboard
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', data.session.user.id)
+          .single();
+          
+        if (profileData) {
+          updateRole(profileData.role as UserRole);
+          updateUser({
+            name: profileData.name,
+            email: profileData.email,
+            role: profileData.role as UserRole,
+            onboardingStatus: profileData.onboarding_status
+          });
+          
+          redirectToDashboard(profileData.role as UserRole);
+        }
+      }
+    };
+    
+    checkSession();
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -42,46 +72,107 @@ const Login: React.FC = () => {
     });
   };
 
+  const redirectToDashboard = (role: UserRole) => {
+    switch(role) {
+      case "teacher":
+        navigate("/teacher-dashboard");
+        break;
+      case "parent":
+        navigate("/parent-dashboard");
+        break;
+      default:
+        navigate("/dashboard");
+        break;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     
     try {
-      // We'll integrate Supabase Auth here
-      console.log("Logging in with:", formData.email, "as", formData.role);
+      // Sign in with Supabase Auth
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+      });
       
-      // Update user role
-      updateRole(formData.role);
-      updateUser({ name: formData.email.split('@')[0], email: formData.email, role: formData.role });
+      if (error) throw error;
       
-      // Navigate based on role
-      setTimeout(() => {
-        toast({
-          title: "Login successful",
-          description: "Welcome back to BrightPair!",
-        });
+      // Get user profile from profiles table
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', data.user.id)
+        .single();
         
-        // Navigate to the appropriate dashboard based on role
-        switch(formData.role) {
-          case "teacher":
-            navigate("/teacher-dashboard");
-            break;
-          case "parent":
-            navigate("/parent-dashboard");
-            break;
-          default:
-            navigate("/dashboard");
-            break;
-        }
-      }, 1500);
-    } catch (error) {
+      if (profileError) throw profileError;
+      
+      // Update role in profile if it's different from what the user selected
+      if (profileData.role !== formData.role) {
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ role: formData.role })
+          .eq('id', data.user.id);
+          
+        if (updateError) throw updateError;
+        
+        profileData.role = formData.role;
+      }
+      
+      // Update user context
+      updateRole(profileData.role as UserRole);
+      updateUser({
+        name: profileData.name,
+        email: profileData.email,
+        role: profileData.role as UserRole,
+        onboardingStatus: profileData.onboarding_status,
+        nextConsultationDate: profileData.next_consultation_date,
+      });
+      
+      toast({
+        title: "Login successful",
+        description: "Welcome back to BrightPair!",
+      });
+      
+      // Redirect to appropriate dashboard based on role
+      redirectToDashboard(profileData.role as UserRole);
+      
+    } catch (error: any) {
       console.error("Login error:", error);
       toast({
         title: "Login failed",
-        description: "Invalid email or password.",
+        description: error.message || "Invalid email or password.",
         variant: "destructive",
       });
     } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const handleGoogleSignIn = async () => {
+    try {
+      setIsLoading(true);
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      });
+      
+      if (error) throw error;
+      
+    } catch (error: any) {
+      console.error("Google login error:", error);
+      toast({
+        title: "Login failed",
+        description: error.message || "Failed to sign in with Google",
+        variant: "destructive",
+      });
       setIsLoading(false);
     }
   };
@@ -170,7 +261,13 @@ const Login: React.FC = () => {
                 </div>
                 
                 <div className="mt-6">
-                  <Button type="button" variant="outline" className="w-full" disabled={isLoading}>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    className="w-full" 
+                    disabled={isLoading}
+                    onClick={handleGoogleSignIn}
+                  >
                     <img
                       src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
                       alt="Google logo"

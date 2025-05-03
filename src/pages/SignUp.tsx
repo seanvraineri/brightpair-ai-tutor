@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/components/ui/use-toast";
 import Logo from "@/components/Logo";
 import { useUser, UserRole } from "@/contexts/UserContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const SignUp: React.FC = () => {
   const navigate = useNavigate();
@@ -23,11 +24,25 @@ const SignUp: React.FC = () => {
   const { updateUser, updateRole } = useUser();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
+    name: "",
     email: "",
     password: "",
     confirmPassword: "",
     role: "student" as UserRole,
   });
+
+  useEffect(() => {
+    // Check if user is already logged in
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        // User is already logged in, redirect to dashboard
+        navigate("/dashboard");
+      }
+    };
+    
+    checkSession();
+  }, [navigate]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -58,29 +73,71 @@ const SignUp: React.FC = () => {
     }
 
     try {
-      // We'll integrate Supabase Auth here
-      console.log("Signing up with:", formData.email, "as", formData.role);
+      // Sign up with Supabase Auth
+      const { data, error } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            name: formData.name,
+            role: formData.role,
+          },
+        }
+      });
       
-      // Update user context with role
+      if (error) throw error;
+      
+      // Update user context
       updateRole(formData.role);
-      updateUser({ name: formData.email.split('@')[0], email: formData.email, role: formData.role });
+      updateUser({
+        name: formData.name,
+        email: formData.email,
+        role: formData.role,
+        onboardingStatus: "pending"
+      });
       
-      // Simulate successful signup
-      setTimeout(() => {
-        toast({
-          title: "Account created!",
-          description: "You've successfully created your account.",
-        });
-        navigate("/consultation");
-      }, 1500);
-    } catch (error) {
+      toast({
+        title: "Account created!",
+        description: "You've successfully created your account.",
+      });
+      
+      // Navigate to consultation page
+      navigate("/consultation");
+    } catch (error: any) {
       console.error("Signup error:", error);
       toast({
         title: "Sign up failed",
-        description: "There was an error creating your account.",
+        description: error.message || "There was an error creating your account.",
         variant: "destructive",
       });
     } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const handleGoogleSignUp = async () => {
+    try {
+      setIsLoading(true);
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      });
+      
+      if (error) throw error;
+      
+    } catch (error: any) {
+      console.error("Google signup error:", error);
+      toast({
+        title: "Sign up failed",
+        description: error.message || "Failed to sign up with Google",
+        variant: "destructive",
+      });
       setIsLoading(false);
     }
   };
@@ -104,6 +161,19 @@ const SignUp: React.FC = () => {
           <form onSubmit={handleSubmit}>
             <CardContent className="pt-6">
               <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Name</Label>
+                  <Input
+                    id="name"
+                    name="name"
+                    type="text"
+                    placeholder="Your name"
+                    autoComplete="name"
+                    required
+                    value={formData.name}
+                    onChange={handleChange}
+                  />
+                </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <Input
@@ -176,7 +246,13 @@ const SignUp: React.FC = () => {
                 </div>
                 
                 <div className="mt-6">
-                  <Button type="button" variant="outline" className="w-full" disabled={isLoading}>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    className="w-full" 
+                    disabled={isLoading}
+                    onClick={handleGoogleSignUp}
+                  >
                     <img
                       src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
                       alt="Google logo"
