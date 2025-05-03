@@ -7,8 +7,21 @@ import BookSessionButton from "../tutor/BookSessionButton";
 import TutorMapView from "../tutor/TutorMapView";
 import { Grid, Map } from "lucide-react";
 
+// Define the type to match the expected GeoTutorData type in TutorMapView
+interface TutorData {
+  id: string;
+  name: string;
+  location: string;
+  subjects: string[];
+  experience: string;
+  education: string;
+  availability: string;
+  tutorMode: "remote" | "in-person" | "both";
+  coordinates: [number, number]; // This needs to be a tuple with exactly 2 numbers
+}
+
 // Mock data for nearby tutors - in a real app, this would come from an API
-const NEARBY_TUTORS = [
+const NEARBY_TUTORS: TutorData[] = [
   {
     id: "1",
     name: "Dr. Alex Johnson",

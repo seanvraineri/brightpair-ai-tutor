@@ -2,13 +2,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Navigate } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { TutorCardProps } from "./TutorCard";
 import { Link } from "react-router-dom";
 
 // Mock data with geolocation for tutors
 interface GeoTutorData extends TutorCardProps {
-  coordinates: [number, number]; // [longitude, latitude]
+  coordinates: [number, number]; // This is a tuple with exactly 2 elements (longitude, latitude)
 }
 
 // Sample geocoded data for our mock tutors
