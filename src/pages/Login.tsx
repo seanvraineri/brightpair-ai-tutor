@@ -15,13 +15,13 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Logo from "@/components/Logo";
-import { useUser, UserRole } from "@/contexts/UserContext";
+import { useUser, UserRole, OnboardingStatus } from "@/contexts/UserContext";
 import { supabase } from "@/integrations/supabase/client";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { updateUser, updateRole } = useUser();
+  const { updateUser, updateRole, updateOnboardingStatus } = useUser();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -47,7 +47,7 @@ const Login: React.FC = () => {
             name: profileData.name,
             email: profileData.email,
             role: profileData.role as UserRole,
-            onboardingStatus: profileData.onboarding_status
+            onboardingStatus: profileData.onboarding_status as OnboardingStatus
           });
           
           redirectToDashboard(profileData.role as UserRole);
@@ -126,7 +126,7 @@ const Login: React.FC = () => {
         name: profileData.name,
         email: profileData.email,
         role: profileData.role as UserRole,
-        onboardingStatus: profileData.onboarding_status,
+        onboardingStatus: profileData.onboarding_status as OnboardingStatus,
         nextConsultationDate: profileData.next_consultation_date,
       });
       
