@@ -9,7 +9,8 @@ import {
   ListTodo,
   Calendar,
   MessageSquare,
-  GraduationCap
+  GraduationCap,
+  Sparkles
 } from "lucide-react";
 import NavItem from "./NavItem";
 import MessageNavItem from "./MessageNavItem";
@@ -89,10 +90,10 @@ const NavLinks: React.FC<NavLinksProps> = ({ onItemClick }) => {
         <MessageNavItem />
         
         <NavItem 
-          to="/tutor-chat" 
-          icon={<MessageSquare size={20} />} 
-          label="AI Tutor Chat"
-          active={isActive("/tutor-chat")}
+          to="/ai-tutor" 
+          icon={<Sparkles size={20} />} 
+          label="AI Tutor"
+          active={isActive("/ai-tutor")}
           onClick={onItemClick}
         />
       </div>

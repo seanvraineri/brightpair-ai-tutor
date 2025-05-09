@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -173,13 +172,12 @@ function App() {
                       <Messages />
                     </MessageProvider>
                   } />
+                  <Route path="/ai-tutor" element={<AITutor />} />
                   <Route path="/tutor-chat" element={<TutorChat />} />
                   <Route path="/flashcards" element={<Flashcards />} />
                   <Route path="/quizzes" element={<Quizzes />} />
                   <Route path="/settings" element={<Settings />} />
                 </Route>
-                
-                <Route path="/ai-tutor" element={<AITutor />} />
                 
                 <Route path="*" element={<NotFound />} />
               </Routes>
