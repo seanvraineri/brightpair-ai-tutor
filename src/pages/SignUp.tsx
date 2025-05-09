@@ -13,9 +13,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
 import Logo from "@/components/Logo";
-import { useUser, UserRole } from "@/contexts/UserContext";
+import { useUser, UserRole, OnboardingStatus } from "@/contexts/UserContext";
 import { supabase } from "@/integrations/supabase/client";
 
 const SignUp: React.FC = () => {
@@ -29,6 +30,7 @@ const SignUp: React.FC = () => {
     password: "",
     confirmPassword: "",
     role: "student" as UserRole,
+    rememberMe: true,
   });
 
   useEffect(() => {
@@ -57,6 +59,13 @@ const SignUp: React.FC = () => {
       role: value as UserRole,
     });
   };
+  
+  const handleCheckboxChange = () => {
+    setFormData({
+      ...formData,
+      rememberMe: !formData.rememberMe,
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -82,6 +91,9 @@ const SignUp: React.FC = () => {
             name: formData.name,
             role: formData.role,
           },
+          // Set session duration based on rememberMe checkbox
+          // 3600 seconds (1 hour) if not checked, 30 days if checked
+          expiresIn: formData.rememberMe ? 2592000 : 3600,
         }
       });
       
@@ -93,7 +105,7 @@ const SignUp: React.FC = () => {
         name: formData.name,
         email: formData.email,
         role: formData.role,
-        onboardingStatus: "pending"
+        onboardingStatus: "pending" as OnboardingStatus
       });
       
       toast({
@@ -226,6 +238,19 @@ const SignUp: React.FC = () => {
                       <SelectItem value="parent">Parent</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="rememberMe" 
+                    checked={formData.rememberMe}
+                    onCheckedChange={handleCheckboxChange}
+                  />
+                  <Label 
+                    htmlFor="rememberMe" 
+                    className="text-sm font-medium leading-none cursor-pointer"
+                  >
+                    Stay signed in for 30 days
+                  </Label>
                 </div>
               </div>
 

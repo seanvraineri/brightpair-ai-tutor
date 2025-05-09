@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import Logo from "@/components/Logo";
 import { useUser, UserRole, OnboardingStatus } from "@/contexts/UserContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,6 +28,7 @@ const Login: React.FC = () => {
     email: "",
     password: "",
     role: "student" as UserRole,
+    rememberMe: false,
   });
 
   useEffect(() => {
@@ -71,6 +73,13 @@ const Login: React.FC = () => {
       role: value as UserRole,
     });
   };
+  
+  const handleCheckboxChange = () => {
+    setFormData({
+      ...formData,
+      rememberMe: !formData.rememberMe,
+    });
+  };
 
   const redirectToDashboard = (role: UserRole) => {
     switch(role) {
@@ -95,6 +104,11 @@ const Login: React.FC = () => {
       const { data, error } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
+        options: {
+          // Set session duration based on rememberMe checkbox
+          // 3600 seconds (1 hour) if not checked, 30 days if checked
+          expiresIn: formData.rememberMe ? 2592000 : 3600,
+        }
       });
       
       if (error) throw error;
@@ -241,6 +255,19 @@ const Login: React.FC = () => {
                       <SelectItem value="parent">Parent</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="rememberMe" 
+                    checked={formData.rememberMe}
+                    onCheckedChange={handleCheckboxChange}
+                  />
+                  <Label 
+                    htmlFor="rememberMe" 
+                    className="text-sm font-medium leading-none cursor-pointer"
+                  >
+                    Remember me for 30 days
+                  </Label>
                 </div>
               </div>
 
