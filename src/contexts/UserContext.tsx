@@ -2,13 +2,13 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { User, UserRole, OnboardingStatus, UserContextType } from './UserTypes';
+import { User, UserRole, OnboardingStatus, UserContextType, Achievement, Badge } from './UserTypes';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useGamification } from '@/hooks/useGamification';
 import { useAuth } from '@/hooks/useAuth';
 
 // Export types from UserTypes.ts
-export type { UserRole, OnboardingStatus, User };
+export type { UserRole, OnboardingStatus, User, Achievement, Badge };
 
 // Create context with default values
 const UserContext = createContext<UserContextType>({

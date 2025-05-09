@@ -1,4 +1,7 @@
 
+// Import Session from Supabase
+import { Session } from '@supabase/supabase-js';
+
 // Define user onboarding status types
 export type OnboardingStatus = 'pending' | 'consultation-scheduled' | 'consultation-complete' | 'onboarding-complete' | 'active';
 

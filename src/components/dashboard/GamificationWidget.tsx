@@ -2,11 +2,12 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
+import { Badge as UIBadge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { useUser, Achievement, Badge as UserBadge } from "@/contexts/UserContext";
+import { useUser } from "@/contexts/UserContext";
+import { Achievement, Badge as UserBadge } from "@/contexts/UserTypes";
 import { Award, Trophy, BadgeCheck, BadgePlus, BadgeInfo, BadgeHelp } from "lucide-react";
 
 const GamificationWidget = () => {
