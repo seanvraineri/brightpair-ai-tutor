@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -32,7 +33,7 @@ import Scheduling from "./pages/Scheduling";
 import Progress from "./pages/Progress";
 import Messages from "./pages/Messages";
 import Lessons from "./pages/Lessons";
-import AITutorPage from "./pages/AITutorPage";
+import AITutor from "./pages/AITutor";
 import { useEffect, useState } from "react";
 import { supabase } from "./integrations/supabase/client";
 
@@ -178,7 +179,7 @@ function App() {
                   <Route path="/settings" element={<Settings />} />
                 </Route>
                 
-                <Route path="/ai-tutor" element={<AITutorPage />} />
+                <Route path="/ai-tutor" element={<AITutor />} />
                 
                 <Route path="*" element={<NotFound />} />
               </Routes>
