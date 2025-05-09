@@ -79,7 +79,7 @@ const GamificationWidget = () => {
             <CardDescription>Track your progress and achievements</CardDescription>
           </div>
           <div className="flex flex-col items-end">
-            <Badge className={`${getLevelColor(level)} mb-1`}>Level {level}</Badge>
+            <UIBadge className={`${getLevelColor(level)} mb-1`}>Level {level}</UIBadge>
             <div className="text-xs text-gray-500">{streak} Day Streak 🔥</div>
           </div>
         </div>
