@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -33,6 +32,7 @@ import Scheduling from "./pages/Scheduling";
 import Progress from "./pages/Progress";
 import Messages from "./pages/Messages";
 import Lessons from "./pages/Lessons";
+import AITutorPage from "./pages/AITutorPage";
 import { useEffect, useState } from "react";
 import { supabase } from "./integrations/supabase/client";
 
@@ -116,74 +116,78 @@ const AuthRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-const App = () => {
+function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <UserProvider>
-          <BrowserRouter>
-            <Toaster />
-            <Sonner />
-            <Routes>
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<SignUp />} />
-              <Route path="/consultation" element={<ConsultationScheduling />} />
-              <Route path="/onboarding" element={<OnboardingForm />} />
-              <Route path="/tutor-signup" element={<TutorSignup />} />
-              <Route path="/tutor-search" element={<TutorSearch />} />
-              <Route path="/tutor-profile/:id" element={<TutorProfile />} />
-              <Route path="/tutor-faq" element={<TutorFAQ />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/about" element={<AboutUs />} />
-              <Route path="/careers" element={<Careers />} />
-              
-              {/* Dashboard Routes */}
-              <Route element={<AuthRoute><DashboardLayout /></AuthRoute>}>
-                {/* Student routes */}
-                <Route path="/dashboard" element={
-                  <ProtectedRoute allowedRole="student">
-                    <Dashboard />
-                  </ProtectedRoute>
-                } />
+    <>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <UserProvider>
+            <BrowserRouter>
+              <Toaster />
+              <Sonner />
+              <Routes>
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<SignUp />} />
+                <Route path="/consultation" element={<ConsultationScheduling />} />
+                <Route path="/onboarding" element={<OnboardingForm />} />
+                <Route path="/tutor-signup" element={<TutorSignup />} />
+                <Route path="/tutor-search" element={<TutorSearch />} />
+                <Route path="/tutor-profile/:id" element={<TutorProfile />} />
+                <Route path="/tutor-faq" element={<TutorFAQ />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/about" element={<AboutUs />} />
+                <Route path="/careers" element={<Careers />} />
                 
-                {/* Teacher routes */}
-                <Route path="/teacher-dashboard" element={
-                  <ProtectedRoute allowedRole="teacher">
-                    <TeacherDashboard />
-                  </ProtectedRoute>
-                } />
+                {/* Dashboard Routes */}
+                <Route element={<AuthRoute><DashboardLayout /></AuthRoute>}>
+                  {/* Student routes */}
+                  <Route path="/dashboard" element={
+                    <ProtectedRoute allowedRole="student">
+                      <Dashboard />
+                    </ProtectedRoute>
+                  } />
+                  
+                  {/* Teacher routes */}
+                  <Route path="/teacher-dashboard" element={
+                    <ProtectedRoute allowedRole="teacher">
+                      <TeacherDashboard />
+                    </ProtectedRoute>
+                  } />
+                  
+                  {/* Parent routes */}
+                  <Route path="/parent-dashboard" element={
+                    <ProtectedRoute allowedRole="parent">
+                      <ParentDashboard />
+                    </ProtectedRoute>
+                  } />
+                  
+                  {/* Shared routes that all roles can access */}
+                  <Route path="/homework" element={<Homework />} />
+                  <Route path="/scheduling" element={<Scheduling />} />
+                  <Route path="/lessons" element={<Lessons />} />
+                  <Route path="/progress" element={<Progress />} />
+                  <Route path="/messages" element={
+                    <MessageProvider>
+                      <Messages />
+                    </MessageProvider>
+                  } />
+                  <Route path="/tutor-chat" element={<TutorChat />} />
+                  <Route path="/flashcards" element={<Flashcards />} />
+                  <Route path="/quizzes" element={<Quizzes />} />
+                  <Route path="/settings" element={<Settings />} />
+                </Route>
                 
-                {/* Parent routes */}
-                <Route path="/parent-dashboard" element={
-                  <ProtectedRoute allowedRole="parent">
-                    <ParentDashboard />
-                  </ProtectedRoute>
-                } />
+                <Route path="/ai-tutor" element={<AITutorPage />} />
                 
-                {/* Shared routes that all roles can access */}
-                <Route path="/homework" element={<Homework />} />
-                <Route path="/scheduling" element={<Scheduling />} />
-                <Route path="/lessons" element={<Lessons />} />
-                <Route path="/progress" element={<Progress />} />
-                <Route path="/messages" element={
-                  <MessageProvider>
-                    <Messages />
-                  </MessageProvider>
-                } />
-                <Route path="/tutor-chat" element={<TutorChat />} />
-                <Route path="/flashcards" element={<Flashcards />} />
-                <Route path="/quizzes" element={<Quizzes />} />
-                <Route path="/settings" element={<Settings />} />
-              </Route>
-              
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </UserProvider>
-      </TooltipProvider>
-    </QueryClientProvider>
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </UserProvider>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </>
   );
-};
+}
 
 export default App;
