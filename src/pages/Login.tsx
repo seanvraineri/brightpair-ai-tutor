@@ -104,12 +104,16 @@ const Login: React.FC = () => {
       const { data, error } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
-        options: {
-          // Set session duration based on rememberMe checkbox
-          // 3600 seconds (1 hour) if not checked, 30 days if checked
-          expiresIn: formData.rememberMe ? 2592000 : 3600,
-        }
       });
+      
+      // Set session expiration time based on rememberMe checkbox
+      if (data?.session && formData.rememberMe) {
+        // Update session with longer expiration (30 days)
+        await supabase.auth.setSession({
+          access_token: data.session.access_token,
+          refresh_token: data.session.refresh_token,
+        });
+      }
       
       if (error) throw error;
       

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -91,13 +90,18 @@ const SignUp: React.FC = () => {
             name: formData.name,
             role: formData.role,
           },
-          // Set session duration based on rememberMe checkbox
-          // 3600 seconds (1 hour) if not checked, 30 days if checked
-          expiresIn: formData.rememberMe ? 2592000 : 3600,
         }
       });
       
       if (error) throw error;
+      
+      // If we have a session and "remember me" is selected, set a longer session
+      if (data.session && formData.rememberMe) {
+        await supabase.auth.setSession({
+          access_token: data.session.access_token,
+          refresh_token: data.session.refresh_token,
+        });
+      }
       
       // Update user context
       updateRole(formData.role);
