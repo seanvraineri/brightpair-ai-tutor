@@ -1,4 +1,3 @@
-
 // Follow Deno's ES modules conventions
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.21.0';
@@ -83,7 +82,43 @@ const formatLearningHistory = (history: any) => {
   
   let context = "";
   
-  // Format tracks (since we know these exist)
+  // Format homework assignments
+  if (history.homework && history.homework.length > 0) {
+    context += "\nRECENT HOMEWORK ASSIGNMENTS:\n";
+    history.homework.forEach((hw: any, index: number) => {
+      const dueDate = hw.due_date ? new Date(hw.due_date).toLocaleDateString() : 'No due date';
+      context += `${index + 1}. "${hw.title}" - ${hw.subject} - Due: ${dueDate} - Status: ${hw.status}\n`;
+      if (hw.description) {
+        context += `   Description: ${hw.description}\n`;
+      }
+    });
+  }
+  
+  // Format quiz results
+  if (history.quizzes && history.quizzes.length > 0) {
+    context += "\nRECENT QUIZ RESULTS:\n";
+    history.quizzes.forEach((quiz: any, index: number) => {
+      const completedDate = quiz.completed_at ? new Date(quiz.completed_at).toLocaleDateString() : 'Not completed';
+      context += `${index + 1}. "${quiz.title}" - ${quiz.subject}`;
+      
+      if (quiz.score !== null) {
+        context += ` - Score: ${quiz.score}%`;
+      }
+      
+      context += ` - Completed: ${completedDate}\n`;
+    });
+  }
+  
+  // Format lesson history
+  if (history.lessons && history.lessons.length > 0) {
+    context += "\nRECENT LESSONS:\n";
+    history.lessons.forEach((lesson: any, index: number) => {
+      const status = lesson.completed_at ? `Completed on ${new Date(lesson.completed_at).toLocaleDateString()}` : 'In progress';
+      context += `${index + 1}. "${lesson.title}" - ${lesson.subject} - ${status}\n`;
+    });
+  }
+  
+  // Format tracks
   if (history.tracks && history.tracks.length > 0) {
     context += "\nACTIVE LEARNING TRACKS:\n";
     history.tracks.forEach((track: any, index: number) => {
@@ -93,7 +128,7 @@ const formatLearningHistory = (history: any) => {
     });
   }
   
-  // Format recent conversations (only the last 5)
+  // Format recent conversations
   if (history.recentConversations && history.recentConversations.length > 0) {
     const recentConvos = history.recentConversations.slice(0, 5);
     context += "\nRECENT CONVERSATION SNIPPETS:\n";
@@ -101,9 +136,6 @@ const formatLearningHistory = (history: any) => {
       context += `Student asked: "${convo.message.substring(0, 100)}${convo.message.length > 100 ? '...' : ''}"\n`;
     });
   }
-  
-  // Include placeholder text for the tables that don't yet exist
-  context += "\nNote: The system will soon track your homework, quizzes, and lessons to provide more personalized assistance.\n";
   
   return context;
 };
@@ -179,7 +211,7 @@ serve(async (req) => {
     // Add learning history context
     if (learningHistoryContext) {
       systemPrompt += `\n\nIMPORTANT LEARNING CONTEXT - Use this information to personalize your responses:${learningHistoryContext}\n\n`;
-      systemPrompt += `You should use this context to tailor your responses. Reference their learning tracks to understand what curriculum they're following. Be helpful and specific, drawing connections between their questions and their learning history.`;
+      systemPrompt += `You should use this context to tailor your responses. For example, if they're asking about their homework assignments, reference them specifically by name. If they're struggling with a topic from a quiz, focus on those areas. Reference their learning tracks to understand what curriculum they're following. When they say "help me with my homework", bring up specific homework assignments they have and offer help. Be helpful and specific, drawing connections between their questions and their learning history.`;
     }
     
     // Make API request to OpenAI

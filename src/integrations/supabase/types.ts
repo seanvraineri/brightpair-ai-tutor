@@ -47,6 +47,59 @@ export type Database = {
           },
         ]
       }
+      homework: {
+        Row: {
+          created_at: string
+          description: string | null
+          documents: Json | null
+          due_date: string | null
+          id: string
+          questions: Json | null
+          status: string
+          student_id: string
+          subject: string
+          title: string
+          track_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          documents?: Json | null
+          due_date?: string | null
+          id?: string
+          questions?: Json | null
+          status?: string
+          student_id: string
+          subject: string
+          title: string
+          track_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          documents?: Json | null
+          due_date?: string | null
+          id?: string
+          questions?: Json | null
+          status?: string
+          student_id?: string
+          subject?: string
+          title?: string
+          track_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "homework_track_id_fkey"
+            columns: ["track_id"]
+            isOneToOne: false
+            referencedRelation: "learning_tracks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       learning_tracks: {
         Row: {
           created_at: string | null
@@ -70,6 +123,53 @@ export type Database = {
           tutor_id?: string | null
         }
         Relationships: []
+      }
+      lessons: {
+        Row: {
+          completed_at: string | null
+          content: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          resources: Json | null
+          student_id: string
+          subject: string
+          title: string
+          track_id: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          content?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          resources?: Json | null
+          student_id: string
+          subject: string
+          title: string
+          track_id?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          content?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          resources?: Json | null
+          student_id?: string
+          subject?: string
+          title?: string
+          track_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lessons_track_id_fkey"
+            columns: ["track_id"]
+            isOneToOne: false
+            referencedRelation: "learning_tracks"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       parent_students: {
         Row: {
@@ -124,6 +224,53 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      quizzes: {
+        Row: {
+          answers: Json | null
+          completed_at: string | null
+          created_at: string
+          id: string
+          questions: Json | null
+          score: number | null
+          student_id: string
+          subject: string
+          title: string
+          track_id: string | null
+        }
+        Insert: {
+          answers?: Json | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          questions?: Json | null
+          score?: number | null
+          student_id: string
+          subject: string
+          title: string
+          track_id?: string | null
+        }
+        Update: {
+          answers?: Json | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          questions?: Json | null
+          score?: number | null
+          student_id?: string
+          subject?: string
+          title?: string
+          track_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quizzes_track_id_fkey"
+            columns: ["track_id"]
+            isOneToOne: false
+            referencedRelation: "learning_tracks"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       skills: {
         Row: {

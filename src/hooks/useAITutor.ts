@@ -52,11 +52,44 @@ export const useAITutor = () => {
     setIsLoadingHistory(true);
     
     try {
-      // We'll simulate these collections since the tables don't exist yet
-      // In a real implementation, these would be actual database queries
-      const homework: any[] = [];
-      const quizzes: any[] = [];
-      const lessons: any[] = [];
+      // Fetch homework assignments
+      const { data: homework, error: homeworkError } = await supabase
+        .from('homework')
+        .select('*')
+        .eq('student_id', session.user.id)
+        .order('due_date', { ascending: false })
+        .limit(10);
+      
+      if (homeworkError) {
+        console.error('Error fetching homework:', homeworkError);
+        // Continue with empty homework array rather than throwing
+      }
+      
+      // Fetch quiz results
+      const { data: quizzes, error: quizzesError } = await supabase
+        .from('quizzes')
+        .select('*')
+        .eq('student_id', session.user.id)
+        .order('completed_at', { ascending: false })
+        .limit(10);
+      
+      if (quizzesError) {
+        console.error('Error fetching quizzes:', quizzesError);
+        // Continue with empty quizzes array rather than throwing
+      }
+      
+      // Fetch lesson history
+      const { data: lessons, error: lessonsError } = await supabase
+        .from('lessons')
+        .select('*')
+        .eq('student_id', session.user.id)
+        .order('completed_at', { ascending: false })
+        .limit(10);
+      
+      if (lessonsError) {
+        console.error('Error fetching lessons:', lessonsError);
+        // Continue with empty lessons array rather than throwing
+      }
       
       // Fetch chat history from chat_logs table
       const { data: recentConversations, error: chatError } = await supabase
