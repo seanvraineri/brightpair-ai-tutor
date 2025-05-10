@@ -15,6 +15,7 @@ import TrustBar from "@/components/TrustBar";
 import ButtonPrimary from "@/components/ButtonPrimary";
 import FaqSection from "@/components/sections/FaqSection";
 import PersonalizationSection from "@/components/sections/PersonalizationSection";
+import FindTutorsSection from "@/components/sections/FindTutorsSection";
 
 const faqs = [
   {
@@ -172,6 +173,7 @@ const LandingPage: React.FC = () => {
       <ComparisonSection />
       <TestimonialsSection />
       <TutorsSection />
+      <FindTutorsSection />
       <PricingSection />
       <FaqSection faqs={faqs} />
       <CTASection />
