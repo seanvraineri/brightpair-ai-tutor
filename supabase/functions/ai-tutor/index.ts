@@ -77,6 +77,58 @@ const fetchStudentContext = async (supabase: any, studentId: string, trackId: st
   };
 };
 
+// Format learning history for context inclusion
+const formatLearningHistory = (history: any) => {
+  if (!history) return "";
+  
+  let context = "";
+  
+  // Format homework assignments
+  if (history.homework && history.homework.length > 0) {
+    context += "\nRECENT HOMEWORK ASSIGNMENTS:\n";
+    history.homework.forEach((hw: any, index: number) => {
+      context += `${index + 1}. "${hw.title}" - Due: ${new Date(hw.due_date).toLocaleDateString()} - Status: ${hw.status}\n`;
+    });
+  }
+  
+  // Format quiz results
+  if (history.quizzes && history.quizzes.length > 0) {
+    context += "\nRECENT QUIZ RESULTS:\n";
+    history.quizzes.forEach((quiz: any, index: number) => {
+      context += `${index + 1}. "${quiz.title}" - Score: ${quiz.score}% - Completed: ${new Date(quiz.completed_at).toLocaleDateString()}\n`;
+    });
+  }
+  
+  // Format lesson history
+  if (history.lessons && history.lessons.length > 0) {
+    context += "\nRECENT LESSONS COMPLETED:\n";
+    history.lessons.forEach((lesson: any, index: number) => {
+      context += `${index + 1}. "${lesson.title}" - Completed: ${new Date(lesson.completed_at).toLocaleDateString()}\n`;
+    });
+  }
+  
+  // Format learning tracks
+  if (history.tracks && history.tracks.length > 0) {
+    context += "\nACTIVE LEARNING TRACKS:\n";
+    history.tracks.forEach((track: any, index: number) => {
+      if (track.learning_tracks) {
+        context += `${index + 1}. "${track.learning_tracks.name}" - ${track.learning_tracks.description || 'No description'}\n`;
+      }
+    });
+  }
+  
+  // Format recent conversations (only the last 5)
+  if (history.recentConversations && history.recentConversations.length > 0) {
+    const recentConvos = history.recentConversations.slice(0, 5);
+    context += "\nRECENT CONVERSATION SNIPPETS:\n";
+    recentConvos.forEach((convo: any, index: number) => {
+      context += `Student asked: "${convo.message.substring(0, 100)}${convo.message.length > 100 ? '...' : ''}"\n`;
+    });
+  }
+  
+  return context;
+};
+
 serve(async (req) => {
   const corsResponse = handleCors(req);
   if (corsResponse) return corsResponse;
@@ -97,7 +149,7 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     
     // Parse request data
-    const { message, userProfile, trackId, studentId } = await req.json();
+    const { message, userProfile, trackId, studentId, learningHistory } = await req.json();
     
     if (!message) {
       return new Response(
@@ -123,6 +175,9 @@ serve(async (req) => {
       ...studentContext,
     };
     
+    // Format learning history for context
+    const learningHistoryContext = formatLearningHistory(learningHistory);
+    
     // Construct system prompt with personalization
     let systemPrompt = `You are a helpful and encouraging AI tutor. `;
     
@@ -140,6 +195,12 @@ serve(async (req) => {
     
     if (personalization.profile?.gamification?.interests?.length) {
       systemPrompt += `Their interests include: ${personalization.profile.gamification.interests.join(', ')}. Use these to make examples relevant. `;
+    }
+    
+    // Add learning history context
+    if (learningHistoryContext) {
+      systemPrompt += `\n\nIMPORTANT LEARNING CONTEXT - Use this information to personalize your responses:${learningHistoryContext}\n\n`;
+      systemPrompt += `You should use this context to tailor your responses. For example, if they're struggling with a topic from their homework or got questions wrong in a quiz, focus on those areas. Reference their learning tracks to understand what curriculum they're following. Be helpful and specific, drawing connections between their questions and their learning history.`;
     }
     
     // Make API request to OpenAI

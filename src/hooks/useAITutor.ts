@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useUser } from '@/contexts/UserContext';
 import { useToast } from '@/components/ui/use-toast';
@@ -11,12 +11,22 @@ interface Message {
   timestamp: Date;
 }
 
+interface LearningHistory {
+  homework: any[];
+  quizzes: any[];
+  lessons: any[];
+  tracks: any[];
+  recentConversations: any[];
+}
+
 export const useAITutor = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { user, session } = useUser();
   const { toast } = useToast();
   const [activeTrackId, setActiveTrackId] = useState<string | null>(null);
+  const [learningHistory, setLearningHistory] = useState<LearningHistory | null>(null);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
 
   // Function to fetch user's learning tracks
   const fetchLearningTracks = async () => {
@@ -35,6 +45,85 @@ export const useAITutor = () => {
       return [];
     }
   };
+
+  // Function to fetch user's learning history
+  const fetchLearningHistory = async () => {
+    if (!session?.user?.id) return null;
+    setIsLoadingHistory(true);
+    
+    try {
+      // Fetch homework assignments
+      const { data: homework, error: homeworkError } = await supabase
+        .from('homework')
+        .select('*')
+        .eq('student_id', session.user.id)
+        .order('due_date', { ascending: false })
+        .limit(10);
+      
+      if (homeworkError) throw homeworkError;
+      
+      // Fetch quiz results
+      const { data: quizzes, error: quizzesError } = await supabase
+        .from('quizzes')
+        .select('*')
+        .eq('student_id', session.user.id)
+        .order('completed_at', { ascending: false })
+        .limit(10);
+      
+      if (quizzesError) throw quizzesError;
+      
+      // Fetch lesson history
+      const { data: lessons, error: lessonsError } = await supabase
+        .from('lessons')
+        .select('*')
+        .eq('student_id', session.user.id)
+        .order('completed_at', { ascending: false })
+        .limit(10);
+      
+      if (lessonsError) throw lessonsError;
+      
+      // Fetch active learning tracks
+      const { data: tracks } = await fetchLearningTracks();
+      
+      // Fetch recent AI conversations
+      const { data: recentConversations, error: chatError } = await supabase
+        .from('chat_logs')
+        .select('*')
+        .eq('student_id', session.user.id)
+        .order('created_at', { ascending: false })
+        .limit(20);
+      
+      if (chatError) throw chatError;
+      
+      const history: LearningHistory = {
+        homework: homework || [],
+        quizzes: quizzes || [],
+        lessons: lessons || [],
+        tracks: tracks || [],
+        recentConversations: recentConversations || [],
+      };
+      
+      setLearningHistory(history);
+      return history;
+    } catch (error) {
+      console.error('Error fetching learning history:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load your learning history",
+        variant: "destructive",
+      });
+      return null;
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  };
+
+  // Fetch learning history when user session is available
+  useEffect(() => {
+    if (session?.user?.id) {
+      fetchLearningHistory();
+    }
+  }, [session?.user?.id]);
 
   const sendMessage = async (content: string) => {
     if (!content.trim()) return;
@@ -61,13 +150,17 @@ export const useAITutor = () => {
         gamification: user.gamification
       } : null;
       
+      // If we haven't loaded the history yet, fetch it now
+      const history = learningHistory || await fetchLearningHistory();
+      
       // Call the AI Tutor edge function
       const { data, error } = await supabase.functions.invoke('ai-tutor', {
         body: { 
           message: content,
           userProfile,
           trackId: activeTrackId,
-          studentId: session.user.id
+          studentId: session.user.id,
+          learningHistory: history
         }
       });
       
@@ -127,6 +220,10 @@ export const useAITutor = () => {
     setActiveTrackId(trackId);
   };
   
+  const refreshLearningHistory = () => {
+    return fetchLearningHistory();
+  };
+  
   return {
     messages,
     sendMessage,
@@ -134,6 +231,9 @@ export const useAITutor = () => {
     isLoading,
     fetchLearningTracks,
     activeTrackId,
-    setTrack
+    setTrack,
+    learningHistory,
+    isLoadingHistory,
+    refreshLearningHistory
   };
 };
