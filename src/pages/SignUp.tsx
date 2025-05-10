@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { 
   Card,
   CardContent,
@@ -13,8 +13,10 @@ import SocialAuth from "@/components/auth/SocialAuth";
 
 const SignUp: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isLoading, setIsLoading] = useState(false);
-
+  const [consultationBooked, setConsultationBooked] = useState(false);
+  
   useEffect(() => {
     // Check if user is already logged in
     const checkSession = async () => {
@@ -25,8 +27,15 @@ const SignUp: React.FC = () => {
       }
     };
     
+    // Check if user came from Calendly (consultation already booked)
+    const params = new URLSearchParams(location.search);
+    const consultationParam = params.get('consultation_booked');
+    if (consultationParam === 'true') {
+      setConsultationBooked(true);
+    }
+    
     checkSession();
-  }, [navigate]);
+  }, [navigate, location]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -38,14 +47,25 @@ const SignUp: React.FC = () => {
           <h2 className="mt-6 text-3xl font-bold font-display text-gray-900">
             Create your account
           </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Schedule a free consultation. No credit card required.
-          </p>
+          {consultationBooked ? (
+            <div className="mt-2">
+              <p className="text-sm text-gray-600 mb-1">
+                Great! Your consultation has been booked.
+              </p>
+              <p className="text-sm text-brightpair font-medium">
+                Complete your account setup below
+              </p>
+            </div>
+          ) : (
+            <p className="mt-2 text-sm text-gray-600">
+              Schedule a free consultation. No credit card required.
+            </p>
+          )}
         </div>
         
         <Card>
           <CardContent className="pt-6">
-            <SignUpForm />
+            <SignUpForm initialConsultationBooked={consultationBooked} />
             <SocialAuth isLoading={isLoading} setIsLoading={setIsLoading} />
           </CardContent>
           <CardFooter className="border-t pt-6">

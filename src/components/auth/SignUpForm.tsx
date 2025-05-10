@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -12,9 +11,13 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface SignUpFormProps {
   initialEmail?: string;
+  initialConsultationBooked?: boolean;
 }
 
-const SignUpForm: React.FC<SignUpFormProps> = ({ initialEmail = "" }) => {
+const SignUpForm: React.FC<SignUpFormProps> = ({ 
+  initialEmail = "", 
+  initialConsultationBooked = false 
+}) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { updateUser, updateRole } = useUser();
@@ -25,7 +28,7 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ initialEmail = "" }) => {
     password: "",
     confirmPassword: "",
     role: "student" as UserRole,
-    consultationBooked: false,
+    consultationBooked: initialConsultationBooked,
     bookingReference: "",
     rememberMe: true,
   });
@@ -188,20 +191,22 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ initialEmail = "" }) => {
           </Select>
         </div>
 
-        {/* Consultation booking checkbox */}
-        <div className="flex items-center space-x-2">
-          <Checkbox 
-            id="consultationBooked" 
-            checked={formData.consultationBooked}
-            onCheckedChange={() => handleCheckboxChange('consultationBooked')}
-          />
-          <Label 
-            htmlFor="consultationBooked" 
-            className="text-sm font-medium leading-none cursor-pointer"
-          >
-            I've already booked a consultation
-          </Label>
-        </div>
+        {/* Consultation booking checkbox - only show if not already set from URL param */}
+        {!initialConsultationBooked && (
+          <div className="flex items-center space-x-2">
+            <Checkbox 
+              id="consultationBooked" 
+              checked={formData.consultationBooked}
+              onCheckedChange={() => handleCheckboxChange('consultationBooked')}
+            />
+            <Label 
+              htmlFor="consultationBooked" 
+              className="text-sm font-medium leading-none cursor-pointer"
+            >
+              I've already booked a consultation
+            </Label>
+          </div>
+        )}
 
         {/* Booking reference field - only shown when consultation is booked */}
         {formData.consultationBooked && (

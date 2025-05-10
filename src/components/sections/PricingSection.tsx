@@ -49,11 +49,18 @@ const PricingSection: React.FC = () => {
                 <span>Needs assessment</span>
               </li>
             </ul>
-            <a href={CALENDLY_URL} target="_blank" rel="noopener noreferrer">
-              <Button variant="outline" className="w-full">
-                Book Consultation
-              </Button>
-            </a>
+            <div className="space-y-3">
+              <a href={CALENDLY_URL} target="_blank" rel="noopener noreferrer" className="block">
+                <Button variant="default" className="w-full bg-brightpair hover:bg-brightpair-600">
+                  Book Consultation
+                </Button>
+              </a>
+              <Link to="/signup" className="block">
+                <Button variant="outline" className="w-full">
+                  Create Account Only
+                </Button>
+              </Link>
+            </div>
           </div>
 
           {/* Monthly Subscription */}

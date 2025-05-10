@@ -24,16 +24,19 @@ const CTASection: React.FC = () => {
               Book Free Consultation
             </ButtonPrimary>
           </a>
-          <Link to="/contact">
+          <Link to="/signup">
             <Button 
               size="lg" 
               variant="outline" 
               className="border-white text-white hover:bg-white hover:text-brightpair-600 font-medium transition-colors shadow-lg hover:shadow-xl"
             >
-              Contact Sales
+              Create Account
             </Button>
           </Link>
         </div>
+        <p className="mt-4 text-white/80 text-sm">
+          We recommend booking a consultation first for the best experience
+        </p>
       </div>
     </section>
   );
