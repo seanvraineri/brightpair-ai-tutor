@@ -62,7 +62,6 @@ export const useAITutor = () => {
       
       if (homeworkError) {
         console.error('Error fetching homework:', homeworkError);
-        // Continue with empty homework array rather than throwing
       }
       
       // Fetch quiz results
@@ -75,7 +74,6 @@ export const useAITutor = () => {
       
       if (quizzesError) {
         console.error('Error fetching quizzes:', quizzesError);
-        // Continue with empty quizzes array rather than throwing
       }
       
       // Fetch lesson history
@@ -88,7 +86,6 @@ export const useAITutor = () => {
       
       if (lessonsError) {
         console.error('Error fetching lessons:', lessonsError);
-        // Continue with empty lessons array rather than throwing
       }
       
       // Fetch chat history from chat_logs table

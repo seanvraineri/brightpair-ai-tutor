@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { FileText, MessageSquare, Mic, BookOpen } from "lucide-react";
 import { useAITutor } from "@/hooks/useAITutor";
 import { useUser } from "@/contexts/UserContext";
@@ -11,6 +11,8 @@ import MessageInput from "@/components/ai-tutor/MessageInput";
 import NotesDialog from "@/components/ai-tutor/NotesDialog";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface TutorFunction {
   id: string;
@@ -27,11 +29,17 @@ const AITutorChat: React.FC = () => {
     clearConversation, 
     isLoading,
     learningHistory,
-    isLoadingHistory 
+    isLoadingHistory,
+    refreshLearningHistory
   } = useAITutor();
   const [notesDialogOpen, setNotesDialogOpen] = useState<boolean>(false);
   const [noteContent, setNoteContent] = useState<string>("");
   const [tutorFunctionOpen, setTutorFunctionOpen] = useState<boolean>(false);
+  const [showHomeworkDetails, setShowHomeworkDetails] = useState<boolean>(false);
+  const [activeHomeworkId, setActiveHomeworkId] = useState<string | null>(null);
+  
+  // Use a ref to detect when we should inject homework context
+  const lastUserMessageRef = useRef<string>("");
   
   // Predefined tutor functions with improved icons and descriptions
   const tutorFunctions: TutorFunction[] = [
@@ -62,6 +70,38 @@ const AITutorChat: React.FC = () => {
       sendMessage("Hello");
     }
   }, []);
+  
+  // Effect to detect homework-related queries and show relevant homework details
+  useEffect(() => {
+    if (messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage.role === 'user') {
+        lastUserMessageRef.current = lastMessage.content.toLowerCase();
+        
+        // Check if message is about homework
+        if (
+          lastUserMessageRef.current.includes('homework') || 
+          lastUserMessageRef.current.includes('assignment') ||
+          lastUserMessageRef.current.includes('help me with') ||
+          lastUserMessageRef.current.includes('my work')
+        ) {
+          setShowHomeworkDetails(true);
+          // If we've got homework data, try to set an active homework
+          if (learningHistory?.homework?.length > 0) {
+            // Default to the most recent homework
+            setActiveHomeworkId(learningHistory.homework[0].id);
+          }
+        }
+      }
+    }
+  }, [messages]);
+  
+  // Fetch fresh learning history data when showing homework details
+  useEffect(() => {
+    if (showHomeworkDetails) {
+      refreshLearningHistory();
+    }
+  }, [showHomeworkDetails]);
 
   const handleTutorFunctionClick = (functionId: string) => {
     setTutorFunctionOpen(false);
@@ -90,6 +130,22 @@ const AITutorChat: React.FC = () => {
     await sendMessage(`I've uploaded my notes on the following material:\n\n${noteContent}`);
     setNotesDialogOpen(false);
     setNoteContent("");
+  };
+  
+  const handleSelectHomework = async (homeworkId: string) => {
+    // Set active homework
+    setActiveHomeworkId(homeworkId);
+    
+    // Find the selected homework
+    const homework = learningHistory?.homework.find(hw => hw.id === homeworkId);
+    
+    if (homework) {
+      // Send a message that references this specific homework
+      await sendMessage(`I need help with my homework assignment "${homework.title}" for ${homework.subject}. ${homework.description ? `Here's what I need to do: ${homework.description}` : ''}`);
+      
+      // Once we've sent the message, we can hide the homework details panel
+      setShowHomeworkDetails(false);
+    }
   };
 
   // Subtitle for chat header
@@ -124,7 +180,11 @@ const AITutorChat: React.FC = () => {
     return (
       <div className="flex flex-wrap gap-2 mb-2">
         {learningHistory.homework.length > 0 && (
-          <Badge variant="outline" className="bg-blue-50 text-blue-700 hover:bg-blue-100">
+          <Badge 
+            variant="outline" 
+            className="bg-blue-50 text-blue-700 hover:bg-blue-100 cursor-pointer"
+            onClick={() => setShowHomeworkDetails(prev => !prev)}
+          >
             {learningHistory.homework.length} Homework{learningHistory.homework.length > 1 ? 's' : ''}
           </Badge>
         )}
@@ -149,6 +209,61 @@ const AITutorChat: React.FC = () => {
       </div>
     );
   };
+  
+  // Render the homework details panel when a user mentions homework
+  const renderHomeworkDetailsPanel = () => {
+    if (!showHomeworkDetails || !learningHistory?.homework?.length) {
+      return null;
+    }
+    
+    return (
+      <div className="mb-4 animate-fadeIn">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="font-medium text-brightpair-700">Your Homework Assignments</h3>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setShowHomeworkDetails(false)}
+              >
+                Hide
+              </Button>
+            </div>
+            <div className="space-y-2">
+              {learningHistory.homework.map((hw) => (
+                <div 
+                  key={hw.id}
+                  className={`p-2 border rounded-md cursor-pointer transition-colors ${
+                    activeHomeworkId === hw.id 
+                      ? 'bg-brightpair-50 border-brightpair-200' 
+                      : 'hover:bg-gray-50'
+                  }`}
+                  onClick={() => handleSelectHomework(hw.id)}
+                >
+                  <div className="flex justify-between">
+                    <span className="font-medium">{hw.title}</span>
+                    <Badge variant={hw.status === 'pending' ? 'outline' : 'secondary'}>
+                      {hw.status}
+                    </Badge>
+                  </div>
+                  <div className="text-sm text-gray-500">{hw.subject}</div>
+                  {hw.description && (
+                    <div className="text-sm mt-1 text-gray-600 line-clamp-2">{hw.description}</div>
+                  )}
+                  {hw.due_date && (
+                    <div className="text-xs mt-1 text-gray-500">
+                      Due: {new Date(hw.due_date).toLocaleDateString()}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  };
 
   return (
     <div className="h-screen flex flex-col bg-gradient-to-br from-gray-50 to-brightpair-50 overflow-hidden">
@@ -161,6 +276,8 @@ const AITutorChat: React.FC = () => {
         />
         
         {renderLearningContextBadges()}
+        
+        {renderHomeworkDetailsPanel()}
         
         <QuickActions 
           tutorFunctions={tutorFunctions} 

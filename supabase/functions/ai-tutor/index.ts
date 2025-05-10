@@ -1,3 +1,4 @@
+
 // Follow Deno's ES modules conventions
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.21.0';
@@ -82,7 +83,7 @@ const formatLearningHistory = (history: any) => {
   
   let context = "";
   
-  // Format homework assignments
+  // Format homework assignments with more detail
   if (history.homework && history.homework.length > 0) {
     context += "\nRECENT HOMEWORK ASSIGNMENTS:\n";
     history.homework.forEach((hw: any, index: number) => {
@@ -90,6 +91,12 @@ const formatLearningHistory = (history: any) => {
       context += `${index + 1}. "${hw.title}" - ${hw.subject} - Due: ${dueDate} - Status: ${hw.status}\n`;
       if (hw.description) {
         context += `   Description: ${hw.description}\n`;
+      }
+      if (hw.questions && Array.isArray(hw.questions)) {
+        context += `   Questions: ${hw.questions.length} question(s)\n`;
+        hw.questions.forEach((q: any, qIdx: number) => {
+          context += `   - Q${qIdx + 1}: ${q.question}\n`;
+        });
       }
     });
   }
@@ -138,6 +145,42 @@ const formatLearningHistory = (history: any) => {
   }
   
   return context;
+};
+
+// Detect if message is about homework
+const isHomeworkQuery = (message: string) => {
+  const homeworkKeywords = ['homework', 'assignment', 'help me with', 'exercise', 'my work'];
+  return homeworkKeywords.some(keyword => message.toLowerCase().includes(keyword));
+};
+
+// Generate specific instructions for homework assistance
+const generateHomeworkInstructions = (history: any, message: string) => {
+  if (!history?.homework?.length) return "";
+  
+  let instructions = "\n\nThe student is asking about homework. IMPORTANT INSTRUCTIONS: ";
+  instructions += "Reference specific homework assignments by title and subject. ";
+  instructions += "Offer assistance that directly addresses the homework's requirements. ";
+  instructions += "If the student mentioned a specific assignment, focus on that one. ";
+  instructions += "Otherwise, reference their most recent or upcoming assignments.\n\n";
+  
+  // Check if student mentioned a specific homework title
+  const homeworkTitles = history.homework.map((hw: any) => hw.title.toLowerCase());
+  const mentionedHomework = homeworkTitles.find((title: string) => 
+    message.toLowerCase().includes(title.toLowerCase())
+  );
+  
+  if (mentionedHomework) {
+    const homework = history.homework.find((hw: any) => 
+      hw.title.toLowerCase() === mentionedHomework
+    );
+    
+    instructions += `The student is specifically asking about the "${homework.title}" assignment for ${homework.subject}. `;
+    instructions += `Focus your assistance on this specific homework.\n`;
+  } else {
+    instructions += `The student didn't mention a specific assignment, so focus on their most recent homework.\n`;
+  }
+  
+  return instructions;
 };
 
 serve(async (req) => {
@@ -212,6 +255,11 @@ serve(async (req) => {
     if (learningHistoryContext) {
       systemPrompt += `\n\nIMPORTANT LEARNING CONTEXT - Use this information to personalize your responses:${learningHistoryContext}\n\n`;
       systemPrompt += `You should use this context to tailor your responses. For example, if they're asking about their homework assignments, reference them specifically by name. If they're struggling with a topic from a quiz, focus on those areas. Reference their learning tracks to understand what curriculum they're following. When they say "help me with my homework", bring up specific homework assignments they have and offer help. Be helpful and specific, drawing connections between their questions and their learning history.`;
+    }
+    
+    // Add specific homework instructions if the query is about homework
+    if (isHomeworkQuery(message)) {
+      systemPrompt += generateHomeworkInstructions(learningHistory, message);
     }
     
     // Make API request to OpenAI
