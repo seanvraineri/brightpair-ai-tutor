@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import ButtonPrimary from "@/components/ButtonPrimary";
 
-// Replace this URL with your actual Calendly link
-const CALENDLY_URL = "https://calendly.com/your-calendly-link";
+// The actual Calendly link
+const CALENDLY_URL = "https://calendly.com/seanvraineri/brightpair-tutoring-onboarding";
 
 const CTASection: React.FC = () => {
   return (

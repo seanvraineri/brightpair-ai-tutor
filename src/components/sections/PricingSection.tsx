@@ -4,8 +4,8 @@ import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 
-// Replace this URL with your actual Calendly link
-const CALENDLY_URL = "https://calendly.com/your-calendly-link";
+// The actual Calendly link
+const CALENDLY_URL = "https://calendly.com/seanvraineri/brightpair-tutoring-onboarding";
 
 const PricingSection: React.FC = () => {
   return <section id="pricing" className="py-16 md:py-24 px-4 bg-white">
