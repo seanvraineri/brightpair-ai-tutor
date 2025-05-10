@@ -52,40 +52,13 @@ export const useAITutor = () => {
     setIsLoadingHistory(true);
     
     try {
-      // Fetch homework assignments
-      const { data: homework, error: homeworkError } = await supabase
-        .from('homework')
-        .select('*')
-        .eq('student_id', session.user.id)
-        .order('due_date', { ascending: false })
-        .limit(10);
+      // We'll simulate these collections since the tables don't exist yet
+      // In a real implementation, these would be actual database queries
+      const homework: any[] = [];
+      const quizzes: any[] = [];
+      const lessons: any[] = [];
       
-      if (homeworkError) throw homeworkError;
-      
-      // Fetch quiz results
-      const { data: quizzes, error: quizzesError } = await supabase
-        .from('quizzes')
-        .select('*')
-        .eq('student_id', session.user.id)
-        .order('completed_at', { ascending: false })
-        .limit(10);
-      
-      if (quizzesError) throw quizzesError;
-      
-      // Fetch lesson history
-      const { data: lessons, error: lessonsError } = await supabase
-        .from('lessons')
-        .select('*')
-        .eq('student_id', session.user.id)
-        .order('completed_at', { ascending: false })
-        .limit(10);
-      
-      if (lessonsError) throw lessonsError;
-      
-      // Fetch active learning tracks
-      const { data: tracks } = await fetchLearningTracks();
-      
-      // Fetch recent AI conversations
+      // Fetch chat history from chat_logs table
       const { data: recentConversations, error: chatError } = await supabase
         .from('chat_logs')
         .select('*')
@@ -94,6 +67,9 @@ export const useAITutor = () => {
         .limit(20);
       
       if (chatError) throw chatError;
+      
+      // Fetch active learning tracks
+      const tracks = await fetchLearningTracks();
       
       const history: LearningHistory = {
         homework: homework || [],
