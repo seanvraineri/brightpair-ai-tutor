@@ -1,25 +1,7 @@
+
 // Follow Deno's ES modules conventions
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.21.0';
-import { ChatOpenAI } from 'npm:@langchain/openai';
-import { 
-  ConversationChain,
-  BufferWindowMemory,
-  LLMChain
-} from 'npm:langchain';
-import { PromptTemplate } from 'npm:@langchain/core/prompts';
-import { StringOutputParser } from 'npm:@langchain/core/output_parsers';
-
-// Response cache structure
-interface CacheEntry {
-  response: string;
-  timestamp: number;
-}
-
-// In-memory cache with expiration (15 minutes)
-const responseCache = new Map<string, CacheEntry>();
-const CACHE_TTL = 15 * 60 * 1000; // 15 minutes in milliseconds
-const MAX_CACHE_ENTRIES = 100;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -36,25 +18,6 @@ const handleCors = (req: Request) => {
   return null;
 };
 
-// Helper function to generate a cache key from request data
-const generateCacheKey = (message: string, studentId: string, trackId: string | null): string => {
-  return `${studentId}:${trackId || 'null'}:${message.trim().toLowerCase()}`;
-};
-
-// Helper to clean old cache entries
-const cleanupCache = () => {
-  if (responseCache.size > MAX_CACHE_ENTRIES) {
-    // Convert map to array, sort by timestamp, and keep the newest entries
-    const entries = Array.from(responseCache.entries());
-    const sortedEntries = entries.sort((a, b) => b[1].timestamp - a[1].timestamp);
-    // Keep only the MAX_CACHE_ENTRIES newest entries
-    responseCache.clear();
-    sortedEntries.slice(0, MAX_CACHE_ENTRIES).forEach(([key, value]) => {
-      responseCache.set(key, value);
-    });
-  }
-};
-
 // Fetch student profile and learning context data
 const fetchStudentContext = async (supabase: any, studentId: string, trackId: string | null) => {
   // Fetch student profile
@@ -62,7 +25,7 @@ const fetchStudentContext = async (supabase: any, studentId: string, trackId: st
     .from('profiles')
     .select('*')
     .eq('id', studentId)
-    .maybeSingle();
+    .single();
 
   if (profileError) {
     console.error("Error fetching student profile:", profileError);
@@ -79,7 +42,7 @@ const fetchStudentContext = async (supabase: any, studentId: string, trackId: st
       .from('learning_tracks')
       .select('*')
       .eq('id', trackId)
-      .maybeSingle();
+      .single();
 
     if (!trackError && track) {
       trackData = track;
@@ -112,28 +75,6 @@ const fetchStudentContext = async (supabase: any, studentId: string, trackId: st
     skills: skillsData,
     mastery: studentSkillsError ? [] : studentSkills,
   };
-};
-
-// Get previous conversation history for a student
-const fetchConversationHistory = async (supabase: any, studentId: string, limit = 10) => {
-  const { data, error } = await supabase
-    .from('chat_logs')
-    .select('*')
-    .eq('student_id', studentId)
-    .order('created_at', { ascending: false })
-    .limit(limit);
-  
-  if (error) {
-    console.error("Error fetching conversation history:", error);
-    return [];
-  }
-
-  // Convert to format suitable for Langchain memory
-  return data.reverse().map((item: any) => ({
-    type: item.message ? 'human' : 'ai',
-    content: item.message || item.response,
-    timestamp: new Date(item.created_at)
-  }));
 };
 
 // Format learning history for context inclusion
@@ -194,6 +135,15 @@ const formatLearningHistory = (history: any) => {
     });
   }
   
+  // Format recent conversations
+  if (history.recentConversations && history.recentConversations.length > 0) {
+    const recentConvos = history.recentConversations.slice(0, 5);
+    context += "\nRECENT CONVERSATION SNIPPETS:\n";
+    recentConvos.forEach((convo: any, index: number) => {
+      context += `Student asked: "${convo.message.substring(0, 100)}${convo.message.length > 100 ? '...' : ''}"\n`;
+    });
+  }
+  
   return context;
 };
 
@@ -242,7 +192,7 @@ serve(async (req) => {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       return new Response(
-        JSON.stringify({ error: 'Missing authorization header' }),
+        JSON.stringify({ success: false, error: 'Missing authorization header' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
       );
     }
@@ -253,47 +203,14 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     
     // Parse request data
-    const { message, userProfile, trackId, studentId, learningHistory, messageHistory } = await req.json();
+    const { message, userProfile, trackId, studentId, learningHistory } = await req.json();
     
     if (!message) {
       return new Response(
-        JSON.stringify({ error: 'Message is required' }),
+        JSON.stringify({ success: false, error: 'Message is required' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       );
     }
-    
-    // Check cache first - we can skip DB lookups and API calls if we have a cached response
-    const cacheKey = generateCacheKey(message, studentId, trackId);
-    const now = Date.now();
-    const cachedResult = responseCache.get(cacheKey);
-    
-    if (cachedResult && (now - cachedResult.timestamp < CACHE_TTL)) {
-      console.log("Cache hit! Returning cached response");
-      
-      // Log the interaction in the chat_logs table (do this asynchronously without awaiting)
-      try {
-        EdgeRuntime.waitUntil(supabase.from('chat_logs').insert({
-          student_id: studentId,
-          track_id: trackId,
-          message,
-          response: cachedResult.response,
-          skills_addressed: {},
-          cached: true
-        }));
-      } catch (logError) {
-        console.error('Error logging cached chat interaction:', logError);
-      }
-      
-      return new Response(
-        JSON.stringify({
-          response: cachedResult.response,
-          cached: true
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-    
-    console.log("Cache miss, generating new response");
     
     // Fetch student context if studentId is provided
     const studentContext = studentId 
@@ -344,104 +261,45 @@ serve(async (req) => {
     if (isHomeworkQuery(message)) {
       systemPrompt += generateHomeworkInstructions(learningHistory, message);
     }
-
-    // Fetch or use provided conversation history
-    let conversationHistory = messageHistory || [];
-    if (!messageHistory && studentId) {
-      conversationHistory = await fetchConversationHistory(supabase, studentId);
-    }
-
-    // Initialize Langchain with ChatOpenAI - using a faster model for improved response times
-    const llm = new ChatOpenAI({
-      openAIApiKey: apiKey,
-      modelName: "gpt-3.5-turbo", // Faster than GPT-4 with decent quality
-      temperature: 0.7,
-      maxTokens: 600, // Reduced token count for faster responses
-      cache: true, // Enable OpenAI's built-in caching
-    });
-
-    // Create a memory instance with the conversation history - reduced context for speed
-    const memory = new BufferWindowMemory({
-      k: 3, // Reduced from 5 to 3 for faster processing
-      returnMessages: true,
-      memoryKey: "chat_history",
-      inputKey: "input",
-      outputKey: "output",
-    });
-
-    // Add existing conversation history to memory (only the most recent messages)
-    if (conversationHistory.length > 0) {
-      // Only use the most recent messages for context
-      const recentHistory = conversationHistory.slice(-3);
-      for (const entry of recentHistory) {
-        await memory.saveContext(
-          { input: entry.type === 'human' ? entry.content : '' },
-          { output: entry.type === 'ai' ? entry.content : '' }
-        );
-      }
-    }
-
-    // Create a prompt template - simplified for faster processing
-    const promptTemplate = PromptTemplate.fromTemplate(`
-      {system_message}
-      
-      Current conversation:
-      {chat_history}
-      
-      Human: {input}
-      AI Tutor:
-    `);
-
-    // Create a chain with faster settings
-    const chain = new LLMChain({
-      llm,
-      prompt: promptTemplate,
-      memory,
-      outputParser: new StringOutputParser(),
-      verbose: false,
-    });
-
-    // Set a timeout for the OpenAI call
-    const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('OpenAI request timed out')), 15000); // 15-second timeout
-    });
-
-    // Run the chain with timeout
-    const response = await Promise.race([
-      chain.invoke({
-        input: message,
-        system_message: systemPrompt,
-      }),
-      timeoutPromise
-    ]);
-
-    // Store in cache
-    responseCache.set(cacheKey, {
-      response,
-      timestamp: Date.now()
+    
+    // Make API request to OpenAI
+    const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'gpt-3.5-turbo',
+        messages: [
+          {
+            role: 'system',
+            content: systemPrompt
+          },
+          {
+            role: 'user',
+            content: message
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 800
+      })
     });
     
-    // Periodically clean up the cache
-    cleanupCache();
+    const openAIData = await openAIResponse.json();
     
-    // Log the interaction in the chat_logs table
-    try {
-      EdgeRuntime.waitUntil(supabase.from('chat_logs').insert({
-        student_id: studentId,
-        track_id: trackId,
-        message,
-        response,
-        skills_addressed: {},
-        cached: false
-      }));
-    } catch (logError) {
-      console.error('Error logging chat interaction:', logError);
+    if (!openAIResponse.ok) {
+      console.error('OpenAI API error:', openAIData);
+      throw new Error(`OpenAI API error: ${openAIData.error?.message || 'Unknown error'}`);
     }
+    
+    const aiResponse = openAIData.choices[0]?.message?.content || 'Sorry, I could not generate a response.';
     
     // Return the AI response
     return new Response(
       JSON.stringify({
-        response
+        success: true,
+        response: aiResponse
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
@@ -451,6 +309,7 @@ serve(async (req) => {
     
     return new Response(
       JSON.stringify({
+        success: false,
         error: error instanceof Error ? error.message : 'An unknown error occurred'
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
