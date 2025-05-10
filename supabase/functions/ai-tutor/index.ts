@@ -1,104 +1,198 @@
 
+// Follow Deno's ES modules conventions
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
-
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.21.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-serve(async (req) => {
-  // Handle CORS preflight requests
+// Handle CORS preflight requests
+const handleCors = (req: Request) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, {
+      headers: corsHeaders,
+    });
+  }
+  return null;
+};
+
+// Fetch student profile and learning context data
+const fetchStudentContext = async (supabase: any, studentId: string, trackId: string | null) => {
+  // Fetch student profile
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', studentId)
+    .single();
+
+  if (profileError) {
+    console.error("Error fetching student profile:", profileError);
+    return null;
   }
 
-  try {
-    const { message, userProfile } = await req.json();
-    
-    console.log("Processing tutor request for user:", userProfile?.name);
-    console.log("Learning style:", userProfile?.gamification?.learningStyle);
+  let trackData = null;
+  let skillsData = null;
 
-    if (!message) {
-      throw new Error("Message is required");
-    }
+  // If a trackId is provided, fetch track and skill data
+  if (trackId) {
+    // Fetch track details
+    const { data: track, error: trackError } = await supabase
+      .from('learning_tracks')
+      .select('*')
+      .eq('id', trackId)
+      .single();
 
-    if (!openAIApiKey) {
-      throw new Error("OpenAI API key is missing");
-    }
-
-    // Create a system prompt based on user profile
-    let systemPrompt = "You are an AI tutor helping a student learn.";
-    
-    if (userProfile) {
-      systemPrompt = `You are an AI tutor specialized in personalized education. 
-Address the student as ${userProfile.name || "student"}. 
-Their learning style is ${userProfile.gamification?.learningStyle || "unknown"}, so adapt your explanations accordingly.`;
-
-      if (userProfile.gamification?.interests?.length > 0) {
-        systemPrompt += `\nThey're interested in: ${userProfile.gamification.interests.join(", ")}.`;
-      }
+    if (!trackError && track) {
+      trackData = track;
       
-      if (userProfile.gamification?.favoriteSubjects?.length > 0) {
-        systemPrompt += `\nTheir favorite subjects include: ${userProfile.gamification.favoriteSubjects.join(", ")}.`;
+      // Fetch skills for this track
+      const { data: skills, error: skillsError } = await supabase
+        .from('skills')
+        .select('*')
+        .eq('track_id', trackId);
+
+      if (!skillsError) {
+        skillsData = skills;
       }
-
-      systemPrompt += `\n\nKey guidelines:
-- For visual learners: Use diagrams, charts and visual metaphors
-- For auditory learners: Use rhythmic mnemonics and spoken explanations
-- For kinesthetic learners: Suggest hands-on activities and experiments
-- For reading/writing learners: Provide written resources and note-taking strategies
-- For mixed learners: Balance different approaches
-
-Use emoji and formatting to make your responses engaging. Break down complex topics into smaller steps.
-Always provide some form of practice or quick assessment at the end of your explanations.`;
     }
+  }
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  // Fetch student skills mastery
+  const { data: studentSkills, error: studentSkillsError } = await supabase
+    .from('student_skills')
+    .select(`
+      skill_id,
+      mastery_level,
+      skills (*)
+    `)
+    .eq('student_id', studentId);
+
+  return {
+    profile,
+    track: trackData,
+    skills: skillsData,
+    mastery: studentSkillsError ? [] : studentSkills,
+  };
+};
+
+serve(async (req) => {
+  const corsResponse = handleCors(req);
+  if (corsResponse) return corsResponse;
+  
+  try {
+    // Check authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Missing authorization header' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+      );
+    }
+    
+    // Create Supabase client with admin privileges
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") || '';
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || '';
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    
+    // Parse request data
+    const { message, userProfile, trackId, studentId } = await req.json();
+    
+    if (!message) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Message is required' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
+    }
+    
+    // Fetch student context if studentId is provided
+    const studentContext = studentId 
+      ? await fetchStudentContext(supabase, studentId, trackId)
+      : null;
+    
+    // Access OpenAI API key from environment
+    const apiKey = Deno.env.get('OPENAI_API_KEY');
+    if (!apiKey) {
+      throw new Error('Missing OpenAI API key');
+    }
+    
+    // Combine the user profile and student context to create personalization data
+    const personalization = {
+      ...userProfile,
+      ...studentContext,
+    };
+    
+    // Construct system prompt with personalization
+    let systemPrompt = `You are a helpful and encouraging AI tutor. `;
+    
+    if (personalization.profile?.name) {
+      systemPrompt += `You're speaking with ${personalization.profile.name}. `;
+    }
+    
+    if (personalization.track) {
+      systemPrompt += `They are currently studying ${personalization.track.name}. `;
+    }
+    
+    if (personalization.profile?.gamification?.learningStyle) {
+      systemPrompt += `Their learning style is ${personalization.profile.gamification.learningStyle}, so adapt your teaching approach accordingly. `;
+    }
+    
+    if (personalization.profile?.gamification?.interests?.length) {
+      systemPrompt += `Their interests include: ${personalization.profile.gamification.interests.join(', ')}. Use these to make examples relevant. `;
+    }
+    
+    // Make API request to OpenAI
+    const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-3.5-turbo',
         messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: message }
+          {
+            role: 'system',
+            content: systemPrompt
+          },
+          {
+            role: 'user',
+            content: message
+          }
         ],
         temperature: 0.7,
-      }),
+        max_tokens: 800
+      })
     });
-
-    const data = await response.json();
     
-    if (!response.ok) {
-      console.error("OpenAI API error:", data);
-      throw new Error(data.error?.message || "Failed to get response from OpenAI");
+    const openAIData = await openAIResponse.json();
+    
+    if (!openAIResponse.ok) {
+      console.error('OpenAI API error:', openAIData);
+      throw new Error(`OpenAI API error: ${openAIData.error?.message || 'Unknown error'}`);
     }
-
-    const tutorResponse = data.choices[0].message.content;
     
-    // Update the user's gamification (would be handled separately)
-    // This is just logging for now
-    console.log("User interaction completed - XP could be awarded");
-
-    return new Response(JSON.stringify({ 
-      response: tutorResponse,
-      success: true 
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    const aiResponse = openAIData.choices[0]?.message?.content || 'Sorry, I could not generate a response.';
+    
+    // Return the AI response
+    return new Response(
+      JSON.stringify({
+        success: true,
+        response: aiResponse
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+    
   } catch (error) {
     console.error('Error in AI tutor function:', error);
-    return new Response(JSON.stringify({ 
-      error: error.message,
-      success: false 
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: error instanceof Error ? error.message : 'An unknown error occurred'
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+    );
   }
 });

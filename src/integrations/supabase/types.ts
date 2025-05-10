@@ -9,10 +9,91 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      chat_logs: {
+        Row: {
+          created_at: string | null
+          id: string
+          message: string
+          response: string
+          skills_addressed: Json | null
+          student_id: string | null
+          track_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message: string
+          response: string
+          skills_addressed?: Json | null
+          student_id?: string | null
+          track_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message?: string
+          response?: string
+          skills_addressed?: Json | null
+          student_id?: string | null
+          track_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_logs_track_id_fkey"
+            columns: ["track_id"]
+            isOneToOne: false
+            referencedRelation: "learning_tracks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      learning_tracks: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          tutor_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          tutor_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          tutor_id?: string | null
+        }
+        Relationships: []
+      }
+      parent_students: {
+        Row: {
+          assigned_at: string | null
+          parent_id: string
+          student_id: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          parent_id: string
+          student_id: string
+        }
+        Update: {
+          assigned_at?: string | null
+          parent_id?: string
+          student_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
           email: string
+          full_name: string | null
           id: string
           name: string | null
           next_consultation_date: string | null
@@ -23,6 +104,7 @@ export type Database = {
         Insert: {
           created_at?: string
           email: string
+          full_name?: string | null
           id: string
           name?: string | null
           next_consultation_date?: string | null
@@ -33,6 +115,7 @@ export type Database = {
         Update: {
           created_at?: string
           email?: string
+          full_name?: string | null
           id?: string
           name?: string | null
           next_consultation_date?: string | null
@@ -42,15 +125,267 @@ export type Database = {
         }
         Relationships: []
       }
+      skills: {
+        Row: {
+          description: string | null
+          id: string
+          name: string
+          track_id: string | null
+        }
+        Insert: {
+          description?: string | null
+          id?: string
+          name: string
+          track_id?: string | null
+        }
+        Update: {
+          description?: string | null
+          id?: string
+          name?: string
+          track_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skills_track_id_fkey"
+            columns: ["track_id"]
+            isOneToOne: false
+            referencedRelation: "learning_tracks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      student_skills: {
+        Row: {
+          last_assessed: string | null
+          mastery_level: number | null
+          skill_id: string
+          student_id: string
+        }
+        Insert: {
+          last_assessed?: string | null
+          mastery_level?: number | null
+          skill_id: string
+          student_id: string
+        }
+        Update: {
+          last_assessed?: string | null
+          mastery_level?: number | null
+          skill_id?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_skills_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skills"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      student_tracks: {
+        Row: {
+          completed_at: string | null
+          progress: number | null
+          started_at: string | null
+          student_id: string
+          track_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          progress?: number | null
+          started_at?: string | null
+          student_id: string
+          track_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          progress?: number | null
+          started_at?: string | null
+          student_id?: string
+          track_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_tracks_track_id_fkey"
+            columns: ["track_id"]
+            isOneToOne: false
+            referencedRelation: "learning_tracks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      topics: {
+        Row: {
+          content: string | null
+          embedding: string | null
+          id: string
+          title: string
+          track_id: string | null
+        }
+        Insert: {
+          content?: string | null
+          embedding?: string | null
+          id?: string
+          title: string
+          track_id?: string | null
+        }
+        Update: {
+          content?: string | null
+          embedding?: string | null
+          id?: string
+          title?: string
+          track_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "topics_track_id_fkey"
+            columns: ["track_id"]
+            isOneToOne: false
+            referencedRelation: "learning_tracks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tutor_students: {
+        Row: {
+          assigned_at: string | null
+          student_id: string
+          tutor_id: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          student_id: string
+          tutor_id: string
+        }
+        Update: {
+          assigned_at?: string | null
+          student_id?: string
+          tutor_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          role: Database["public"]["Enums"]["role_type"]
+          user_id: string
+        }
+        Insert: {
+          role: Database["public"]["Enums"]["role_type"]
+          user_id: string
+        }
+        Update: {
+          role?: Database["public"]["Enums"]["role_type"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      binary_quantize: {
+        Args: { "": string } | { "": unknown }
+        Returns: unknown
+      }
+      get_user_roles: {
+        Args: { user_id: string }
+        Returns: {
+          role: Database["public"]["Enums"]["role_type"]
+        }[]
+      }
+      halfvec_avg: {
+        Args: { "": number[] }
+        Returns: unknown
+      }
+      halfvec_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      halfvec_send: {
+        Args: { "": unknown }
+        Returns: string
+      }
+      halfvec_typmod_in: {
+        Args: { "": unknown[] }
+        Returns: number
+      }
+      hnsw_bit_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      hnsw_halfvec_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      hnsw_sparsevec_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      hnswhandler: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ivfflat_bit_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ivfflat_halfvec_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ivfflathandler: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      l2_norm: {
+        Args: { "": unknown } | { "": unknown }
+        Returns: number
+      }
+      l2_normalize: {
+        Args: { "": string } | { "": unknown } | { "": unknown }
+        Returns: string
+      }
+      sparsevec_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      sparsevec_send: {
+        Args: { "": unknown }
+        Returns: string
+      }
+      sparsevec_typmod_in: {
+        Args: { "": unknown[] }
+        Returns: number
+      }
+      vector_avg: {
+        Args: { "": number[] }
+        Returns: string
+      }
+      vector_dims: {
+        Args: { "": string } | { "": unknown }
+        Returns: number
+      }
+      vector_norm: {
+        Args: { "": string }
+        Returns: number
+      }
+      vector_out: {
+        Args: { "": string }
+        Returns: unknown
+      }
+      vector_send: {
+        Args: { "": string }
+        Returns: string
+      }
+      vector_typmod_in: {
+        Args: { "": unknown[] }
+        Returns: number
+      }
     }
     Enums: {
-      [_ in never]: never
+      role_type: "student" | "tutor" | "parent"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -165,6 +500,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      role_type: ["student", "tutor", "parent"],
+    },
   },
 } as const

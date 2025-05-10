@@ -10,10 +10,14 @@ import {
   Calendar,
   MessageSquare,
   GraduationCap,
-  Sparkles
+  Sparkles,
+  Users,
+  FileText,
+  BarChart
 } from "lucide-react";
 import NavItem from "./NavItem";
 import MessageNavItem from "./MessageNavItem";
+import { useUser } from "@/contexts/UserContext";
 
 interface NavLinksProps {
   onItemClick?: () => void;
@@ -21,22 +25,89 @@ interface NavLinksProps {
 
 const NavLinks: React.FC<NavLinksProps> = ({ onItemClick }) => {
   const location = useLocation();
-
+  const { user } = useUser();
+  
   const isActive = (path: string) => {
     return location.pathname === path;
   };
 
+  // Get user role, defaulting to student if not available
+  const userRole = user?.role || "student";
+
   return (
     <nav className="space-y-2">
+      {/* Dashboard - different links based on role */}
       <NavItem 
-        to="/dashboard" 
+        to={userRole === "student" ? "/dashboard" : 
+            userRole === "tutor" ? "/teacher-dashboard" : 
+            "/parent-dashboard"} 
         icon={<User size={20} />} 
         label="Dashboard"
-        active={isActive("/dashboard")}
+        active={isActive(userRole === "student" ? "/dashboard" : 
+                         userRole === "tutor" ? "/teacher-dashboard" : 
+                         "/parent-dashboard")}
         onClick={onItemClick}
       />
       
-      {/* Learning Resources Group - visually grouped together */}
+      {/* Tutor-specific navigation */}
+      {userRole === "tutor" && (
+        <div className="pt-2 pb-1">
+          <div className="px-3 mb-2">
+            <p className="text-xs font-medium text-gray-500">TUTOR TOOLS</p>
+          </div>
+          
+          <NavItem 
+            to="/students" 
+            icon={<Users size={20} />} 
+            label="Students"
+            active={isActive("/students")}
+            onClick={onItemClick}
+          />
+          
+          <NavItem 
+            to="/learning-tracks" 
+            icon={<FileText size={20} />} 
+            label="Learning Tracks"
+            active={isActive("/learning-tracks")}
+            onClick={onItemClick}
+          />
+          
+          <NavItem 
+            to="/reports" 
+            icon={<BarChart size={20} />} 
+            label="Reports"
+            active={isActive("/reports")}
+            onClick={onItemClick}
+          />
+        </div>
+      )}
+      
+      {/* Parent-specific navigation */}
+      {userRole === "parent" && (
+        <div className="pt-2 pb-1">
+          <div className="px-3 mb-2">
+            <p className="text-xs font-medium text-gray-500">PARENT TOOLS</p>
+          </div>
+          
+          <NavItem 
+            to="/children" 
+            icon={<Users size={20} />} 
+            label="My Children"
+            active={isActive("/children")}
+            onClick={onItemClick}
+          />
+          
+          <NavItem 
+            to="/progress-reports" 
+            icon={<BarChart size={20} />} 
+            label="Progress Reports"
+            active={isActive("/progress-reports")}
+            onClick={onItemClick}
+          />
+        </div>
+      )}
+      
+      {/* Learning Resources - shown to all users */}
       <div className="pt-2 pb-1">
         <div className="px-3 mb-2">
           <p className="text-xs font-medium text-gray-500">LEARNING RESOURCES</p>
@@ -49,30 +120,42 @@ const NavLinks: React.FC<NavLinksProps> = ({ onItemClick }) => {
           active={isActive("/lessons")}
           onClick={onItemClick}
         />
-        <NavItem 
-          to="/homework" 
-          icon={<ListTodo size={20} />} 
-          label="Homework"
-          active={isActive("/homework")}
-          onClick={onItemClick}
-        />
-        <NavItem 
-          to="/flashcards" 
-          icon={<BookOpen size={20} />} 
-          label="Flashcards" 
-          active={isActive("/flashcards")}
-          onClick={onItemClick}
-        />
-        <NavItem 
-          to="/quizzes" 
-          icon={<HelpCircle size={20} />} 
-          label="Quizzes"
-          active={isActive("/quizzes")}
-          onClick={onItemClick}
-        />
+        
+        {/* Show homework to students and tutors */}
+        {(userRole === "student" || userRole === "tutor") && (
+          <NavItem 
+            to="/homework" 
+            icon={<ListTodo size={20} />} 
+            label="Homework"
+            active={isActive("/homework")}
+            onClick={onItemClick}
+          />
+        )}
+        
+        {/* Show flashcards primarily to students */}
+        {userRole === "student" && (
+          <NavItem 
+            to="/flashcards" 
+            icon={<BookOpen size={20} />} 
+            label="Flashcards" 
+            active={isActive("/flashcards")}
+            onClick={onItemClick}
+          />
+        )}
+        
+        {/* Show quizzes to students and tutors */}
+        {(userRole === "student" || userRole === "tutor") && (
+          <NavItem 
+            to="/quizzes" 
+            icon={<HelpCircle size={20} />} 
+            label="Quizzes"
+            active={isActive("/quizzes")}
+            onClick={onItemClick}
+          />
+        )}
       </div>
       
-      {/* Tools Group */}
+      {/* Tools Group - available to all users */}
       <div className="pt-2 pb-1">
         <div className="px-3 mb-2">
           <p className="text-xs font-medium text-gray-500">TOOLS</p>
@@ -89,13 +172,16 @@ const NavLinks: React.FC<NavLinksProps> = ({ onItemClick }) => {
         {/* Use MessageNavItem for messages */}
         <MessageNavItem />
         
-        <NavItem 
-          to="/ai-tutor" 
-          icon={<Sparkles size={20} />} 
-          label="AI Tutor"
-          active={isActive("/ai-tutor")}
-          onClick={onItemClick}
-        />
+        {/* AI Tutor - primarily for students */}
+        {userRole === "student" && (
+          <NavItem 
+            to="/ai-tutor" 
+            icon={<Sparkles size={20} />} 
+            label="AI Tutor"
+            active={isActive("/ai-tutor")}
+            onClick={onItemClick}
+          />
+        )}
       </div>
       
       {/* Settings */}

@@ -14,8 +14,27 @@ interface Message {
 export const useAITutor = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const { user } = useUser();
+  const { user, session } = useUser();
   const { toast } = useToast();
+  const [activeTrackId, setActiveTrackId] = useState<string | null>(null);
+
+  // Function to fetch user's learning tracks
+  const fetchLearningTracks = async () => {
+    if (!session?.user?.id) return [];
+    
+    try {
+      const { data, error } = await supabase
+        .from('student_tracks')
+        .select('track_id, learning_tracks(id, name, description)')
+        .eq('student_id', session.user.id);
+      
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching learning tracks:', error);
+      return [];
+    }
+  };
 
   const sendMessage = async (content: string) => {
     if (!content.trim()) return;
@@ -32,6 +51,10 @@ export const useAITutor = () => {
     setIsLoading(true);
     
     try {
+      if (!session?.user?.id) {
+        throw new Error("You must be logged in to use the AI Tutor");
+      }
+      
       // Prepare the user profile data to send to the AI
       const userProfile = user ? {
         name: user.name,
@@ -42,7 +65,9 @@ export const useAITutor = () => {
       const { data, error } = await supabase.functions.invoke('ai-tutor', {
         body: { 
           message: content,
-          userProfile
+          userProfile,
+          trackId: activeTrackId,
+          studentId: session.user.id
         }
       });
       
@@ -62,7 +87,8 @@ export const useAITutor = () => {
       
       setMessages(prev => [...prev, assistantMessage]);
       
-      // Could award XP here or call another function to do so
+      // Log the chat interaction to the database
+      await logChatInteraction(content, data.response);
       
       return assistantMessage;
     } catch (error) {
@@ -77,14 +103,37 @@ export const useAITutor = () => {
     }
   };
   
+  const logChatInteraction = async (message: string, response: string) => {
+    if (!session?.user?.id) return;
+    
+    try {
+      await supabase.from('chat_logs').insert({
+        student_id: session.user.id,
+        track_id: activeTrackId,
+        message,
+        response,
+        skills_addressed: {} // This could be populated with skill data from the AI response
+      });
+    } catch (error) {
+      console.error('Error logging chat interaction:', error);
+    }
+  };
+  
   const clearConversation = () => {
     setMessages([]);
+  };
+  
+  const setTrack = (trackId: string | null) => {
+    setActiveTrackId(trackId);
   };
   
   return {
     messages,
     sendMessage,
     clearConversation,
-    isLoading
+    isLoading,
+    fetchLearningTracks,
+    activeTrackId,
+    setTrack
   };
 };
