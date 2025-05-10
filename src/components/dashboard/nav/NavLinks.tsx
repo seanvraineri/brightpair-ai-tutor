@@ -39,21 +39,21 @@ const NavLinks: React.FC<NavLinksProps> = ({ onItemClick }) => {
       {/* Dashboard - different links based on role */}
       <NavItem 
         to={userRole === "student" ? "/dashboard" : 
-            userRole === "tutor" ? "/teacher-dashboard" : 
+            userRole === "teacher" ? "/teacher-dashboard" : 
             "/parent-dashboard"} 
         icon={<User size={20} />} 
         label="Dashboard"
         active={isActive(userRole === "student" ? "/dashboard" : 
-                         userRole === "tutor" ? "/teacher-dashboard" : 
+                         userRole === "teacher" ? "/teacher-dashboard" : 
                          "/parent-dashboard")}
         onClick={onItemClick}
       />
       
-      {/* Tutor-specific navigation */}
-      {userRole === "tutor" && (
+      {/* Teacher-specific navigation */}
+      {userRole === "teacher" && (
         <div className="pt-2 pb-1">
           <div className="px-3 mb-2">
-            <p className="text-xs font-medium text-gray-500">TUTOR TOOLS</p>
+            <p className="text-xs font-medium text-gray-500">TEACHER TOOLS</p>
           </div>
           
           <NavItem 
@@ -121,8 +121,8 @@ const NavLinks: React.FC<NavLinksProps> = ({ onItemClick }) => {
           onClick={onItemClick}
         />
         
-        {/* Show homework to students and tutors */}
-        {(userRole === "student" || userRole === "tutor") && (
+        {/* Show homework to students and teachers */}
+        {(userRole === "student" || userRole === "teacher") && (
           <NavItem 
             to="/homework" 
             icon={<ListTodo size={20} />} 
@@ -143,8 +143,8 @@ const NavLinks: React.FC<NavLinksProps> = ({ onItemClick }) => {
           />
         )}
         
-        {/* Show quizzes to students and tutors */}
-        {(userRole === "student" || userRole === "tutor") && (
+        {/* Show quizzes to students and teachers */}
+        {(userRole === "student" || userRole === "teacher") && (
           <NavItem 
             to="/quizzes" 
             icon={<HelpCircle size={20} />} 
