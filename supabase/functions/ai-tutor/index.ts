@@ -18,84 +18,29 @@ const handleCors = (req: Request) => {
   return null;
 };
 
-// Fetch student profile and learning context data
-const fetchStudentContext = async (supabase: any, studentId: string, trackId: string | null) => {
-  // Fetch student profile
-  const { data: profile, error: profileError } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', studentId)
-    .single();
-
-  if (profileError) {
-    console.error("Error fetching student profile:", profileError);
-    return null;
-  }
-
-  let trackData = null;
-  let skillsData = null;
-
-  // If a trackId is provided, fetch track and skill data
-  if (trackId) {
-    // Fetch track details
-    const { data: track, error: trackError } = await supabase
-      .from('learning_tracks')
-      .select('*')
-      .eq('id', trackId)
-      .single();
-
-    if (!trackError && track) {
-      trackData = track;
-      
-      // Fetch skills for this track
-      const { data: skills, error: skillsError } = await supabase
-        .from('skills')
-        .select('*')
-        .eq('track_id', trackId);
-
-      if (!skillsError) {
-        skillsData = skills;
-      }
-    }
-  }
-
-  // Fetch student skills mastery
-  const { data: studentSkills, error: studentSkillsError } = await supabase
-    .from('student_skills')
-    .select(`
-      skill_id,
-      mastery_level,
-      skills (*)
-    `)
-    .eq('student_id', studentId);
-
-  return {
-    profile,
-    track: trackData,
-    skills: skillsData,
-    mastery: studentSkillsError ? [] : studentSkills,
+// Extract and format context from student's learning history
+const formatLearningContext = (history: any) => {
+  if (!history) return {
+    contextText: "",
+    isHomeworkQuery: false,
+    activeHomework: null
   };
-};
-
-// Format learning history for context inclusion
-const formatLearningHistory = (history: any) => {
-  if (!history) return "";
   
-  let context = "";
+  let contextText = "";
   
-  // Format homework assignments with more detail
+  // Format homework assignments
   if (history.homework && history.homework.length > 0) {
-    context += "\nRECENT HOMEWORK ASSIGNMENTS:\n";
+    contextText += "\nRECENT HOMEWORK ASSIGNMENTS:\n";
     history.homework.forEach((hw: any, index: number) => {
       const dueDate = hw.due_date ? new Date(hw.due_date).toLocaleDateString() : 'No due date';
-      context += `${index + 1}. "${hw.title}" - ${hw.subject} - Due: ${dueDate} - Status: ${hw.status}\n`;
+      contextText += `${index + 1}. "${hw.title}" - ${hw.subject} - Due: ${dueDate} - Status: ${hw.status}\n`;
       if (hw.description) {
-        context += `   Description: ${hw.description}\n`;
+        contextText += `   Description: ${hw.description}\n`;
       }
       if (hw.questions && Array.isArray(hw.questions)) {
-        context += `   Questions: ${hw.questions.length} question(s)\n`;
+        contextText += `   Questions: ${hw.questions.length} question(s)\n`;
         hw.questions.forEach((q: any, qIdx: number) => {
-          context += `   - Q${qIdx + 1}: ${q.question}\n`;
+          contextText += `   - Q${qIdx + 1}: ${q.question}\n`;
         });
       }
     });
@@ -103,84 +48,216 @@ const formatLearningHistory = (history: any) => {
   
   // Format quiz results
   if (history.quizzes && history.quizzes.length > 0) {
-    context += "\nRECENT QUIZ RESULTS:\n";
+    contextText += "\nRECENT QUIZ RESULTS:\n";
     history.quizzes.forEach((quiz: any, index: number) => {
       const completedDate = quiz.completed_at ? new Date(quiz.completed_at).toLocaleDateString() : 'Not completed';
-      context += `${index + 1}. "${quiz.title}" - ${quiz.subject}`;
+      contextText += `${index + 1}. "${quiz.title}" - ${quiz.subject}`;
       
       if (quiz.score !== null) {
-        context += ` - Score: ${quiz.score}%`;
+        contextText += ` - Score: ${quiz.score}%`;
       }
       
-      context += ` - Completed: ${completedDate}\n`;
+      contextText += ` - Completed: ${completedDate}\n`;
     });
   }
   
   // Format lesson history
   if (history.lessons && history.lessons.length > 0) {
-    context += "\nRECENT LESSONS:\n";
+    contextText += "\nRECENT LESSONS:\n";
     history.lessons.forEach((lesson: any, index: number) => {
       const status = lesson.completed_at ? `Completed on ${new Date(lesson.completed_at).toLocaleDateString()}` : 'In progress';
-      context += `${index + 1}. "${lesson.title}" - ${lesson.subject} - ${status}\n`;
+      contextText += `${index + 1}. "${lesson.title}" - ${lesson.subject} - ${status}\n`;
     });
   }
   
   // Format tracks
   if (history.tracks && history.tracks.length > 0) {
-    context += "\nACTIVE LEARNING TRACKS:\n";
+    contextText += "\nACTIVE LEARNING TRACKS:\n";
     history.tracks.forEach((track: any, index: number) => {
       if (track.learning_tracks) {
-        context += `${index + 1}. "${track.learning_tracks.name}" - ${track.learning_tracks.description || 'No description'}\n`;
+        contextText += `${index + 1}. "${track.learning_tracks.name}" - ${track.learning_tracks.description || 'No description'}\n`;
       }
     });
   }
   
-  // Format recent conversations
+  // Format recent conversations (limited to prevent context overflow)
   if (history.recentConversations && history.recentConversations.length > 0) {
-    const recentConvos = history.recentConversations.slice(0, 5);
-    context += "\nRECENT CONVERSATION SNIPPETS:\n";
+    const recentConvos = history.recentConversations.slice(0, 3);
+    contextText += "\nRECENT CONVERSATION SNIPPETS:\n";
     recentConvos.forEach((convo: any, index: number) => {
-      context += `Student asked: "${convo.message.substring(0, 100)}${convo.message.length > 100 ? '...' : ''}"\n`;
+      contextText += `Student asked: "${convo.message.substring(0, 100)}${convo.message.length > 100 ? '...' : ''}"\n`;
     });
   }
   
-  return context;
+  return {
+    contextText,
+    isHomeworkQuery: false,
+    activeHomework: null
+  };
 };
 
-// Detect if message is about homework
-const isHomeworkQuery = (message: string) => {
+// Detect homework queries and extract relevant homework context
+const analyzeStudentQuery = (message: string, history: any) => {
+  const result = formatLearningContext(history);
+  
+  // Check for homework-related keywords
   const homeworkKeywords = ['homework', 'assignment', 'help me with', 'exercise', 'my work'];
-  return homeworkKeywords.some(keyword => message.toLowerCase().includes(keyword));
-};
-
-// Generate specific instructions for homework assistance
-const generateHomeworkInstructions = (history: any, message: string) => {
-  if (!history?.homework?.length) return "";
-  
-  let instructions = "\n\nThe student is asking about homework. IMPORTANT INSTRUCTIONS: ";
-  instructions += "Reference specific homework assignments by title and subject. ";
-  instructions += "Offer assistance that directly addresses the homework's requirements. ";
-  instructions += "If the student mentioned a specific assignment, focus on that one. ";
-  instructions += "Otherwise, reference their most recent or upcoming assignments.\n\n";
-  
-  // Check if student mentioned a specific homework title
-  const homeworkTitles = history.homework.map((hw: any) => hw.title.toLowerCase());
-  const mentionedHomework = homeworkTitles.find((title: string) => 
-    message.toLowerCase().includes(title.toLowerCase())
+  const isHomeworkQuery = homeworkKeywords.some(keyword => 
+    message.toLowerCase().includes(keyword.toLowerCase())
   );
   
-  if (mentionedHomework) {
-    const homework = history.homework.find((hw: any) => 
-      hw.title.toLowerCase() === mentionedHomework
+  result.isHomeworkQuery = isHomeworkQuery;
+  
+  // If it's a homework query, try to identify which specific homework is referenced
+  if (isHomeworkQuery && history?.homework?.length) {
+    // Look for homework title mentions in the query
+    const mentionedTitle = history.homework.find((hw: any) => 
+      message.toLowerCase().includes(hw.title.toLowerCase())
     );
     
-    instructions += `The student is specifically asking about the "${homework.title}" assignment for ${homework.subject}. `;
-    instructions += `Focus your assistance on this specific homework.\n`;
-  } else {
-    instructions += `The student didn't mention a specific assignment, so focus on their most recent homework.\n`;
+    if (mentionedTitle) {
+      result.activeHomework = mentionedTitle;
+    } else {
+      // Default to most recent homework if no specific one is mentioned
+      result.activeHomework = history.homework[0];
+    }
+    
+    // Add specific homework context
+    if (result.activeHomework) {
+      result.contextText += "\n\nFOCUSED HOMEWORK CONTEXT:\n";
+      result.contextText += `You are helping with the "${result.activeHomework.title}" assignment for ${result.activeHomework.subject}.\n`;
+      
+      if (result.activeHomework.description) {
+        result.contextText += `Description: ${result.activeHomework.description}\n`;
+      }
+      
+      if (result.activeHomework.questions && Array.isArray(result.activeHomework.questions)) {
+        result.contextText += `Questions to answer:\n`;
+        result.activeHomework.questions.forEach((q: any, idx: number) => {
+          result.contextText += `${idx + 1}. ${q.question}\n`;
+        });
+      }
+    }
   }
   
-  return instructions;
+  return result;
+};
+
+// Fetch student profile and learning context data
+const fetchStudentContext = async (supabase: any, studentId: string, trackId: string | null) => {
+  try {
+    // Fetch student profile
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', studentId)
+      .single();
+
+    if (profileError) {
+      console.error("Error fetching student profile:", profileError);
+      return { profile: null, track: null, skills: null, mastery: [] };
+    }
+
+    let trackData = null;
+    let skillsData = null;
+
+    // If a trackId is provided, fetch track and skill data
+    if (trackId) {
+      // Fetch track details
+      const { data: track, error: trackError } = await supabase
+        .from('learning_tracks')
+        .select('*')
+        .eq('id', trackId)
+        .single();
+
+      if (!trackError && track) {
+        trackData = track;
+        
+        // Fetch skills for this track
+        const { data: skills, error: skillsError } = await supabase
+          .from('skills')
+          .select('*')
+          .eq('track_id', trackId);
+
+        if (!skillsError) {
+          skillsData = skills;
+        }
+      }
+    }
+
+    // Fetch student skills mastery
+    const { data: studentSkills, error: studentSkillsError } = await supabase
+      .from('student_skills')
+      .select(`
+        skill_id,
+        mastery_level,
+        skills (*)
+      `)
+      .eq('student_id', studentId);
+
+    return {
+      profile,
+      track: trackData,
+      skills: skillsData,
+      mastery: studentSkillsError ? [] : studentSkills,
+    };
+  } catch (error) {
+    console.error("Error in fetchStudentContext:", error);
+    return { profile: null, track: null, skills: null, mastery: [] };
+  }
+};
+
+// Build the full system prompt with all available context
+const buildSystemPrompt = (
+  userProfile: any,
+  studentContext: any, 
+  learningContext: { contextText: string, isHomeworkQuery: boolean, activeHomework: any }
+) => {
+  let systemPrompt = `You are a helpful and encouraging AI tutor. `;
+  
+  // Add personalization based on student profile
+  if (studentContext?.profile?.name) {
+    systemPrompt += `You're speaking with ${studentContext.profile.name}. `;
+  } else if (userProfile?.name) {
+    systemPrompt += `You're speaking with ${userProfile.name}. `;
+  }
+  
+  // Add track context if available
+  if (studentContext?.track) {
+    systemPrompt += `They are currently studying ${studentContext.track.name}. `;
+  }
+  
+  // Add learning style preferences if available
+  if (userProfile?.gamification?.learningStyle) {
+    systemPrompt += `Their learning style is ${userProfile.gamification.learningStyle}, so adapt your teaching approach accordingly. `;
+  }
+  
+  // Add interests for relevant examples
+  if (userProfile?.gamification?.interests?.length) {
+    systemPrompt += `Their interests include: ${userProfile.gamification.interests.join(', ')}. Use these to make examples relevant. `;
+  }
+  
+  // Add learning history context
+  if (learningContext.contextText) {
+    systemPrompt += `\n\nIMPORTANT LEARNING CONTEXT - Use this information to personalize your responses:${learningContext.contextText}\n\n`;
+    systemPrompt += `You should use this context to tailor your responses. For example, if they're asking about their homework assignments, reference them specifically by name. If they're struggling with a topic from a quiz, focus on those areas. Reference their learning tracks to understand what curriculum they're following.`;
+  }
+  
+  // Add specific homework instructions if the query is about homework
+  if (learningContext.isHomeworkQuery) {
+    systemPrompt += `\n\nThe student is asking about homework. IMPORTANT INSTRUCTIONS: `;
+    systemPrompt += `Reference specific homework assignments by title and subject. `;
+    systemPrompt += `Offer assistance that directly addresses the homework's requirements. `;
+    
+    if (learningContext.activeHomework) {
+      systemPrompt += `The student is specifically asking about the "${learningContext.activeHomework.title}" assignment for ${learningContext.activeHomework.subject}. `;
+      systemPrompt += `Focus your assistance on this specific homework.\n`;
+    } else {
+      systemPrompt += `The student didn't mention a specific assignment, so focus on their most recent homework.\n`;
+    }
+  }
+  
+  return systemPrompt;
 };
 
 serve(async (req) => {
@@ -223,87 +300,64 @@ serve(async (req) => {
       throw new Error('Missing OpenAI API key');
     }
     
-    // Combine the user profile and student context to create personalization data
-    const personalization = {
-      ...userProfile,
-      ...studentContext,
-    };
+    // Analyze the student query and build context
+    const learningContext = analyzeStudentQuery(message, learningHistory);
     
-    // Format learning history for context
-    const learningHistoryContext = formatLearningHistory(learningHistory);
+    // Build the system prompt with all available context
+    const systemPrompt = buildSystemPrompt(userProfile, studentContext, learningContext);
     
-    // Construct system prompt with personalization
-    let systemPrompt = `You are a helpful and encouraging AI tutor. `;
-    
-    if (personalization.profile?.name) {
-      systemPrompt += `You're speaking with ${personalization.profile.name}. `;
+    // Make API request to OpenAI with error handling
+    try {
+      const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'gpt-3.5-turbo',
+          messages: [
+            {
+              role: 'system',
+              content: systemPrompt
+            },
+            {
+              role: 'user',
+              content: message
+            }
+          ],
+          temperature: 0.7,
+          max_tokens: 800
+        })
+      });
+      
+      if (!openAIResponse.ok) {
+        const errorData = await openAIResponse.json();
+        console.error('OpenAI API error:', errorData);
+        throw new Error(`OpenAI API error: ${errorData.error?.message || 'Unknown error'}`);
+      }
+      
+      const openAIData = await openAIResponse.json();
+      const aiResponse = openAIData.choices[0]?.message?.content || 'Sorry, I could not generate a response.';
+      
+      // Return the AI response
+      return new Response(
+        JSON.stringify({
+          success: true,
+          response: aiResponse
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    } catch (openAIError) {
+      console.error('Error calling OpenAI API:', openAIError);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: openAIError instanceof Error ? openAIError.message : 'Failed to get response from AI service'
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      );
     }
-    
-    if (personalization.track) {
-      systemPrompt += `They are currently studying ${personalization.track.name}. `;
-    }
-    
-    if (personalization.profile?.gamification?.learningStyle) {
-      systemPrompt += `Their learning style is ${personalization.profile.gamification.learningStyle}, so adapt your teaching approach accordingly. `;
-    }
-    
-    if (personalization.profile?.gamification?.interests?.length) {
-      systemPrompt += `Their interests include: ${personalization.profile.gamification.interests.join(', ')}. Use these to make examples relevant. `;
-    }
-    
-    // Add learning history context
-    if (learningHistoryContext) {
-      systemPrompt += `\n\nIMPORTANT LEARNING CONTEXT - Use this information to personalize your responses:${learningHistoryContext}\n\n`;
-      systemPrompt += `You should use this context to tailor your responses. For example, if they're asking about their homework assignments, reference them specifically by name. If they're struggling with a topic from a quiz, focus on those areas. Reference their learning tracks to understand what curriculum they're following. When they say "help me with my homework", bring up specific homework assignments they have and offer help. Be helpful and specific, drawing connections between their questions and their learning history.`;
-    }
-    
-    // Add specific homework instructions if the query is about homework
-    if (isHomeworkQuery(message)) {
-      systemPrompt += generateHomeworkInstructions(learningHistory, message);
-    }
-    
-    // Make API request to OpenAI
-    const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
-        messages: [
-          {
-            role: 'system',
-            content: systemPrompt
-          },
-          {
-            role: 'user',
-            content: message
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 800
-      })
-    });
-    
-    const openAIData = await openAIResponse.json();
-    
-    if (!openAIResponse.ok) {
-      console.error('OpenAI API error:', openAIData);
-      throw new Error(`OpenAI API error: ${openAIData.error?.message || 'Unknown error'}`);
-    }
-    
-    const aiResponse = openAIData.choices[0]?.message?.content || 'Sorry, I could not generate a response.';
-    
-    // Return the AI response
-    return new Response(
-      JSON.stringify({
-        success: true,
-        response: aiResponse
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-    
   } catch (error) {
     console.error('Error in AI tutor function:', error);
     
