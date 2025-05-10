@@ -1,4 +1,3 @@
-
 // Follow Deno's ES modules conventions
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.21.0';
@@ -10,6 +9,17 @@ import {
 } from 'npm:langchain';
 import { PromptTemplate } from 'npm:@langchain/core/prompts';
 import { StringOutputParser } from 'npm:@langchain/core/output_parsers';
+
+// Response cache structure
+interface CacheEntry {
+  response: string;
+  timestamp: number;
+}
+
+// In-memory cache with expiration (15 minutes)
+const responseCache = new Map<string, CacheEntry>();
+const CACHE_TTL = 15 * 60 * 1000; // 15 minutes in milliseconds
+const MAX_CACHE_ENTRIES = 100;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -24,6 +34,25 @@ const handleCors = (req: Request) => {
     });
   }
   return null;
+};
+
+// Helper function to generate a cache key from request data
+const generateCacheKey = (message: string, studentId: string, trackId: string | null): string => {
+  return `${studentId}:${trackId || 'null'}:${message.trim().toLowerCase()}`;
+};
+
+// Helper to clean old cache entries
+const cleanupCache = () => {
+  if (responseCache.size > MAX_CACHE_ENTRIES) {
+    // Convert map to array, sort by timestamp, and keep the newest entries
+    const entries = Array.from(responseCache.entries());
+    const sortedEntries = entries.sort((a, b) => b[1].timestamp - a[1].timestamp);
+    // Keep only the MAX_CACHE_ENTRIES newest entries
+    responseCache.clear();
+    sortedEntries.slice(0, MAX_CACHE_ENTRIES).forEach(([key, value]) => {
+      responseCache.set(key, value);
+    });
+  }
 };
 
 // Fetch student profile and learning context data
@@ -233,6 +262,40 @@ serve(async (req) => {
       );
     }
     
+    // Check cache first - we can skip DB lookups and API calls if we have a cached response
+    const cacheKey = generateCacheKey(message, studentId, trackId);
+    const now = Date.now();
+    const cachedResult = responseCache.get(cacheKey);
+    
+    if (cachedResult && (now - cachedResult.timestamp < CACHE_TTL)) {
+      console.log("Cache hit! Returning cached response");
+      
+      // Log the interaction in the chat_logs table (do this asynchronously without awaiting)
+      try {
+        EdgeRuntime.waitUntil(supabase.from('chat_logs').insert({
+          student_id: studentId,
+          track_id: trackId,
+          message,
+          response: cachedResult.response,
+          skills_addressed: {},
+          cached: true
+        }));
+      } catch (logError) {
+        console.error('Error logging cached chat interaction:', logError);
+      }
+      
+      return new Response(
+        JSON.stringify({
+          success: true,
+          response: cachedResult.response,
+          cached: true
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    console.log("Cache miss, generating new response");
+    
     // Fetch student context if studentId is provided
     const studentContext = studentId 
       ? await fetchStudentContext(supabase, studentId, trackId)
@@ -289,26 +352,29 @@ serve(async (req) => {
       conversationHistory = await fetchConversationHistory(supabase, studentId);
     }
 
-    // Initialize Langchain with ChatOpenAI
+    // Initialize Langchain with ChatOpenAI - using a faster model for improved response times
     const llm = new ChatOpenAI({
       openAIApiKey: apiKey,
-      modelName: "gpt-3.5-turbo",
+      modelName: "gpt-3.5-turbo", // Faster than GPT-4 with decent quality
       temperature: 0.7,
-      maxTokens: 800,
+      maxTokens: 600, // Reduced token count for faster responses
+      cache: true, // Enable OpenAI's built-in caching
     });
 
-    // Create a memory instance with the conversation history
+    // Create a memory instance with the conversation history - reduced context for speed
     const memory = new BufferWindowMemory({
-      k: 5, // Number of interactions to remember
+      k: 3, // Reduced from 5 to 3 for faster processing
       returnMessages: true,
       memoryKey: "chat_history",
       inputKey: "input",
       outputKey: "output",
     });
 
-    // Add existing conversation history to memory
+    // Add existing conversation history to memory (only the most recent messages)
     if (conversationHistory.length > 0) {
-      for (const entry of conversationHistory) {
+      // Only use the most recent messages for context
+      const recentHistory = conversationHistory.slice(-3);
+      for (const entry of recentHistory) {
         await memory.saveContext(
           { input: entry.type === 'human' ? entry.content : '' },
           { output: entry.type === 'ai' ? entry.content : '' }
@@ -316,7 +382,7 @@ serve(async (req) => {
       }
     }
 
-    // Create a prompt template
+    // Create a prompt template - simplified for faster processing
     const promptTemplate = PromptTemplate.fromTemplate(`
       {system_message}
       
@@ -327,30 +393,48 @@ serve(async (req) => {
       AI Tutor:
     `);
 
-    // Create a chain
+    // Create a chain with faster settings
     const chain = new LLMChain({
       llm,
       prompt: promptTemplate,
       memory,
       outputParser: new StringOutputParser(),
-      verbose: false, // Set to true for debugging
+      verbose: false,
     });
 
-    // Run the chain
-    const response = await chain.invoke({
-      input: message,
-      system_message: systemPrompt,
+    // Set a timeout for the OpenAI call
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('OpenAI request timed out')), 15000); // 15-second timeout
     });
+
+    // Run the chain with timeout
+    const response = await Promise.race([
+      chain.invoke({
+        input: message,
+        system_message: systemPrompt,
+      }),
+      timeoutPromise
+    ]);
+
+    // Store in cache
+    responseCache.set(cacheKey, {
+      response,
+      timestamp: Date.now()
+    });
+    
+    // Periodically clean up the cache
+    cleanupCache();
     
     // Log the interaction in the chat_logs table
     try {
-      await supabase.from('chat_logs').insert({
+      EdgeRuntime.waitUntil(supabase.from('chat_logs').insert({
         student_id: studentId,
         track_id: trackId,
         message,
         response,
-        skills_addressed: {} // This could be populated with skill data from the AI response
-      });
+        skills_addressed: {},
+        cached: false
+      }));
     } catch (logError) {
       console.error('Error logging chat interaction:', logError);
     }

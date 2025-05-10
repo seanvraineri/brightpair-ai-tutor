@@ -1,8 +1,14 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useUser } from '@/contexts/UserContext';
 import { useToast } from '@/components/ui/use-toast';
+
+// Define a type for cache items
+interface CacheItem {
+  response: string;
+  timestamp: number;
+}
 
 interface Message {
   id: string;
@@ -19,6 +25,10 @@ interface LearningHistory {
   recentConversations: any[];
 }
 
+// Configurable parameters
+const CACHE_TTL = 5 * 60 * 1000; // Client-side cache lifetime: 5 minutes
+const MAX_CACHE_SIZE = 50; // Maximum number of cached responses
+
 export const useAITutor = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -27,6 +37,28 @@ export const useAITutor = () => {
   const [activeTrackId, setActiveTrackId] = useState<string | null>(null);
   const [learningHistory, setLearningHistory] = useState<LearningHistory | null>(null);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  
+  // Create a client-side response cache
+  const [responseCache] = useState<Map<string, CacheItem>>(new Map());
+
+  // Helper function to generate cache keys
+  const generateCacheKey = useCallback((content: string): string => {
+    return `${session?.user?.id || 'anonymous'}:${activeTrackId || 'null'}:${content.toLowerCase().trim()}`;
+  }, [session?.user?.id, activeTrackId]);
+
+  // Helper function to clean cache when it gets too large
+  const cleanCache = useCallback(() => {
+    if (responseCache.size > MAX_CACHE_SIZE) {
+      // Convert map to array, sort by timestamp (oldest first)
+      const entries = Array.from(responseCache.entries());
+      const oldestEntries = entries
+        .sort((a, b) => a[1].timestamp - b[1].timestamp)
+        .slice(0, entries.length - MAX_CACHE_SIZE);
+      
+      // Delete oldest entries
+      oldestEntries.forEach(([key]) => responseCache.delete(key));
+    }
+  }, [responseCache]);
 
   // Function to fetch user's learning tracks
   const fetchLearningTracks = async () => {
@@ -150,6 +182,27 @@ export const useAITutor = () => {
         throw new Error("You must be logged in to use the AI Tutor");
       }
       
+      // Check client-side cache first
+      const cacheKey = generateCacheKey(content);
+      const cached = responseCache.get(cacheKey);
+      const now = Date.now();
+      
+      if (cached && (now - cached.timestamp < CACHE_TTL)) {
+        console.log("Using cached response from client");
+        
+        // Add AI response from cache to the conversation
+        const assistantMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: cached.response,
+          timestamp: new Date(),
+        };
+        
+        setMessages(prev => [...prev, assistantMessage]);
+        setIsLoading(false);
+        return assistantMessage;
+      }
+      
       // Prepare the user profile data to send to the AI
       const userProfile = user ? {
         name: user.name,
@@ -165,8 +218,20 @@ export const useAITutor = () => {
         content: msg.content
       }));
       
+      // Set a timeout to prevent hanging requests
+      const timeoutId = setTimeout(() => {
+        if (isLoading) {
+          setIsLoading(false);
+          toast({
+            title: "Request timeout",
+            description: "The AI is taking too long to respond. Please try again.",
+            variant: "destructive",
+          });
+        }
+      }, 15000);
+      
       // Call the AI Tutor edge function with message history for LangChain
-      const { data, error } = await supabase.functions.invoke('ai-tutor', {
+      const response = await supabase.functions.invoke('ai-tutor', {
         body: { 
           message: content,
           userProfile,
@@ -177,24 +242,30 @@ export const useAITutor = () => {
         }
       });
       
-      if (error) throw error;
+      clearTimeout(timeoutId);
       
-      if (!data.success) {
-        throw new Error(data.error || "Failed to get response from tutor");
+      if (!response.data.success) {
+        throw new Error(response.data.error || "Failed to get response from tutor");
       }
       
       // Add AI response to the conversation
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: data.response,
+        content: response.data.response,
         timestamp: new Date(),
       };
       
+      // Update client-side cache with the new response
+      responseCache.set(cacheKey, {
+        response: response.data.response,
+        timestamp: now
+      });
+      
+      // Clean cache if it's getting too large
+      cleanCache();
+      
       setMessages(prev => [...prev, assistantMessage]);
-      
-      // Log the chat interaction is now handled by the edge function
-      
       return assistantMessage;
     } catch (error) {
       console.error('Error sending message to AI tutor:', error);
