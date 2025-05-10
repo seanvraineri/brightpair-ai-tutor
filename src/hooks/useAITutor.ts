@@ -159,14 +159,21 @@ export const useAITutor = () => {
       // If we haven't loaded the history yet, fetch it now
       const history = learningHistory || await fetchLearningHistory();
       
-      // Call the AI Tutor edge function
+      // Format message history for LangChain
+      const messageHistory = messages.map(msg => ({
+        type: msg.role === 'user' ? 'human' : 'ai',
+        content: msg.content
+      }));
+      
+      // Call the AI Tutor edge function with message history for LangChain
       const { data, error } = await supabase.functions.invoke('ai-tutor', {
         body: { 
           message: content,
           userProfile,
           trackId: activeTrackId,
           studentId: session.user.id,
-          learningHistory: history
+          learningHistory: history,
+          messageHistory
         }
       });
       
@@ -186,8 +193,7 @@ export const useAITutor = () => {
       
       setMessages(prev => [...prev, assistantMessage]);
       
-      // Log the chat interaction to the database
-      await logChatInteraction(content, data.response);
+      // Log the chat interaction is now handled by the edge function
       
       return assistantMessage;
     } catch (error) {
@@ -199,22 +205,6 @@ export const useAITutor = () => {
       });
     } finally {
       setIsLoading(false);
-    }
-  };
-  
-  const logChatInteraction = async (message: string, response: string) => {
-    if (!session?.user?.id) return;
-    
-    try {
-      await supabase.from('chat_logs').insert({
-        student_id: session.user.id,
-        track_id: activeTrackId,
-        message,
-        response,
-        skills_addressed: {} // This could be populated with skill data from the AI response
-      });
-    } catch (error) {
-      console.error('Error logging chat interaction:', error);
     }
   };
   

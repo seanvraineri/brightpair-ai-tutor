@@ -2,6 +2,14 @@
 // Follow Deno's ES modules conventions
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.21.0';
+import { ChatOpenAI } from 'npm:@langchain/openai';
+import { 
+  ConversationChain,
+  BufferWindowMemory,
+  LLMChain
+} from 'npm:langchain';
+import { PromptTemplate } from 'npm:@langchain/core/prompts';
+import { StringOutputParser } from 'npm:@langchain/core/output_parsers';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -77,6 +85,28 @@ const fetchStudentContext = async (supabase: any, studentId: string, trackId: st
   };
 };
 
+// Get previous conversation history for a student
+const fetchConversationHistory = async (supabase: any, studentId: string, limit = 10) => {
+  const { data, error } = await supabase
+    .from('chat_logs')
+    .select('*')
+    .eq('student_id', studentId)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+  
+  if (error) {
+    console.error("Error fetching conversation history:", error);
+    return [];
+  }
+
+  // Convert to format suitable for Langchain memory
+  return data.reverse().map((item: any) => ({
+    type: item.message ? 'human' : 'ai',
+    content: item.message || item.response,
+    timestamp: new Date(item.created_at)
+  }));
+};
+
 // Format learning history for context inclusion
 const formatLearningHistory = (history: any) => {
   if (!history) return "";
@@ -132,15 +162,6 @@ const formatLearningHistory = (history: any) => {
       if (track.learning_tracks) {
         context += `${index + 1}. "${track.learning_tracks.name}" - ${track.learning_tracks.description || 'No description'}\n`;
       }
-    });
-  }
-  
-  // Format recent conversations
-  if (history.recentConversations && history.recentConversations.length > 0) {
-    const recentConvos = history.recentConversations.slice(0, 5);
-    context += "\nRECENT CONVERSATION SNIPPETS:\n";
-    recentConvos.forEach((convo: any, index: number) => {
-      context += `Student asked: "${convo.message.substring(0, 100)}${convo.message.length > 100 ? '...' : ''}"\n`;
     });
   }
   
@@ -203,7 +224,7 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     
     // Parse request data
-    const { message, userProfile, trackId, studentId, learningHistory } = await req.json();
+    const { message, userProfile, trackId, studentId, learningHistory, messageHistory } = await req.json();
     
     if (!message) {
       return new Response(
@@ -261,45 +282,84 @@ serve(async (req) => {
     if (isHomeworkQuery(message)) {
       systemPrompt += generateHomeworkInstructions(learningHistory, message);
     }
-    
-    // Make API request to OpenAI
-    const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
-        messages: [
-          {
-            role: 'system',
-            content: systemPrompt
-          },
-          {
-            role: 'user',
-            content: message
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 800
-      })
+
+    // Fetch or use provided conversation history
+    let conversationHistory = messageHistory || [];
+    if (!messageHistory && studentId) {
+      conversationHistory = await fetchConversationHistory(supabase, studentId);
+    }
+
+    // Initialize Langchain with ChatOpenAI
+    const llm = new ChatOpenAI({
+      openAIApiKey: apiKey,
+      modelName: "gpt-3.5-turbo",
+      temperature: 0.7,
+      maxTokens: 800,
+    });
+
+    // Create a memory instance with the conversation history
+    const memory = new BufferWindowMemory({
+      k: 5, // Number of interactions to remember
+      returnMessages: true,
+      memoryKey: "chat_history",
+      inputKey: "input",
+      outputKey: "output",
+    });
+
+    // Add existing conversation history to memory
+    if (conversationHistory.length > 0) {
+      for (const entry of conversationHistory) {
+        await memory.saveContext(
+          { input: entry.type === 'human' ? entry.content : '' },
+          { output: entry.type === 'ai' ? entry.content : '' }
+        );
+      }
+    }
+
+    // Create a prompt template
+    const promptTemplate = PromptTemplate.fromTemplate(`
+      {system_message}
+      
+      Current conversation:
+      {chat_history}
+      
+      Human: {input}
+      AI Tutor:
+    `);
+
+    // Create a chain
+    const chain = new LLMChain({
+      llm,
+      prompt: promptTemplate,
+      memory,
+      outputParser: new StringOutputParser(),
+      verbose: false, // Set to true for debugging
+    });
+
+    // Run the chain
+    const response = await chain.invoke({
+      input: message,
+      system_message: systemPrompt,
     });
     
-    const openAIData = await openAIResponse.json();
-    
-    if (!openAIResponse.ok) {
-      console.error('OpenAI API error:', openAIData);
-      throw new Error(`OpenAI API error: ${openAIData.error?.message || 'Unknown error'}`);
+    // Log the interaction in the chat_logs table
+    try {
+      await supabase.from('chat_logs').insert({
+        student_id: studentId,
+        track_id: trackId,
+        message,
+        response,
+        skills_addressed: {} // This could be populated with skill data from the AI response
+      });
+    } catch (logError) {
+      console.error('Error logging chat interaction:', logError);
     }
-    
-    const aiResponse = openAIData.choices[0]?.message?.content || 'Sorry, I could not generate a response.';
     
     // Return the AI response
     return new Response(
       JSON.stringify({
         success: true,
-        response: aiResponse
+        response
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
