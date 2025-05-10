@@ -1,23 +1,13 @@
 
 import React from "react";
 import { useLocation } from "react-router-dom";
-import { 
-  User,
-  BookOpen, 
-  HelpCircle, 
-  Settings,
-  ListTodo,
-  Calendar,
-  MessageSquare,
-  GraduationCap,
-  Sparkles,
-  Users,
-  FileText,
-  BarChart
-} from "lucide-react";
+import { User, Settings } from "lucide-react";
 import NavItem from "./NavItem";
-import MessageNavItem from "./MessageNavItem";
 import { useUser } from "@/contexts/UserContext";
+import TeacherNavLinks from "./TeacherNavLinks";
+import ParentNavLinks from "./ParentNavLinks";
+import LearningResourcesLinks from "./LearningResourcesLinks";
+import ToolsLinks from "./ToolsLinks";
 
 interface NavLinksProps {
   onItemClick?: () => void;
@@ -49,140 +39,15 @@ const NavLinks: React.FC<NavLinksProps> = ({ onItemClick }) => {
         onClick={onItemClick}
       />
       
-      {/* Teacher-specific navigation */}
-      {userRole === "teacher" && (
-        <div className="pt-2 pb-1">
-          <div className="px-3 mb-2">
-            <p className="text-xs font-medium text-gray-500">TEACHER TOOLS</p>
-          </div>
-          
-          <NavItem 
-            to="/students" 
-            icon={<Users size={20} />} 
-            label="Students"
-            active={isActive("/students")}
-            onClick={onItemClick}
-          />
-          
-          <NavItem 
-            to="/learning-tracks" 
-            icon={<FileText size={20} />} 
-            label="Learning Tracks"
-            active={isActive("/learning-tracks")}
-            onClick={onItemClick}
-          />
-          
-          <NavItem 
-            to="/reports" 
-            icon={<BarChart size={20} />} 
-            label="Reports"
-            active={isActive("/reports")}
-            onClick={onItemClick}
-          />
-        </div>
-      )}
-      
-      {/* Parent-specific navigation */}
-      {userRole === "parent" && (
-        <div className="pt-2 pb-1">
-          <div className="px-3 mb-2">
-            <p className="text-xs font-medium text-gray-500">PARENT TOOLS</p>
-          </div>
-          
-          <NavItem 
-            to="/children" 
-            icon={<Users size={20} />} 
-            label="My Children"
-            active={isActive("/children")}
-            onClick={onItemClick}
-          />
-          
-          <NavItem 
-            to="/progress-reports" 
-            icon={<BarChart size={20} />} 
-            label="Progress Reports"
-            active={isActive("/progress-reports")}
-            onClick={onItemClick}
-          />
-        </div>
-      )}
+      {/* Role-specific navigation */}
+      {userRole === "teacher" && <TeacherNavLinks onItemClick={onItemClick} />}
+      {userRole === "parent" && <ParentNavLinks onItemClick={onItemClick} />}
       
       {/* Learning Resources - shown to all users */}
-      <div className="pt-2 pb-1">
-        <div className="px-3 mb-2">
-          <p className="text-xs font-medium text-gray-500">LEARNING RESOURCES</p>
-        </div>
-        
-        <NavItem 
-          to="/lessons" 
-          icon={<GraduationCap size={20} />} 
-          label="Lessons"
-          active={isActive("/lessons")}
-          onClick={onItemClick}
-        />
-        
-        {/* Show homework to students and teachers */}
-        {(userRole === "student" || userRole === "teacher") && (
-          <NavItem 
-            to="/homework" 
-            icon={<ListTodo size={20} />} 
-            label="Homework"
-            active={isActive("/homework")}
-            onClick={onItemClick}
-          />
-        )}
-        
-        {/* Show flashcards primarily to students */}
-        {userRole === "student" && (
-          <NavItem 
-            to="/flashcards" 
-            icon={<BookOpen size={20} />} 
-            label="Flashcards" 
-            active={isActive("/flashcards")}
-            onClick={onItemClick}
-          />
-        )}
-        
-        {/* Show quizzes to students and teachers */}
-        {(userRole === "student" || userRole === "teacher") && (
-          <NavItem 
-            to="/quizzes" 
-            icon={<HelpCircle size={20} />} 
-            label="Quizzes"
-            active={isActive("/quizzes")}
-            onClick={onItemClick}
-          />
-        )}
-      </div>
+      <LearningResourcesLinks userRole={userRole} onItemClick={onItemClick} />
       
       {/* Tools Group - available to all users */}
-      <div className="pt-2 pb-1">
-        <div className="px-3 mb-2">
-          <p className="text-xs font-medium text-gray-500">TOOLS</p>
-        </div>
-        
-        <NavItem
-          to="/scheduling"
-          icon={<Calendar size={20} />}
-          label="Scheduling"
-          active={isActive("/scheduling")}
-          onClick={onItemClick}
-        />
-        
-        {/* Use MessageNavItem for messages */}
-        <MessageNavItem />
-        
-        {/* AI Tutor - primarily for students */}
-        {userRole === "student" && (
-          <NavItem 
-            to="/ai-tutor" 
-            icon={<Sparkles size={20} />} 
-            label="AI Tutor"
-            active={isActive("/ai-tutor")}
-            onClick={onItemClick}
-          />
-        )}
-      </div>
+      <ToolsLinks userRole={userRole} onItemClick={onItemClick} />
       
       {/* Settings */}
       <div className="pt-2">
