@@ -1,6 +1,7 @@
 
 import React, { useRef, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import "katex/dist/katex.min.css";
 
 interface Message {
   id: string;
@@ -43,7 +44,7 @@ const MessageList: React.FC<MessageListProps> = ({ messages, isLoading, formatMe
                   : "bg-white border border-gray-200"
               }`}
             >
-              <div className="text-sm leading-relaxed">{formatMessage(message.content)}</div>
+              <div className="text-sm leading-relaxed math-content">{formatMessage(message.content)}</div>
               <div
                 className={`text-xs mt-2 flex justify-between items-center ${
                   message.role === "user" ? "text-white/80" : "text-gray-400"
