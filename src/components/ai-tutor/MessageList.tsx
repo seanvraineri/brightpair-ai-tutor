@@ -29,6 +29,33 @@ const MessageList: React.FC<MessageListProps> = ({ messages, isLoading, formatMe
   
   return (
     <ScrollArea className="flex-1 p-4">
+      <style jsx global>{`
+        .math-content {
+          font-family: 'Cambria Math', 'Times New Roman', serif;
+          line-height: 1.5;
+          padding: 0.25rem 0;
+        }
+        
+        .katex-display {
+          margin: 0.75rem 0;
+          overflow-x: auto;
+          overflow-y: hidden;
+          padding: 0.25rem;
+        }
+        
+        .katex {
+          font-size: 1.1rem;
+          line-height: 1.3;
+        }
+        
+        .quadratic-formula {
+          background-color: #f5f8ff;
+          border-radius: 0.375rem;
+          padding: 0.75rem;
+          margin: 0.75rem 0;
+          border-left: 3px solid #4263eb;
+        }
+      `}</style>
       <div className="space-y-4">
         {messages.map((message) => (
           <div

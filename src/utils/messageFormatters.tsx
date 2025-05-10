@@ -9,7 +9,7 @@ export const formatMessage = (content: string) => {
   // Check for LaTeX-style math expressions
   const hasLatex = content.includes('\\(') || content.includes('\\[') || 
                   content.includes('$') || content.includes('\\frac') ||
-                  content.includes('\\sqrt');
+                  content.includes('\\sqrt') || content.includes('ax^2');
 
   // Handle code blocks and LaTeX formatting
   if (content.includes('```') || hasLatex) {
@@ -53,6 +53,20 @@ export const formatMessage = (content: string) => {
           );
         }
         
+        // Look for quadratic formulas specifically
+        if (line.includes('ax^2') || line.includes('x^2') || line.match(/\\frac\{-b.*?\\sqrt/)) {
+          try {
+            return <PrettyMath key={`${i}-${j}`} latex={line} />;
+          } catch (e) {
+            return (
+              <div key={`${i}-${j}`} className="py-1">
+                {line}
+                {j < segment.split('\n').length - 1 && <br />}
+              </div>
+            );
+          }
+        }
+        
         // Format inline LaTeX expressions: \( ... \) or $ ... $
         if (line.includes('\\(') || line.includes('$') || line.includes('\\frac') || line.includes('\\sqrt')) {
           // Extract potential LaTeX expressions
@@ -92,18 +106,7 @@ export const formatMessage = (content: string) => {
                  line.includes('\\[') ||
                  line.includes('\\]')) {
           try {
-            const html = katex.renderToString(line, {
-              displayMode: true,
-              throwOnError: false
-            });
-            
-            return (
-              <div key={`${i}-${j}`} className="flex justify-center my-4">
-                <div className="bg-white shadow-md rounded-lg px-6 py-4 overflow-x-auto max-w-full">
-                  <div dangerouslySetInnerHTML={{ __html: html }} />
-                </div>
-              </div>
-            );
+            return <PrettyMath key={`${i}-${j}`} latex={line} />;
           } catch (e) {
             // Fall back to standard formatting if KaTeX fails
             return (
@@ -115,24 +118,19 @@ export const formatMessage = (content: string) => {
           }
         }
         
-        // Highlight equations or formulas with special styling
-        else if (line.match(/^\d*[+\-*/=][^a-zA-Z]*$/)) {
+        // Special formatter for quadratic formulas and mathematical expressions
+        else if (line.match(/[-+]?[0-9]*\.?[0-9]+[a-zA-Z]?\^2/) ||        // Matches x^2, ax^2
+                 line.match(/\\frac\{.*\}\{.*\}/) ||                      // Matches fractions
+                 line.match(/\\sqrt\{.*\}/) ||                           // Matches square roots
+                 line.includes('\\pm') ||                                 // Matches ± symbol
+                 line.match(/\([0-9]+[a-zA-Z]\)/) ||                      // Matches (2x)
+                 line.match(/=[^a-zA-Z0-9]?[0-9]/) ||                      // Matches =0, = 0
+                 line.includes('frac')) {                                 // Fractions without backslash
           try {
-            const html = katex.renderToString(line, {
-              displayMode: true,
-              throwOnError: false
-            });
-            
-            return (
-              <div key={`${i}-${j}`} className="flex justify-center my-2">
-                <div className="bg-brightpair-50 px-4 py-2 rounded shadow-sm overflow-x-auto max-w-full">
-                  <div dangerouslySetInnerHTML={{ __html: html }} />
-                </div>
-              </div>
-            );
+            return <PrettyMath key={`${i}-${j}`} latex={line} />;
           } catch (e) {
             return (
-              <div key={`${i}-${j}`} className="bg-brightpair-50 px-3 py-1.5 rounded my-1.5 font-mono text-brightpair-700 overflow-x-auto">
+              <div key={`${i}-${j}`} className="py-1">
                 {line}
                 {j < segment.split('\n').length - 1 && <br />}
               </div>
@@ -163,25 +161,32 @@ export const formatMessage = (content: string) => {
 
   // Original behavior for content without code blocks
   return content.split('\n').map((line, i) => {
+    // Special case for quadratic formulas and equations
+    if (line.includes('x^2') || line.includes('ax^2') || 
+        line.match(/[-+]?[0-9]*\.?[0-9]+x\^2/) ||
+        line.match(/\\frac\{-b.*?\\sqrt/) || 
+        line.includes('frac')) {
+      try {
+        return <PrettyMath key={i} latex={line} />;
+      } catch (e) {
+        return (
+          <div key={i} className="py-1">
+            {line}
+            {i < content.split('\n').length - 1 && <br />}
+          </div>
+        );
+      }
+    }
+    
     // Try to handle math expressions
-    if (line.match(/^\d*[+\-*/=][^a-zA-Z]*$/) || 
+    else if (line.match(/^\d*[+\-*/=][^a-zA-Z]*$/) || 
         line.includes('\\(') || line.includes('\\)') || 
         line.includes('\\frac') || line.includes('\\sqrt') ||
         line.includes('$')) {
       
       try {
-        const html = katex.renderToString(line, {
-          displayMode: true,
-          throwOnError: false
-        });
-        
-        return (
-          <div key={i} className="flex justify-center my-2">
-            <div className="bg-brightpair-50 px-4 py-2 rounded shadow-sm overflow-x-auto max-w-full">
-              <div dangerouslySetInnerHTML={{ __html: html }} />
-            </div>
-          </div>
-        );
+        // Use PrettyMath for better display of equations
+        return <PrettyMath key={i} latex={line} />;
       } catch (e) {
         return (
           <div key={i} className="bg-brightpair-50 px-3 py-1.5 rounded my-1.5 font-mono text-brightpair-700 overflow-x-auto">
