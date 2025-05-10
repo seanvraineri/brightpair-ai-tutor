@@ -207,53 +207,150 @@ const fetchStudentContext = async (supabase: any, studentId: string, trackId: st
   }
 };
 
-// Build the full system prompt with all available context
-const buildSystemPrompt = (
-  userProfile: any,
-  studentContext: any, 
+// Create student snapshot from available data
+const createStudentSnapshot = (userProfile: any, studentContext: any) => {
+  try {
+    if (!studentContext || !studentContext.profile) {
+      return userProfile ? {
+        name: userProfile.name || "Student",
+        learning_style: userProfile.gamification?.learningStyle || "mixed",
+        grade: "Unknown"
+      } : { name: "Student", learning_style: "mixed", grade: "Unknown" };
+    }
+    
+    // Create lowest mastery skills array
+    const lowestMasterySkills = [];
+    if (studentContext.mastery && studentContext.mastery.length > 0) {
+      // Sort by mastery level ascending
+      const sortedSkills = [...studentContext.mastery].sort((a, b) => 
+        (a.mastery_level || 0) - (b.mastery_level || 0)
+      );
+      
+      // Take up to 3 lowest mastery skills
+      sortedSkills.slice(0, 3).forEach(skill => {
+        if (skill.skills) {
+          lowestMasterySkills.push({
+            id: skill.skill_id,
+            name: skill.skills.name,
+            mastery: skill.mastery_level
+          });
+        }
+      });
+    }
+    
+    // Format the track information
+    const track = studentContext.track ? {
+      id: studentContext.track.id,
+      name: studentContext.track.name
+    } : null;
+    
+    // Extract goals from user profile if available
+    const goals = userProfile?.gamification?.goals || [];
+    
+    return {
+      student_id: studentContext.profile.id,
+      name: studentContext.profile.name || userProfile?.name || "Student",
+      grade: studentContext.profile.grade || "Unknown",
+      learning_style: userProfile?.gamification?.learningStyle || "mixed",
+      goals: goals,
+      lowest_mastery_skills: lowestMasterySkills,
+      track: track,
+      mood: userProfile?.gamification?.mood || "neutral"
+    };
+  } catch (error) {
+    console.error("Error creating student snapshot:", error);
+    return { name: "Student", learning_style: "mixed", grade: "Unknown" };
+  }
+};
+
+// Extract topic passages from learning context
+const extractTopicPassages = (learningContext: any, studentContext: any) => {
+  const passages = [];
+  
+  // Extract from lessons
+  if (learningContext && learningContext.lessons) {
+    learningContext.lessons.slice(0, 3).forEach((lesson: any) => {
+      if (lesson.title && lesson.content) {
+        passages.push({
+          title: lesson.title,
+          content: lesson.content.substring(0, 300) // Limit size
+        });
+      }
+    });
+  }
+  
+  // Extract from active track materials
+  if (studentContext && studentContext.track && studentContext.track.materials) {
+    const materials = Array.isArray(studentContext.track.materials) 
+      ? studentContext.track.materials 
+      : [studentContext.track.materials];
+      
+    materials.slice(0, 5).forEach((material: any) => {
+      if (material.title && material.content) {
+        passages.push({
+          title: material.title,
+          content: material.content.substring(0, 300) // Limit size
+        });
+      }
+    });
+  }
+  
+  return passages;
+};
+
+// Build the BrightPair v2.0 system prompt
+const buildBrightPairSystemPrompt = (
+  studentSnapshot: any,
+  topicPassages: any[],
   learningContext: { contextText: string, isHomeworkQuery: boolean, activeHomework: any }
 ) => {
-  let systemPrompt = `You are a helpful and encouraging AI tutor. `;
-  
-  // Add personalization based on student profile
-  if (studentContext?.profile?.name) {
-    systemPrompt += `You're speaking with ${studentContext.profile.name}. `;
-  } else if (userProfile?.name) {
-    systemPrompt += `You're speaking with ${userProfile.name}. `;
-  }
-  
-  // Add track context if available
-  if (studentContext?.track) {
-    systemPrompt += `They are currently studying ${studentContext.track.name}. `;
-  }
-  
-  // Add learning style preferences if available
-  if (userProfile?.gamification?.learningStyle) {
-    systemPrompt += `Their learning style is ${userProfile.gamification.learningStyle}, so adapt your teaching approach accordingly. `;
-  }
-  
-  // Add interests for relevant examples
-  if (userProfile?.gamification?.interests?.length) {
-    systemPrompt += `Their interests include: ${userProfile.gamification.interests.join(', ')}. Use these to make examples relevant. `;
-  }
-  
-  // Add learning history context
+  // Core BrightPair v2.0 prompt
+  let systemPrompt = `You are **BrightPair**, a world-class personal tutor that combines evidence-based pedagogy with real-time AI reasoning.
+
+### 0. STUDENT_SNAPSHOT
+\`\`\`json
+${JSON.stringify(studentSnapshot, null, 2)}
+\`\`\`
+
+### TOPIC_PASSAGES
+${topicPassages.length > 0 
+  ? topicPassages.map(p => `## ${p.title}\n${p.content}\n`).join('\n\n') 
+  : "No specific topic passages available for this session."}
+
+### 1. PRIMARY OBJECTIVE
+Help the student master their active learning track as efficiently and enjoyably as possible.
+
+### 2. PEDAGOGICAL RULES
+1. **Personal greeting:** address the student by \`${studentSnapshot.name}\`.
+2. **Adaptive modality:** using the student's learning style "${studentSnapshot.learning_style}".
+   – \`visual\` → include diagrams/ASCII art, highlight equations.
+   – \`auditory\` → rhythmic mnemonics, conversational tone.
+   – \`kinesthetic\` → propose hands-on mini-tasks.
+   – \`reading/writing\` → structured notes, bullet lists.
+   – \`mixed\` → blend two strongest styles.
+3. **Mastery-based scaffolding:**
+   • Begin with concepts the student is less familiar with.
+   • Use ↑ *I → We → You* gradient: demo, practice together, student solo.
+4. **Micro-quiz:** after explanations, include diagnostic questions.
+5. **Encouragement:** reinforce progress; tie feedback to student goals.
+6. **Safety & accuracy:** double-check math/chem answers step-by-step.
+
+### 3. OUTPUT STYLE
+• Markdown: headers (\`###\`), bold key terms, LaTeX for math.
+• Numbered steps for procedures; emojis only for motivation (≤ 1 per 4 sentences).
+• Keep responses under **450 tokens** unless explicitly asked for more.`;
+
+  // Add learning context if available
   if (learningContext.contextText) {
-    systemPrompt += `\n\nIMPORTANT LEARNING CONTEXT - Use this information to personalize your responses:${learningContext.contextText}\n\n`;
-    systemPrompt += `You should use this context to tailor your responses. For example, if they're asking about their homework assignments, reference them specifically by name. If they're struggling with a topic from a quiz, focus on those areas. Reference their learning tracks to understand what curriculum they're following.`;
+    systemPrompt += `\n\n### ADDITIONAL LEARNING CONTEXT\n${learningContext.contextText}`;
   }
   
   // Add specific homework instructions if the query is about homework
   if (learningContext.isHomeworkQuery) {
-    systemPrompt += `\n\nThe student is asking about homework. IMPORTANT INSTRUCTIONS: `;
-    systemPrompt += `Reference specific homework assignments by title and subject. `;
-    systemPrompt += `Offer assistance that directly addresses the homework's requirements. `;
+    systemPrompt += `\n\n### HOMEWORK ASSISTANCE\nThe student is asking about homework. Focus on guiding them through the problem-solving process without providing direct answers. Encourage critical thinking.`;
     
     if (learningContext.activeHomework) {
-      systemPrompt += `The student is specifically asking about the "${learningContext.activeHomework.title}" assignment for ${learningContext.activeHomework.subject}. `;
-      systemPrompt += `Focus your assistance on this specific homework.\n`;
-    } else {
-      systemPrompt += `The student didn't mention a specific assignment, so focus on their most recent homework.\n`;
+      systemPrompt += `\nYou are helping with "${learningContext.activeHomework.title}" for ${learningContext.activeHomework.subject}.`;
     }
   }
   
@@ -303,8 +400,16 @@ serve(async (req) => {
     // Analyze the student query and build context
     const learningContext = analyzeStudentQuery(message, learningHistory);
     
-    // Build the system prompt with all available context
-    const systemPrompt = buildSystemPrompt(userProfile, studentContext, learningContext);
+    // Create student snapshot from available data
+    const studentSnapshot = createStudentSnapshot(userProfile, studentContext);
+    
+    // Extract topic passages from learning context
+    const topicPassages = extractTopicPassages(learningHistory, studentContext);
+    
+    // Build the BrightPair system prompt
+    const systemPrompt = buildBrightPairSystemPrompt(studentSnapshot, topicPassages, learningContext);
+    
+    console.log("Using system prompt: ", systemPrompt.substring(0, 200) + "...");
     
     // Make API request to OpenAI with error handling
     try {
