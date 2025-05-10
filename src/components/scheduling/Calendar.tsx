@@ -129,7 +129,7 @@ const Calendar = () => {
                   <SelectValue placeholder="Choose a tutor" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Any Available Tutor</SelectItem>
+                  <SelectItem value="any">Any Available Tutor</SelectItem>
                   {TUTORS.map(tutor => (
                     <SelectItem key={tutor.id} value={tutor.id}>
                       {tutor.name} - {tutor.subjects.join(", ")}
