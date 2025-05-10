@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,7 +5,6 @@ import { Link } from "react-router-dom";
 
 // The actual Calendly link
 const CALENDLY_URL = "https://calendly.com/seanvraineri/brightpair-tutoring-onboarding";
-
 const PricingSection: React.FC = () => {
   return <section id="pricing" className="py-16 md:py-24 px-4 bg-white">
       <div className="container max-w-7xl mx-auto">
@@ -56,9 +54,7 @@ const PricingSection: React.FC = () => {
                 </Button>
               </a>
               <Link to="/signup" className="block">
-                <Button variant="outline" className="w-full">
-                  Create Account Only
-                </Button>
+                <Button variant="outline" className="w-full">Create Account </Button>
               </Link>
             </div>
           </div>
