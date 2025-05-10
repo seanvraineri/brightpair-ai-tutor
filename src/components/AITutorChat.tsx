@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { FileText, MessageSquare, Mic, BookOpen } from "lucide-react";
 import { useAITutor } from "@/hooks/useAITutor";
@@ -263,6 +262,27 @@ const AITutorChat: React.FC = () => {
         </Card>
       </div>
     );
+  };
+
+  // Add some CSS for better math rendering
+  const styles = {
+    mathContent: `
+      .math-content {
+        font-family: 'Cambria Math', 'Times New Roman', serif;
+        line-height: 1.5;
+        padding: 0.25rem 0;
+      }
+      
+      .equation-block {
+        background-color: #f5f8ff;
+        border-radius: 0.375rem;
+        padding: 0.75rem;
+        margin: 0.75rem 0;
+        overflow-x: auto;
+        font-family: 'Cambria Math', 'Times New Roman', serif;
+        border-left: 3px solid #4263eb;
+      }
+    `
   };
 
   return (

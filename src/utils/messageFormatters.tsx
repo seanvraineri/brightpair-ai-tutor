@@ -1,10 +1,15 @@
 
 import React from 'react';
 
-// Format message with improved handling of formatting
+// Enhanced format message with improved handling of mathematics and formatting
 export const formatMessage = (content: string) => {
-  // Check if the content might contain code blocks
-  if (content.includes('```')) {
+  // Check for LaTeX-style math expressions
+  const hasLatex = content.includes('\\(') || content.includes('\\[') || 
+                  content.includes('$') || content.includes('\\frac') ||
+                  content.includes('\\sqrt');
+
+  // Handle code blocks and LaTeX formatting
+  if (content.includes('```') || hasLatex) {
     // Split by code block markers
     const segments = content.split(/(```[\s\S]*?```)/g);
     
@@ -25,25 +30,48 @@ export const formatMessage = (content: string) => {
         );
       }
       
-      // Process non-code segments normally
-      return segment.split('\n').map((line, j) => {
-        // Highlight equations or formulas with special styling
-        if (line.match(/^\d*[+\-*/=][^a-zA-Z]*$/)) {
+      // Process LaTeX-style math expressions
+      let lines = segment.split('\n');
+      return lines.map((line, j) => {
+        // Format inline LaTeX expressions: \( ... \) or $ ... $
+        if (line.includes('\\(') || line.includes('$') || line.includes('\\frac') || line.includes('\\sqrt')) {
+          // Simple check for inline math - this is a basic implementation
+          // In a real app, you would use a proper LaTeX renderer like KaTeX or MathJax
           return (
-            <div key={`${i}-${j}`} className="bg-brightpair-50 px-2 py-1 rounded my-1 font-mono text-brightpair-700">
+            <div key={`${i}-${j}`} className="math-content py-1 font-serif">
               {line}
             </div>
           );
         }
+        
+        // Highlight equations or formulas with special styling
+        else if (line.match(/^\d*[+\-*/=][^a-zA-Z]*$/) || line.match(/\\[a-zA-Z]/)) {
+          return (
+            <div key={`${i}-${j}`} className="bg-brightpair-50 px-3 py-1.5 rounded my-1.5 font-mono text-brightpair-700 overflow-x-auto">
+              {line}
+            </div>
+          );
+        }
+        
+        // Special handling for quadratic formula or other equations with fractions/roots
+        else if (line.includes('sqrt') || line.includes('frac')) {
+          return (
+            <div key={`${i}-${j}`} className="bg-brightpair-50 px-3 py-1.5 rounded my-1.5 font-mono text-brightpair-700 overflow-x-auto">
+              {line}
+            </div>
+          );
+        }
+        
         // Highlight numbered steps with emphasis
         else if (line.match(/^\d+[\.\)].*$/)) {
           return (
-            <div key={`${i}-${j}`} className="font-medium">
+            <div key={`${i}-${j}`} className="font-medium my-1">
               {line}
               {j < segment.split('\n').length - 1 && <br />}
             </div>
           );
         }
+        
         // Regular text
         return (
           <React.Fragment key={`${i}-${j}`}>
@@ -58,22 +86,25 @@ export const formatMessage = (content: string) => {
   // Original behavior for content without code blocks
   return content.split('\n').map((line, i) => {
     // Highlight equations or formulas with special styling
-    if (line.match(/^\d*[+\-*/=][^a-zA-Z]*$/)) {
+    if (line.match(/^\d*[+\-*/=][^a-zA-Z]*$/) || line.includes('\\(') || line.includes('\\)') || 
+        line.includes('\\frac') || line.includes('\\sqrt')) {
       return (
-        <div key={i} className="bg-brightpair-50 px-2 py-1 rounded my-1 font-mono text-brightpair-700">
+        <div key={i} className="bg-brightpair-50 px-3 py-1.5 rounded my-1.5 font-mono text-brightpair-700 overflow-x-auto">
           {line}
         </div>
       );
     }
+    
     // Highlight numbered steps with emphasis
     else if (line.match(/^\d+[\.\)].*$/)) {
       return (
-        <div key={i} className="font-medium">
+        <div key={i} className="font-medium my-1">
           {line}
           {i < content.split('\n').length - 1 && <br />}
         </div>
       );
     }
+    
     // Regular text
     return (
       <React.Fragment key={i}>

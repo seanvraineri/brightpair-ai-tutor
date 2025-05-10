@@ -337,6 +337,8 @@ Help the student master their active learning track as efficiently and enjoyably
 
 ### 3. OUTPUT STYLE
 • Markdown: headers (\`###\`), bold key terms, LaTeX for math.
+• For mathematical expressions use proper LaTeX notation: $x^2$ or \\(\\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}\\)
+• Always format equations cleanly with proper spacing and alignment.
 • Numbered steps for procedures; emojis only for motivation (≤ 1 per 4 sentences).
 • Keep responses under **450 tokens** unless explicitly asked for more.`;
 
@@ -353,6 +355,17 @@ Help the student master their active learning track as efficiently and enjoyably
       systemPrompt += `\nYou are helping with "${learningContext.activeHomework.title}" for ${learningContext.activeHomework.subject}.`;
     }
   }
+
+  // Additional guidance for mathematical formatting
+  systemPrompt += `\n\n### MATHEMATICAL FORMATTING
+When writing mathematical expressions:
+• Use LaTeX syntax with proper delimiters: $x^2$ for inline or $$x^2$$ for display math.
+• For complex expressions like fractions use: $\\frac{numerator}{denominator}$
+• For square roots use: $\\sqrt{expression}$
+• For the quadratic formula use: $x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$
+• Format multi-step equations with clear spacing and alignment.
+• Use $\\cdot$ for multiplication, not *
+• Use proper subscripts like $x_1$ and superscripts like $x^2$`;
   
   return systemPrompt;
 };
@@ -406,7 +419,7 @@ serve(async (req) => {
     // Extract topic passages from learning context
     const topicPassages = extractTopicPassages(learningHistory, studentContext);
     
-    // Build the BrightPair system prompt
+    // Build the BrightPair system prompt with improved math formatting
     const systemPrompt = buildBrightPairSystemPrompt(studentSnapshot, topicPassages, learningContext);
     
     console.log("Using system prompt: ", systemPrompt.substring(0, 200) + "...");
