@@ -65,7 +65,7 @@ export const useAITutorMessages = (
       // If we haven't loaded the history yet, fetch it now
       const history = learningHistory || (fetchLearningHistory ? await fetchLearningHistory() : null);
       
-      // Format message history for LangChain
+      // Format message history for better context
       const messageHistory = messages.map(msg => ({
         type: msg.role === 'user' ? 'human' : 'ai',
         content: msg.content
@@ -83,7 +83,9 @@ export const useAITutorMessages = (
         }
       }, 15000);
       
-      // Call the AI Tutor edge function with message history for LangChain
+      console.log("Sending request to AI tutor edge function");
+      
+      // Call the AI Tutor edge function with simplified payload
       const response = await supabase.functions.invoke('ai-tutor', {
         body: { 
           message: content,
@@ -97,16 +99,18 @@ export const useAITutorMessages = (
       
       clearTimeout(timeoutId);
       
-      // Handle edge function response
-      if (!response.data || response.error) {
-        throw new Error(response.error?.message || "Failed to get response from tutor");
+      console.log("Received response from edge function:", response);
+      
+      // Check for errors
+      if (response.error) {
+        throw new Error(`Edge function error: ${response.error.message || "Unknown error"}`);
       }
       
-      // Get the response text from the response object
-      const responseText = response.data.response;
+      // Get the response text
+      const responseText = response.data?.response;
       
       if (!responseText) {
-        throw new Error("Empty response received from tutor");
+        throw new Error("Empty or invalid response received from tutor");
       }
       
       // Add AI response to the conversation
