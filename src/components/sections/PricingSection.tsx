@@ -3,6 +3,10 @@ import React from "react";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+
+// Replace this URL with your actual Calendly link
+const CALENDLY_URL = "https://calendly.com/your-calendly-link";
+
 const PricingSection: React.FC = () => {
   return <section id="pricing" className="py-16 md:py-24 px-4 bg-white">
       <div className="container max-w-7xl mx-auto">
@@ -45,11 +49,11 @@ const PricingSection: React.FC = () => {
                 <span>Needs assessment</span>
               </li>
             </ul>
-            <Link to="/signup">
+            <a href={CALENDLY_URL} target="_blank" rel="noopener noreferrer">
               <Button variant="outline" className="w-full">
                 Book Consultation
               </Button>
-            </Link>
+            </a>
           </div>
 
           {/* Monthly Subscription */}

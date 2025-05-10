@@ -4,6 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import ButtonPrimary from "@/components/ButtonPrimary";
 
+// Replace this URL with your actual Calendly link
+const CALENDLY_URL = "https://calendly.com/your-calendly-link";
+
 const CTASection: React.FC = () => {
   return (
     <section className="py-16 md:py-20 px-4 bg-gradient-to-r from-brightpair-600 to-brightpair-700">
@@ -16,11 +19,11 @@ const CTASection: React.FC = () => {
           No credit card required.
         </p>
         <div className="flex flex-col sm:flex-row justify-center gap-4">
-          <Link to="/signup">
+          <a href={CALENDLY_URL} target="_blank" rel="noopener noreferrer">
             <ButtonPrimary size="lg" className="shadow-lg hover:shadow-xl transition-shadow">
-              Free Consultation
+              Book Free Consultation
             </ButtonPrimary>
-          </Link>
+          </a>
           <Link to="/contact">
             <Button 
               size="lg" 

@@ -25,6 +25,8 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ initialEmail = "" }) => {
     password: "",
     confirmPassword: "",
     role: "student" as UserRole,
+    consultationBooked: false,
+    bookingReference: "",
     rememberMe: true,
   });
 
@@ -42,10 +44,10 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ initialEmail = "" }) => {
     });
   };
   
-  const handleCheckboxChange = () => {
+  const handleCheckboxChange = (field: string) => {
     setFormData({
       ...formData,
-      rememberMe: !formData.rememberMe,
+      [field]: !formData[field as keyof typeof formData],
     });
   };
 
@@ -72,6 +74,8 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ initialEmail = "" }) => {
           data: {
             name: formData.name,
             role: formData.role,
+            consultationBooked: formData.consultationBooked,
+            bookingReference: formData.bookingReference,
           },
         }
       });
@@ -92,7 +96,7 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ initialEmail = "" }) => {
         name: formData.name,
         email: formData.email,
         role: formData.role,
-        onboardingStatus: "pending" as OnboardingStatus
+        onboardingStatus: formData.consultationBooked ? "consultation-scheduled" : "pending" as OnboardingStatus
       });
       
       toast({
@@ -100,8 +104,8 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ initialEmail = "" }) => {
         description: "You've successfully created your account.",
       });
       
-      // Navigate to consultation page
-      navigate("/consultation");
+      // Navigate based on whether they've already booked a consultation
+      navigate(formData.consultationBooked ? "/dashboard" : "/consultation");
     } catch (error: any) {
       console.error("Signup error:", error);
       toast({
@@ -183,11 +187,45 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ initialEmail = "" }) => {
             </SelectContent>
           </Select>
         </div>
+
+        {/* Consultation booking checkbox */}
+        <div className="flex items-center space-x-2">
+          <Checkbox 
+            id="consultationBooked" 
+            checked={formData.consultationBooked}
+            onCheckedChange={() => handleCheckboxChange('consultationBooked')}
+          />
+          <Label 
+            htmlFor="consultationBooked" 
+            className="text-sm font-medium leading-none cursor-pointer"
+          >
+            I've already booked a consultation
+          </Label>
+        </div>
+
+        {/* Booking reference field - only shown when consultation is booked */}
+        {formData.consultationBooked && (
+          <div className="space-y-2">
+            <Label htmlFor="bookingReference">Booking Reference (Optional)</Label>
+            <Input
+              id="bookingReference"
+              name="bookingReference"
+              type="text"
+              placeholder="Your Calendly booking reference"
+              value={formData.bookingReference}
+              onChange={handleChange}
+            />
+            <p className="text-xs text-gray-500">
+              This helps us match your account with your scheduled consultation
+            </p>
+          </div>
+        )}
+
         <div className="flex items-center space-x-2">
           <Checkbox 
             id="rememberMe" 
             checked={formData.rememberMe}
-            onCheckedChange={handleCheckboxChange}
+            onCheckedChange={() => handleCheckboxChange('rememberMe')}
           />
           <Label 
             htmlFor="rememberMe" 
