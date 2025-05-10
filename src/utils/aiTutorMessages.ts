@@ -97,21 +97,29 @@ export const useAITutorMessages = (
       
       clearTimeout(timeoutId);
       
-      if (!response.data.success) {
-        throw new Error(response.data.error || "Failed to get response from tutor");
+      // Handle edge function response
+      if (!response.data || response.error) {
+        throw new Error(response.error?.message || "Failed to get response from tutor");
+      }
+      
+      // Get the response text from the response object
+      const responseText = response.data.response;
+      
+      if (!responseText) {
+        throw new Error("Empty response received from tutor");
       }
       
       // Add AI response to the conversation
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: response.data.response,
+        content: responseText,
         timestamp: new Date(),
       };
       
       // Update client-side cache with the new response
       if (setCachedResponse) {
-        setCachedResponse(content, response.data.response);
+        setCachedResponse(content, responseText);
       }
       
       setMessages(prev => [...prev, assistantMessage]);

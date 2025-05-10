@@ -62,7 +62,7 @@ const fetchStudentContext = async (supabase: any, studentId: string, trackId: st
     .from('profiles')
     .select('*')
     .eq('id', studentId)
-    .single();
+    .maybeSingle();
 
   if (profileError) {
     console.error("Error fetching student profile:", profileError);
@@ -79,7 +79,7 @@ const fetchStudentContext = async (supabase: any, studentId: string, trackId: st
       .from('learning_tracks')
       .select('*')
       .eq('id', trackId)
-      .single();
+      .maybeSingle();
 
     if (!trackError && track) {
       trackData = track;
@@ -242,7 +242,7 @@ serve(async (req) => {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       return new Response(
-        JSON.stringify({ success: false, error: 'Missing authorization header' }),
+        JSON.stringify({ error: 'Missing authorization header' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
       );
     }
@@ -257,7 +257,7 @@ serve(async (req) => {
     
     if (!message) {
       return new Response(
-        JSON.stringify({ success: false, error: 'Message is required' }),
+        JSON.stringify({ error: 'Message is required' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       );
     }
@@ -286,7 +286,6 @@ serve(async (req) => {
       
       return new Response(
         JSON.stringify({
-          success: true,
           response: cachedResult.response,
           cached: true
         }),
@@ -442,7 +441,6 @@ serve(async (req) => {
     // Return the AI response
     return new Response(
       JSON.stringify({
-        success: true,
         response
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -453,7 +451,6 @@ serve(async (req) => {
     
     return new Response(
       JSON.stringify({
-        success: false,
         error: error instanceof Error ? error.message : 'An unknown error occurred'
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
