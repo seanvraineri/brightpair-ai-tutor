@@ -6,6 +6,8 @@ import { Plus, Sparkles, ChevronLeft, ChevronRight, RotateCcw, Clock, CheckCircl
 import FlashcardGenerator from "@/components/flashcards/FlashcardGenerator";
 import { getFlashcardSets, Flashcard, FlashcardSet } from "@/services/flashcardService";
 import { useUser } from "@/contexts/UserContext";
+import PrettyMath from "@/components/ui/PrettyMath";
+import { formatMessage } from "@/utils/messageFormatters";
 
 // Mock flashcard sets (we'll replace with actual data)
 const mockFlashcardSets = [
@@ -143,6 +145,24 @@ const Flashcards: React.FC = () => {
       description: "We'll show this card more frequently",
     });
     handleNext();
+  };
+
+  // Helper function to format flashcard content with LaTeX support
+  const renderFlashcardContent = (content: string) => {
+    // Check if content has LaTeX-like expressions or mathematical formulas
+    const hasMathContent = content.includes('$') || 
+                           content.includes('\\(') ||
+                           content.includes('\\[') ||
+                           content.includes('x^2') ||
+                           content.includes('ax^2') ||
+                           content.includes('frac') ||
+                           content.includes('sqrt');
+    
+    if (hasMathContent) {
+      return <PrettyMath latex={content} />;
+    }
+    
+    return <div className="text-center font-tutor">{formatMessage(content)}</div>;
   };
 
   return (
@@ -294,7 +314,7 @@ const Flashcards: React.FC = () => {
                   ${flipped ? "opacity-0" : "bg-white shadow-lg border border-gray-200"}`}
                 >
                   <div className="text-xl font-medium text-center font-tutor">
-                    {flashcards[currentIndex]?.front}
+                    {renderFlashcardContent(flashcards[currentIndex]?.front)}
                   </div>
                   <div className="mt-4 text-sm text-gray-500">Click to reveal answer</div>
                 </div>
@@ -305,7 +325,7 @@ const Flashcards: React.FC = () => {
                   style={{ transform: "rotateY(180deg)" }}
                 >
                   <div className="text-xl font-medium text-center font-tutor">
-                    {flashcards[currentIndex]?.back}
+                    {renderFlashcardContent(flashcards[currentIndex]?.back)}
                   </div>
                   <div className="mt-4 text-sm text-brightpair">Click to see question</div>
                 </div>

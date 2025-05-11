@@ -9,8 +9,13 @@ const PrettyMath: FC<Props> = ({ latex }) => {
   // Normalize common raw text patterns to LaTeX
   let processedLatex = latex;
   
+  // Check if content is already wrapped in LaTeX delimiters
+  const needsWrapping = !processedLatex.includes('$$') && 
+                       !processedLatex.includes('\\[') &&
+                       !processedLatex.includes('\\begin{');
+  
   // Convert common quadratic equation patterns
-  if (latex.includes('x^2') || latex.includes('ax^2') || latex.includes('frac')) {
+  if (latex.includes('x^2') || latex.includes('ax^2') || latex.includes('frac') || latex.includes('=')) {
     // Handle quadratic formula special cases that aren't in LaTeX format yet
     
     // Convert x^2 to x^{2}
@@ -30,22 +35,35 @@ const PrettyMath: FC<Props> = ({ latex }) => {
     if (processedLatex.includes('frac') && !processedLatex.includes('\\frac')) {
       processedLatex = processedLatex.replace(/frac/g, '\\frac');
     }
+    
+    // Replace special symbols with LaTeX commands
+    processedLatex = processedLatex
+      .replace(/neq/g, '\\neq')
+      .replace(/\+\-/g, '\\pm')
+      .replace(/\</g, '\\lt')
+      .replace(/\>/g, '\\gt');
+  }
+
+  // If the content isn't already in a LaTeX display format, wrap it
+  if (needsWrapping && (processedLatex.includes('=') || 
+                        processedLatex.includes('^') || 
+                        processedLatex.includes('\\frac'))) {
+    processedLatex = `${processedLatex}`;
   }
 
   try {
     const html = katex.renderToString(processedLatex, {
       displayMode: true,
-      output: "html",          // KaTeX outputs an <span class="katex">
+      output: "html",
       throwOnError: false
     });
 
     return (
-      <div className="flex justify-center my-4">
+      <div className="flex justify-center my-2">
         <div
           className="
             bg-white dark:bg-neutral-900
-            shadow-md rounded-lg
-            px-6 py-4
+            px-4 py-2
             overflow-x-auto
             max-w-full
             font-tutor
@@ -59,7 +77,7 @@ const PrettyMath: FC<Props> = ({ latex }) => {
     // Fallback for when KaTeX fails
     return (
       <div className="flex justify-center my-2">
-        <div className="bg-brightpair-50 px-4 py-2 rounded shadow-sm overflow-x-auto max-w-full font-tutor text-brightpair-700">
+        <div className="bg-brightpair-50 px-4 py-2 rounded overflow-x-auto max-w-full font-tutor text-brightpair-700">
           {latex}
         </div>
       </div>
