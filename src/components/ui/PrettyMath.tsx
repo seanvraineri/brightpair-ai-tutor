@@ -14,11 +14,9 @@ const PrettyMath: FC<Props> = ({ latex }) => {
                        !processedLatex.includes('\\[') &&
                        !processedLatex.includes('\\begin{');
   
-  // Convert common quadratic equation patterns
+  // Handle quadratic formula and other common mathematical patterns
   if (latex.includes('x^2') || latex.includes('ax^2') || latex.includes('frac') || latex.includes('=')) {
-    // Handle quadratic formula special cases that aren't in LaTeX format yet
-    
-    // Convert x^2 to x^{2}
+    // Convert x^2 to x^{2} for proper exponent formatting
     processedLatex = processedLatex.replace(/([a-zA-Z])(\^)(\d+)/g, '$1^{$3}');
     
     // Convert fractions like (-b +- sqrt(b^2-4ac))/2a to proper LaTeX
@@ -26,12 +24,12 @@ const PrettyMath: FC<Props> = ({ latex }) => {
       processedLatex = processedLatex.replace(/sqrt\(([^)]+)\)/g, '\\sqrt{$1}');
     }
     
-    // Add spacing around operators for readability
+    // Add spacing around operators for better readability
     processedLatex = processedLatex
       .replace(/([a-zA-Z0-9}])([\+\-])/g, '$1 $2 ')
       .replace(/([\+\-])([a-zA-Z0-9\\{])/g, '$1 $2');
       
-    // Convert plain 'frac' to '\frac'
+    // Convert plain 'frac' to '\frac' for proper fraction display
     if (processedLatex.includes('frac') && !processedLatex.includes('\\frac')) {
       processedLatex = processedLatex.replace(/frac/g, '\\frac');
     }
@@ -44,7 +42,7 @@ const PrettyMath: FC<Props> = ({ latex }) => {
       .replace(/\>/g, '\\gt');
   }
 
-  // If the content isn't already in a LaTeX display format, wrap it
+  // If the content isn't already in a LaTeX display format and contains math symbols, wrap it
   if (needsWrapping && (processedLatex.includes('=') || 
                         processedLatex.includes('^') || 
                         processedLatex.includes('\\frac'))) {

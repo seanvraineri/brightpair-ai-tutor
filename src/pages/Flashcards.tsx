@@ -36,7 +36,18 @@ const mockFlashcards: Record<string, Flashcard[]> = {
     { id: "3", front: "Factor x² + 5x + 6", back: "(x + 2)(x + 3)" },
     { id: "4", front: "What is the slope-intercept form?", back: "y = mx + b\nwhere m is the slope and b is the y-intercept" },
   ],
-  // ... keep existing code (other flashcard sets)
+  "biology": [
+    { id: "5", front: "What is the powerhouse of the cell?", back: "Mitochondria" },
+    { id: "6", front: "What is the function of ribosomes?", back: "Protein synthesis" },
+    { id: "7", front: "What are the four types of tissue?", back: "Epithelial, connective, muscle, and nervous" },
+    { id: "8", front: "What is the process of cell division called?", back: "Mitosis" },
+  ],
+  "geometry": [
+    { id: "9", front: "What is the formula for the area of a circle?", back: "A = πr²" },
+    { id: "10", front: "What is the Pythagorean theorem?", back: "a² + b² = c²" },
+    { id: "11", front: "What is the sum of angles in a triangle?", back: "180 degrees" },
+    { id: "12", front: "What is the formula for the volume of a cube?", back: "V = s³" },
+  ],
 };
 
 const Flashcards: React.FC = () => {

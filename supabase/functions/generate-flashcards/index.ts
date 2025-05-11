@@ -38,22 +38,28 @@ serve(async (req) => {
       throw new Error('Missing OpenAI API key');
     }
     
-    // Create the prompt for flashcard generation
+    // Create the prompt for flashcard generation with improved LaTeX formatting instructions
     const prompt = `
       Generate a set of ${count} flashcards for studying ${topic}.
       The difficulty level should be ${difficulty}.
       Each flashcard should have a question on the front and a concise, accurate answer on the back.
+      
+      For mathematical content, use proper LaTeX notation:
+      - Wrap inline math in single dollar signs: $x^2$
+      - Wrap display equations in double dollar signs: $$x = \\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}$$
+      - Use proper LaTeX commands: \\frac{}{} for fractions, x^{2} for exponents, \\sqrt{} for square roots
+      - Add proper spacing around operators: $a + b$ not $a+b$
+      
       Return the flashcards as a JSON array with the following structure:
       [
         {
           "id": "uniqueId1",
           "front": "Question text",
-          "back": "Answer text"
+          "back": "Answer text with properly formatted LaTeX when needed"
         },
         ...
       ]
       
-      For mathematical content, use LaTeX notation wrapped in $ symbols.
       Be educational, accurate, and at an appropriate level of detail for the ${difficulty} difficulty level.
       Ensure the content is factually correct and formatted clearly.
     `;
@@ -70,7 +76,7 @@ serve(async (req) => {
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages: [
-          { role: 'system', content: 'You are an educational assistant that creates study flashcards.' },
+          { role: 'system', content: 'You are an educational assistant that creates study flashcards with well-formatted mathematical expressions using LaTeX.' },
           { role: 'user', content: prompt }
         ],
         temperature: 0.5,
