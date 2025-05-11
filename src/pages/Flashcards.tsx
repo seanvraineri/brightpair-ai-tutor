@@ -1,26 +1,13 @@
-
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { Plus, Sparkles, ChevronLeft, ChevronRight, RotateCcw, Clock, CheckCircle, XCircle } from "lucide-react";
+import FlashcardGenerator from "@/components/flashcards/FlashcardGenerator";
+import { getFlashcardSets, Flashcard, FlashcardSet } from "@/services/flashcardService";
+import { useUser } from "@/contexts/UserContext";
 
-interface Flashcard {
-  id: string;
-  front: string;
-  back: string;
-}
-
-// Mock flashcard sets
+// Mock flashcard sets (we'll replace with actual data)
 const mockFlashcardSets = [
   {
     id: "algebra",
@@ -47,15 +34,7 @@ const mockFlashcards: Record<string, Flashcard[]> = {
     { id: "3", front: "Factor x² + 5x + 6", back: "(x + 2)(x + 3)" },
     { id: "4", front: "What is the slope-intercept form?", back: "y = mx + b\nwhere m is the slope and b is the y-intercept" },
   ],
-  "biology": [
-    { id: "1", front: "What are the main parts of a cell?", back: "Cell membrane, cytoplasm, nucleus, and various organelles" },
-    { id: "2", front: "What is the function of mitochondria?", back: "Powerhouse of the cell - generates energy through cellular respiration" },
-    { id: "3", front: "What is photosynthesis?", back: "Process where plants convert light energy into chemical energy" },
-  ],
-  "geometry": [
-    { id: "1", front: "What is the formula for the area of a circle?", back: "A = πr²\nwhere r is the radius" },
-    { id: "2", front: "What is the Pythagorean theorem?", back: "a² + b² = c²\nwhere c is the hypotenuse" },
-  ],
+  // ... keep existing code (other flashcard sets)
 };
 
 const Flashcards: React.FC = () => {
@@ -63,12 +42,47 @@ const Flashcards: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [flipped, setFlipped] = useState<boolean>(false);
   const [isStudyMode, setIsStudyMode] = useState<boolean>(false);
-  const [newTopicInput, setNewTopicInput] = useState<string>("");
-  const [isGenerating, setIsGenerating] = useState<boolean>(false);
+  const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
+  const [generatedFlashcards, setGeneratedFlashcards] = useState<Flashcard[]>([]);
+  const [userFlashcardSets, setUserFlashcardSets] = useState<FlashcardSet[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const { user } = useUser();
 
-  const flashcards = mockFlashcards[selectedSet] || [];
+  useEffect(() => {
+    // Load flashcards for the selected set
+    if (selectedSet === "generated" && generatedFlashcards.length > 0) {
+      setFlashcards(generatedFlashcards);
+    } else {
+      setFlashcards(mockFlashcards[selectedSet] || []);
+    }
+    
+    setCurrentIndex(0);
+    setFlipped(false);
+    if (cardRef.current) {
+      cardRef.current.style.transform = "rotateY(0deg)";
+    }
+  }, [selectedSet, generatedFlashcards]);
+  
+  useEffect(() => {
+    // Fetch user's flashcard sets from the database
+    const fetchFlashcardSets = async () => {
+      try {
+        setIsLoading(true);
+        const sets = await getFlashcardSets();
+        setUserFlashcardSets(sets);
+      } catch (error) {
+        console.error("Error fetching flashcard sets:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    if (user) {
+      fetchFlashcardSets();
+    }
+  }, [user]);
 
   const handleFlip = () => {
     setFlipped(!flipped);
@@ -108,34 +122,11 @@ const Flashcards: React.FC = () => {
 
   const handleSetChange = (value: string) => {
     setSelectedSet(value);
-    setCurrentIndex(0);
-    setFlipped(false);
-    if (cardRef.current) {
-      cardRef.current.style.transform = "rotateY(0deg)";
-    }
   };
 
-  const handleGenerateFlashcards = () => {
-    if (!newTopicInput.trim()) {
-      toast({
-        title: "Please enter a topic",
-        description: "Enter a specific topic to generate flashcards",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsGenerating(true);
-
-    // Simulate generating flashcards with GPT-4o
-    setTimeout(() => {
-      toast({
-        title: "Flashcards generated!",
-        description: `Created 10 new flashcards on ${newTopicInput}`,
-      });
-      setIsGenerating(false);
-      setNewTopicInput("");
-    }, 2000);
+  const handleFlashcardsGenerated = (newFlashcards: Flashcard[]) => {
+    setGeneratedFlashcards(newFlashcards);
+    setSelectedSet("generated");
   };
 
   const handleKnownCard = () => {
@@ -180,21 +171,50 @@ const Flashcards: React.FC = () => {
               <CardContent className="pt-6">
                 <h2 className="text-xl font-semibold mb-4">Your Flashcard Sets</h2>
                 <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="flashcard-set">Select a flashcard set</Label>
-                    <Select value={selectedSet} onValueChange={handleSetChange}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select flashcard set" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {mockFlashcardSets.map((set) => (
-                          <SelectItem key={set.id} value={set.id}>
-                            {set.name} ({set.count} cards)
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  {isLoading ? (
+                    <p className="text-gray-500">Loading your flashcard sets...</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {/* Mock flashcard sets for now */}
+                      {mockFlashcardSets.map((set) => (
+                        <div 
+                          key={set.id}
+                          className={`p-3 rounded-lg cursor-pointer border transition-colors ${
+                            selectedSet === set.id 
+                              ? 'border-brightpair bg-brightpair-50' 
+                              : 'border-gray-200 hover:bg-gray-50'
+                          }`}
+                          onClick={() => handleSetChange(set.id)}
+                        >
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <p className="font-medium">{set.name}</p>
+                              <p className="text-xs text-gray-500">{set.count} cards</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      
+                      {generatedFlashcards.length > 0 && (
+                        <div 
+                          className={`p-3 rounded-lg cursor-pointer border transition-colors ${
+                            selectedSet === 'generated' 
+                              ? 'border-brightpair bg-brightpair-50' 
+                              : 'border-gray-200 hover:bg-gray-50'
+                          }`}
+                          onClick={() => handleSetChange('generated')}
+                        >
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <p className="font-medium">Generated Flashcards</p>
+                              <p className="text-xs text-gray-500">{generatedFlashcards.length} cards</p>
+                            </div>
+                            <Sparkles size={16} className="text-brightpair" />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
                 
                 <div className="mt-6">
@@ -230,47 +250,7 @@ const Flashcards: React.FC = () => {
               </CardContent>
             </Card>
             
-            <Card>
-              <CardContent className="pt-6">
-                <h2 className="text-xl font-semibold mb-4">Generate New Flashcards</h2>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="topic">Enter a specific topic</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        id="topic"
-                        placeholder="e.g., Quadratic Equations"
-                        value={newTopicInput}
-                        onChange={(e) => setNewTopicInput(e.target.value)}
-                      />
-                      <Button 
-                        onClick={handleGenerateFlashcards} 
-                        disabled={isGenerating}
-                        className="bg-brightpair hover:bg-brightpair-600"
-                      >
-                        {isGenerating ? "Generating..." : "Generate"}
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    Your AI tutor will create custom flashcards based on your learning style.
-                  </div>
-                  
-                  <div className="bg-brightpair-50 p-4 rounded-lg">
-                    <div className="flex items-start">
-                      <Sparkles size={18} className="text-brightpair mt-0.5 mr-2" />
-                      <div>
-                        <p className="font-medium text-sm">Pro tip</p>
-                        <p className="text-sm text-gray-600">
-                          You can also generate flashcards from your quiz results or AI tutor
-                          conversations.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <FlashcardGenerator onFlashcardsGenerated={handleFlashcardsGenerated} />
           </div>
         )}
         
@@ -313,7 +293,7 @@ const Flashcards: React.FC = () => {
                   className={`absolute w-full h-full backface-hidden rounded-xl p-6 flex flex-col justify-center items-center 
                   ${flipped ? "opacity-0" : "bg-white shadow-lg border border-gray-200"}`}
                 >
-                  <div className="text-xl font-medium text-center">
+                  <div className="text-xl font-medium text-center font-tutor">
                     {flashcards[currentIndex]?.front}
                   </div>
                   <div className="mt-4 text-sm text-gray-500">Click to reveal answer</div>
@@ -324,7 +304,7 @@ const Flashcards: React.FC = () => {
                   ${flipped ? "" : "opacity-0"}`}
                   style={{ transform: "rotateY(180deg)" }}
                 >
-                  <div className="text-xl font-medium text-center">
+                  <div className="text-xl font-medium text-center font-tutor">
                     {flashcards[currentIndex]?.back}
                   </div>
                   <div className="mt-4 text-sm text-brightpair">Click to see question</div>

@@ -1,5 +1,38 @@
 
 project_id = "ijjawnbezcdqxuyhbbpq"
 
-[functions.ai-tutor]
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage", "graphql_public"]
+
+[db]
+port = 54322
+
+[studio]
+enabled = true
+port = 54323
+
+[inbucket]
+enabled = true
+port = 54324
+
+[storage]
+enabled = true
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+
+[analytics]
+enabled = false
+
+[experimental]
+enabled = false
+
+[[open_authoring.policies]]
+path = "migrations/**/*"
+permissive = true
+
+[functions.generate-flashcards]
 verify_jwt = true
