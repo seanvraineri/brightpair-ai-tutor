@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.21.0';
 
@@ -62,6 +61,7 @@ serve(async (req) => {
       
       Be educational, accurate, and at an appropriate level of detail for the ${difficulty} difficulty level.
       Ensure the content is factually correct and formatted clearly.
+      Make sure that any mathematical expressions are properly formatted in LaTeX to ensure they render correctly.
     `;
     
     console.log("Generating flashcards for topic:", topic);

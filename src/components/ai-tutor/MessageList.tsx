@@ -57,6 +57,40 @@ const MessageList: React.FC<MessageListProps> = ({ messages, isLoading, formatMe
             margin: 0.75rem 0;
             border-left: 3px solid #4263eb;
           }
+
+          .ai-message h1, .ai-message h2, .ai-message h3, 
+          .ai-message h4, .ai-message h5, .ai-message h6 {
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            line-height: 1.25;
+            color: var(--brightpair-700, #4263eb);
+          }
+          
+          .ai-message h3 {
+            font-size: 1.25rem;
+          }
+          
+          .ai-message h4 {
+            font-size: 1rem;
+          }
+          
+          .ai-message p {
+            margin-bottom: 0.75rem;
+          }
+          
+          .ai-message ul, .ai-message ol {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+          }
+          
+          .ai-message ul {
+            list-style-type: disc;
+          }
+          
+          .ai-message ol {
+            list-style-type: decimal;
+          }
         `}
       </style>
       <div className="space-y-4">
@@ -71,7 +105,7 @@ const MessageList: React.FC<MessageListProps> = ({ messages, isLoading, formatMe
               className={`max-w-[85%] rounded-2xl p-4 shadow-sm transition-all duration-200 animate-fade-in ${
                 message.role === "user"
                   ? "bg-gradient-to-r from-brightpair-500 to-brightpair-600 text-white font-sans"
-                  : "bg-white border border-gray-200 font-tutor"
+                  : "bg-white border border-gray-200 font-tutor ai-message"
               }`}
             >
               <div className={`text-sm leading-relaxed ${message.role === "assistant" ? "math-content" : ""}`}>{formatMessage(message.content)}</div>

@@ -14,6 +14,12 @@ const PrettyMath: FC<Props> = ({ latex }) => {
                        !processedLatex.includes('\\[') &&
                        !processedLatex.includes('\\begin{');
   
+  // Handle markdown-style headings (convert to plain text for rendering)
+  if (processedLatex.startsWith('#')) {
+    // Remove the heading markers for proper math rendering
+    processedLatex = processedLatex.replace(/^#+\s+/, '');
+  }
+  
   // Handle quadratic formula and other common mathematical patterns
   if (latex.includes('x^2') || latex.includes('ax^2') || latex.includes('frac') || latex.includes('=')) {
     // Convert x^2 to x^{2} for proper exponent formatting

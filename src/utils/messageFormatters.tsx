@@ -4,22 +4,34 @@ import katex from "katex";
 import "katex/dist/katex.min.css";
 import PrettyMath from '@/components/ui/PrettyMath';
 
-// Enhanced format message with improved KaTeX math rendering
+// Enhanced format message with improved KaTeX math rendering and markdown support
 export const formatMessage = (content: string) => {
-  // Check for LaTeX-style math expressions
+  // Handle markdown headings
+  const processMarkdownHeadings = (text: string) => {
+    return text.replace(/^(#{1,6})\s+(.+)$/gm, (_, hashes, title) => {
+      const level = hashes.length;
+      const fontSize = Math.max(5 - level, 1); // Calculate font size based on heading level
+      return (
+        `<h${level} class="font-bold text-${fontSize}xl my-2">${title}</h${level}>`
+      );
+    });
+  };
+
+  // Check for LaTeX-style math expressions or markdown headings
   const hasLatex = content.includes('\\(') || content.includes('\\[') || 
                   content.includes('$') || content.includes('\\frac') ||
                   content.includes('\\sqrt') || content.includes('ax^2');
+  const hasMarkdown = /^#{1,6}\s+.+$/m.test(content);
 
-  // Handle code blocks and LaTeX formatting
-  if (content.includes('```') || hasLatex) {
+  // Handle code blocks, LaTeX formatting, and markdown headings
+  if (content.includes('```') || hasLatex || hasMarkdown) {
     // Split by code block markers
     const segments = content.split(/(```[\s\S]*?```)/g);
     
     return segments.map((segment, i) => {
       // Check if segment is a code block
       if (segment.startsWith('```') && segment.endsWith('```')) {
-        // Extract language (if specified) and code content
+        // Process code block content
         const codeContent = segment.slice(3, -3).trim();
         const firstLineBreak = codeContent.indexOf('\n');
         const language = firstLineBreak > 0 ? codeContent.slice(0, firstLineBreak).trim() : '';
@@ -33,9 +45,28 @@ export const formatMessage = (content: string) => {
         );
       }
       
-      // Process LaTeX-style math expressions
+      // Process LaTeX-style math expressions and markdown
       let lines = segment.split('\n');
       return lines.map((line, j) => {
+        // Handle markdown headings
+        if (line.match(/^#{1,6}\s+.+$/)) {
+          const headingMatch = line.match(/^(#{1,6})\s+(.+)$/);
+          if (headingMatch) {
+            const level = headingMatch[1].length;
+            const title = headingMatch[2];
+            const headingClasses = `font-bold ${
+              level === 1 ? 'text-2xl' : 
+              level === 2 ? 'text-xl' : 
+              level === 3 ? 'text-lg' : 
+              'text-base'
+            } mt-4 mb-2 text-brightpair-700`;
+            
+            return (
+              <div key={`${i}-${j}`} className={headingClasses}>{title}</div>
+            );
+          }
+        }
+        
         // Process display math mode with double dollar signs
         if (line.includes('$$')) {
           const parts = line.split(/(\\$\\$[\s\S]*?\\$\\$)/g);
@@ -161,6 +192,25 @@ export const formatMessage = (content: string) => {
 
   // Original behavior for content without code blocks
   return content.split('\n').map((line, i) => {
+    // Handle markdown headings
+    if (line.match(/^#{1,6}\s+.+$/)) {
+      const headingMatch = line.match(/^(#{1,6})\s+(.+)$/);
+      if (headingMatch) {
+        const level = headingMatch[1].length;
+        const title = headingMatch[2];
+        const headingClasses = `font-bold ${
+          level === 1 ? 'text-2xl' : 
+          level === 2 ? 'text-xl' : 
+          level === 3 ? 'text-lg' : 
+          'text-base'
+        } mt-4 mb-2 text-brightpair-700`;
+        
+        return (
+          <div key={i} className={headingClasses}>{title}</div>
+        );
+      }
+    }
+    
     // Special case for quadratic formulas and equations
     if (line.includes('x^2') || line.includes('ax^2') || 
         line.match(/[-+]?[0-9]*\.?[0-9]+x\^2/) ||

@@ -336,8 +336,10 @@ Help the student master their active learning track as efficiently and enjoyably
 6. **Safety & accuracy:** double-check math/chem answers step-by-step.
 
 ### 3. OUTPUT STYLE
-• Markdown: headers (\`###\`), bold key terms, LaTeX for math.
-• For mathematical expressions use proper LaTeX notation: $x^2$ or \\(\\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}\\)
+• Use markdown headers (###, ##) for section titles.
+• Begin each response with a personal greeting as a level 3 heading (### Personal Greeting).
+• Use bold for **key terms**, and proper LaTeX for math.
+• For mathematical expressions use proper LaTeX notation: $x^2$ or $$\\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$$
 • Always format equations cleanly with proper spacing and alignment.
 • Numbered steps for procedures; emojis only for motivation (≤ 1 per 4 sentences).
 • Keep responses under **450 tokens** unless explicitly asked for more.`;
@@ -365,7 +367,8 @@ When writing mathematical expressions:
 • For the quadratic formula use: $x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$
 • Format multi-step equations with clear spacing and alignment.
 • Use $\\cdot$ for multiplication, not *
-• Use proper subscripts like $x_1$ and superscripts like $x^2$`;
+• Use proper subscripts like $x_1$ and superscripts like $x^2$
+• ALWAYS FORMAT YOUR RESPONSES WITH MARKDOWN HEADINGS AND SECTIONS`;
   
   return systemPrompt;
 };
