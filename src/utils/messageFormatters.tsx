@@ -59,7 +59,7 @@ export const formatMessage = (content: string) => {
             return <PrettyMath key={`${i}-${j}`} latex={line} />;
           } catch (e) {
             return (
-              <div key={`${i}-${j}`} className="py-1">
+              <div key={`${i}-${j}`} className="py-1 font-tutor">
                 {line}
                 {j < segment.split('\n').length - 1 && <br />}
               </div>
@@ -74,7 +74,7 @@ export const formatMessage = (content: string) => {
           const parts = line.split(mathRegex);
           
           return (
-            <div key={`${i}-${j}`} className="py-1">
+            <div key={`${i}-${j}`} className="py-1 font-tutor">
               {parts.map((part, k) => {
                 // Check if part is LaTeX expression
                 if ((part && part.startsWith('\\(') && part.endsWith('\\)')) || 
@@ -110,7 +110,7 @@ export const formatMessage = (content: string) => {
           } catch (e) {
             // Fall back to standard formatting if KaTeX fails
             return (
-              <div key={`${i}-${j}`} className="bg-brightpair-50 px-3 py-1.5 rounded my-1.5 font-mono text-brightpair-700 overflow-x-auto">
+              <div key={`${i}-${j}`} className="bg-brightpair-50 px-3 py-1.5 rounded my-1.5 font-tutor text-brightpair-700 overflow-x-auto">
                 {line}
                 {j < segment.split('\n').length - 1 && <br />}
               </div>
@@ -130,7 +130,7 @@ export const formatMessage = (content: string) => {
             return <PrettyMath key={`${i}-${j}`} latex={line} />;
           } catch (e) {
             return (
-              <div key={`${i}-${j}`} className="py-1">
+              <div key={`${i}-${j}`} className="py-1 font-tutor">
                 {line}
                 {j < segment.split('\n').length - 1 && <br />}
               </div>
@@ -141,7 +141,7 @@ export const formatMessage = (content: string) => {
         // Highlight numbered steps with emphasis
         else if (line.match(/^\d+[\.\)].*$/)) {
           return (
-            <div key={`${i}-${j}`} className="font-medium my-1">
+            <div key={`${i}-${j}`} className="font-medium my-1 font-tutor">
               {line}
               {j < segment.split('\n').length - 1 && <br />}
             </div>
@@ -170,7 +170,7 @@ export const formatMessage = (content: string) => {
         return <PrettyMath key={i} latex={line} />;
       } catch (e) {
         return (
-          <div key={i} className="py-1">
+          <div key={i} className="py-1 font-tutor">
             {line}
             {i < content.split('\n').length - 1 && <br />}
           </div>
@@ -189,7 +189,7 @@ export const formatMessage = (content: string) => {
         return <PrettyMath key={i} latex={line} />;
       } catch (e) {
         return (
-          <div key={i} className="bg-brightpair-50 px-3 py-1.5 rounded my-1.5 font-mono text-brightpair-700 overflow-x-auto">
+          <div key={i} className="bg-brightpair-50 px-3 py-1.5 rounded my-1.5 font-tutor text-brightpair-700 overflow-x-auto">
             {line}
             {i < content.split('\n').length - 1 && <br />}
           </div>
@@ -200,7 +200,7 @@ export const formatMessage = (content: string) => {
     // Highlight numbered steps with emphasis
     else if (line.match(/^\d+[\.\)].*$/)) {
       return (
-        <div key={i} className="font-medium my-1">
+        <div key={i} className="font-medium my-1 font-tutor">
           {line}
           {i < content.split('\n').length - 1 && <br />}
         </div>
@@ -210,7 +210,7 @@ export const formatMessage = (content: string) => {
     // Regular text
     return (
       <React.Fragment key={i}>
-        {line}
+        <span className="font-tutor">{line}</span>
         {i < content.split('\n').length - 1 && <br />}
       </React.Fragment>
     );

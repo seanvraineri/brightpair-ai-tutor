@@ -48,7 +48,7 @@ const PrettyMath: FC<Props> = ({ latex }) => {
             px-6 py-4
             overflow-x-auto
             max-w-full
-            font-['Merriweather',serif]
+            font-tutor
           "
           dangerouslySetInnerHTML={{ __html: html }}
         />
@@ -59,7 +59,7 @@ const PrettyMath: FC<Props> = ({ latex }) => {
     // Fallback for when KaTeX fails
     return (
       <div className="flex justify-center my-2">
-        <div className="bg-brightpair-50 px-4 py-2 rounded shadow-sm overflow-x-auto max-w-full font-['Merriweather',serif] text-brightpair-700">
+        <div className="bg-brightpair-50 px-4 py-2 rounded shadow-sm overflow-x-auto max-w-full font-tutor text-brightpair-700">
           {latex}
         </div>
       </div>
