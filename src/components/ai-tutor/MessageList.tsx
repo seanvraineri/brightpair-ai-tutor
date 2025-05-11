@@ -31,10 +31,13 @@ const MessageList: React.FC<MessageListProps> = ({ messages, isLoading, formatMe
     <ScrollArea className="flex-1 p-4">
       <style>
         {`
+          @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&display=swap');
+          
           .math-content {
-            font-family: 'Cambria Math', 'Times New Roman', serif;
-            line-height: 1.5;
+            font-family: 'Merriweather', 'Cambria Math', 'Times New Roman', serif;
+            line-height: 1.6;
             padding: 0.25rem 0;
+            letter-spacing: 0.01em;
           }
           
           .katex-display {
@@ -56,6 +59,10 @@ const MessageList: React.FC<MessageListProps> = ({ messages, isLoading, formatMe
             margin: 0.75rem 0;
             border-left: 3px solid #4263eb;
           }
+          
+          .assistant-message {
+            font-family: 'Merriweather', serif;
+          }
         `}
       </style>
       <div className="space-y-4">
@@ -70,7 +77,7 @@ const MessageList: React.FC<MessageListProps> = ({ messages, isLoading, formatMe
               className={`max-w-[85%] rounded-2xl p-4 shadow-sm transition-all duration-200 animate-fade-in ${
                 message.role === "user"
                   ? "bg-gradient-to-r from-brightpair-500 to-brightpair-600 text-white"
-                  : "bg-white border border-gray-200"
+                  : "bg-white border border-gray-200 assistant-message"
               }`}
             >
               <div className="text-sm leading-relaxed math-content">{formatMessage(message.content)}</div>
@@ -95,7 +102,7 @@ const MessageList: React.FC<MessageListProps> = ({ messages, isLoading, formatMe
         
         {isLoading && (
           <div className="flex justify-start">
-            <div className="max-w-[85%] rounded-2xl p-4 bg-white border border-gray-200 shadow-sm">
+            <div className="max-w-[85%] rounded-2xl p-4 bg-white border border-gray-200 shadow-sm assistant-message">
               <div className="flex space-x-2 items-center">
                 <div className="w-2 h-2 rounded-full bg-brightpair-300 animate-pulse"></div>
                 <div className="w-2 h-2 rounded-full bg-brightpair-500 animate-pulse delay-150"></div>

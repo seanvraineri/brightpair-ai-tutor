@@ -80,6 +80,7 @@ export default {
 			fontFamily: {
 				sans: ['Inter', 'sans-serif'],
 				display: ['Montserrat', 'sans-serif'],
+				tutor: ['Merriweather', 'serif'],
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
