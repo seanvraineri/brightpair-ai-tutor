@@ -22,7 +22,7 @@ const MessageDetail: React.FC<MessageDetailProps> = ({ message, onReply }) => {
   }, [message.id, message.read, markMessageAsRead]);
 
   return (
-    <div className="border rounded-lg p-4 bg-white">
+    <div className="border rounded-md p-4 bg-white">
       <div className="flex justify-between items-start mb-4">
         <h2 className="text-lg font-semibold">{message.subject}</h2>
         <Button variant="outline" size="sm" onClick={onReply}>
@@ -42,7 +42,7 @@ const MessageDetail: React.FC<MessageDetailProps> = ({ message, onReply }) => {
         </div>
       </div>
 
-      <div className="bg-gray-50 p-4 rounded-lg mb-4">
+      <div className="bg-gray-50 p-4 rounded-md mb-4">
         <p className="whitespace-pre-wrap">{message.content}</p>
       </div>
 

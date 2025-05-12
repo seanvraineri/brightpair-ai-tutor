@@ -1,268 +1,64 @@
-
 import React from 'react';
 import katex from "katex";
 import "katex/dist/katex.min.css";
-import PrettyMath from '@/components/ui/PrettyMath';
 
-// Enhanced format message with improved KaTeX math rendering and markdown support
+// Simplified message formatter with minimal formatting and basic math support
 export const formatMessage = (content: string) => {
-  // Handle markdown headings
-  const processMarkdownHeadings = (text: string) => {
-    return text.replace(/^(#{1,6})\s+(.+)$/gm, (_, hashes, title) => {
-      const level = hashes.length;
-      const fontSize = Math.max(5 - level, 1); // Calculate font size based on heading level
-      return (
-        `<h${level} class="font-bold text-${fontSize}xl my-2">${title}</h${level}>`
-      );
-    });
-  };
-
-  // Check for LaTeX-style math expressions or markdown headings
-  const hasLatex = content.includes('\\(') || content.includes('\\[') || 
-                  content.includes('$') || content.includes('\\frac') ||
-                  content.includes('\\sqrt') || content.includes('ax^2');
-  const hasMarkdown = /^#{1,6}\s+.+$/m.test(content);
-
-  // Handle code blocks, LaTeX formatting, and markdown headings
-  if (content.includes('```') || hasLatex || hasMarkdown) {
-    // Split by code block markers
-    const segments = content.split(/(```[\s\S]*?```)/g);
-    
-    return segments.map((segment, i) => {
-      // Check if segment is a code block
-      if (segment.startsWith('```') && segment.endsWith('```')) {
-        // Process code block content
-        const codeContent = segment.slice(3, -3).trim();
-        const firstLineBreak = codeContent.indexOf('\n');
-        const language = firstLineBreak > 0 ? codeContent.slice(0, firstLineBreak).trim() : '';
-        const code = firstLineBreak > 0 ? codeContent.slice(firstLineBreak + 1).trim() : codeContent;
-        
-        return (
-          <pre key={i} className="bg-gray-100 p-2 rounded my-2 overflow-x-auto">
-            {language && <div className="text-xs text-gray-500 mb-1">{language}</div>}
-            <code className="font-mono text-sm">{code}</code>
-          </pre>
-        );
-      }
-      
-      // Process LaTeX-style math expressions and markdown
-      let lines = segment.split('\n');
-      return lines.map((line, j) => {
-        // Handle markdown headings
-        if (line.match(/^#{1,6}\s+.+$/)) {
-          const headingMatch = line.match(/^(#{1,6})\s+(.+)$/);
-          if (headingMatch) {
-            const level = headingMatch[1].length;
-            const title = headingMatch[2];
-            const headingClasses = `font-bold ${
-              level === 1 ? 'text-2xl' : 
-              level === 2 ? 'text-xl' : 
-              level === 3 ? 'text-lg' : 
-              'text-base'
-            } mt-4 mb-2 text-brightpair-700`;
-            
-            return (
-              <div key={`${i}-${j}`} className={headingClasses}>{title}</div>
-            );
-          }
-        }
-        
-        // Process display math mode with double dollar signs
-        if (line.includes('$$')) {
-          const parts = line.split(/(\\$\\$[\s\S]*?\\$\\$)/g);
-          return (
-            <React.Fragment key={`${i}-${j}`}>
-              {parts.map((part, k) => {
-                if (part.startsWith('$$') && part.endsWith('$$')) {
-                  const latex = part.slice(2, -2).trim();
-                  return <PrettyMath key={`math-${k}`} latex={latex} />;
-                }
-                return part;
-              })}
-              {j < segment.split('\n').length - 1 && <br />}
-            </React.Fragment>
-          );
-        }
-        
-        // Look for quadratic formulas specifically
-        if (line.includes('ax^2') || line.includes('x^2') || line.match(/\\frac\{-b.*?\\sqrt/)) {
-          try {
-            return <PrettyMath key={`${i}-${j}`} latex={line} />;
-          } catch (e) {
-            return (
-              <div key={`${i}-${j}`} className="py-1 font-tutor">
-                {line}
-                {j < segment.split('\n').length - 1 && <br />}
-              </div>
-            );
-          }
-        }
-        
-        // Format inline LaTeX expressions: \( ... \) or $ ... $
-        if (line.includes('\\(') || line.includes('$') || line.includes('\\frac') || line.includes('\\sqrt')) {
-          // Extract potential LaTeX expressions
-          const mathRegex = /(\\\(.*?\\\))|(\$[^$\n]+?\$)/g;
-          const parts = line.split(mathRegex);
-          
-          return (
-            <div key={`${i}-${j}`} className="py-1 font-tutor">
-              {parts.map((part, k) => {
-                // Check if part is LaTeX expression
-                if ((part && part.startsWith('\\(') && part.endsWith('\\)')) || 
-                    (part && part.startsWith('$') && part.endsWith('$'))) {
-                  const latex = part.startsWith('\\(') 
-                    ? part.slice(2, -2).trim() 
-                    : part.slice(1, -1).trim();
-                  
-                  try {
-                    const html = katex.renderToString(latex, {
-                      displayMode: false,
-                      throwOnError: false
-                    });
-                    return <span key={`inline-math-${k}`} dangerouslySetInnerHTML={{ __html: html }} />;
-                  } catch (e) {
-                    return <span key={`inline-math-${k}`} className="text-red-500">{part}</span>;
-                  }
-                }
-                return part;
-              })}
-              {j < segment.split('\n').length - 1 && <br />}
-            </div>
-          );
-        }
-        
-        // Special handling for equations with fancy formatting
-        else if (line.match(/\\begin\{(equation|align|gather|eqnarray)\*?\}/) || 
-                 line.match(/\\[\w]+\{/) ||
-                 line.includes('\\[') ||
-                 line.includes('\\]')) {
-          try {
-            return <PrettyMath key={`${i}-${j}`} latex={line} />;
-          } catch (e) {
-            // Fall back to standard formatting if KaTeX fails
-            return (
-              <div key={`${i}-${j}`} className="bg-brightpair-50 px-3 py-1.5 rounded my-1.5 font-tutor text-brightpair-700 overflow-x-auto">
-                {line}
-                {j < segment.split('\n').length - 1 && <br />}
-              </div>
-            );
-          }
-        }
-        
-        // Special formatter for quadratic formulas and mathematical expressions
-        else if (line.match(/[-+]?[0-9]*\.?[0-9]+[a-zA-Z]?\^2/) ||        // Matches x^2, ax^2
-                 line.match(/\\frac\{.*\}\{.*\}/) ||                      // Matches fractions
-                 line.match(/\\sqrt\{.*\}/) ||                           // Matches square roots
-                 line.includes('\\pm') ||                                 // Matches ± symbol
-                 line.match(/\([0-9]+[a-zA-Z]\)/) ||                      // Matches (2x)
-                 line.match(/=[^a-zA-Z0-9]?[0-9]/) ||                      // Matches =0, = 0
-                 line.includes('frac')) {                                 // Fractions without backslash
-          try {
-            return <PrettyMath key={`${i}-${j}`} latex={line} />;
-          } catch (e) {
-            return (
-              <div key={`${i}-${j}`} className="py-1 font-tutor">
-                {line}
-                {j < segment.split('\n').length - 1 && <br />}
-              </div>
-            );
-          }
-        }
-        
-        // Highlight numbered steps with emphasis
-        else if (line.match(/^\d+[\.\)].*$/)) {
-          return (
-            <div key={`${i}-${j}`} className="font-medium my-1 font-tutor">
-              {line}
-              {j < segment.split('\n').length - 1 && <br />}
-            </div>
-          );
-        }
-        
-        // Regular text
-        return (
-          <React.Fragment key={`${i}-${j}`}>
-            {line}
-            {j < segment.split('\n').length - 1 && <br />}
-          </React.Fragment>
-        );
-      });
-    });
+  // Basic check for math expressions
+  const hasMath = content.includes('$');
+  
+  // Regular text without math expressions
+  if (!hasMath) {
+    return content.split('\n').map((line, i) => (
+      <React.Fragment key={i}>
+        {line}
+        {i < content.split('\n').length - 1 && <br />}
+      </React.Fragment>
+    ));
   }
-
-  // Original behavior for content without code blocks
-  return content.split('\n').map((line, i) => {
-    // Handle markdown headings
-    if (line.match(/^#{1,6}\s+.+$/)) {
-      const headingMatch = line.match(/^(#{1,6})\s+(.+)$/);
-      if (headingMatch) {
-        const level = headingMatch[1].length;
-        const title = headingMatch[2];
-        const headingClasses = `font-bold ${
-          level === 1 ? 'text-2xl' : 
-          level === 2 ? 'text-xl' : 
-          level === 3 ? 'text-lg' : 
-          'text-base'
-        } mt-4 mb-2 text-brightpair-700`;
-        
-        return (
-          <div key={i} className={headingClasses}>{title}</div>
-        );
-      }
-    }
-    
-    // Special case for quadratic formulas and equations
-    if (line.includes('x^2') || line.includes('ax^2') || 
-        line.match(/[-+]?[0-9]*\.?[0-9]+x\^2/) ||
-        line.match(/\\frac\{-b.*?\\sqrt/) || 
-        line.includes('frac')) {
+  
+  // Simple math processor - only handles basic dollar sign delimited math
+  const segments = content.split(/(\$\$[\s\S]*?\$\$)|(\$[\s\S]*?\$)/g).filter(Boolean);
+  
+  return segments.map((segment, i) => {
+    // Display math (double dollars)
+    if (segment.startsWith('$$') && segment.endsWith('$$')) {
+      const latex = segment.slice(2, -2).trim();
       try {
-        return <PrettyMath key={i} latex={line} />;
-      } catch (e) {
+        const html = katex.renderToString(latex, {
+          displayMode: true,
+          throwOnError: false
+        });
         return (
-          <div key={i} className="py-1 font-tutor">
-            {line}
-            {i < content.split('\n').length - 1 && <br />}
+          <div key={`math-block-${i}`} className="my-2">
+            <span dangerouslySetInnerHTML={{ __html: html }} />
           </div>
         );
-      }
-    }
-    
-    // Try to handle math expressions
-    else if (line.match(/^\d*[+\-*/=][^a-zA-Z]*$/) || 
-        line.includes('\\(') || line.includes('\\)') || 
-        line.includes('\\frac') || line.includes('\\sqrt') ||
-        line.includes('$')) {
-      
-      try {
-        // Use PrettyMath for better display of equations
-        return <PrettyMath key={i} latex={line} />;
       } catch (e) {
-        return (
-          <div key={i} className="bg-brightpair-50 px-3 py-1.5 rounded my-1.5 font-tutor text-brightpair-700 overflow-x-auto">
-            {line}
-            {i < content.split('\n').length - 1 && <br />}
-          </div>
-        );
+        return <div key={`math-block-${i}`}>{segment}</div>;
       }
     }
     
-    // Highlight numbered steps with emphasis
-    else if (line.match(/^\d+[\.\)].*$/)) {
-      return (
-        <div key={i} className="font-medium my-1 font-tutor">
-          {line}
-          {i < content.split('\n').length - 1 && <br />}
-        </div>
-      );
+    // Inline math (single dollars)
+    if (segment.startsWith('$') && segment.endsWith('$')) {
+      const latex = segment.slice(1, -1).trim();
+      try {
+        const html = katex.renderToString(latex, {
+          displayMode: false,
+          throwOnError: false
+        });
+        return <span key={`math-inline-${i}`} dangerouslySetInnerHTML={{ __html: html }} />;
+      } catch (e) {
+        return <span key={`math-inline-${i}`}>{segment}</span>;
+      }
     }
     
     // Regular text
-    return (
-      <React.Fragment key={i}>
-        <span className="font-tutor">{line}</span>
-        {i < content.split('\n').length - 1 && <br />}
+    return segment.split('\n').map((line, j) => (
+      <React.Fragment key={`${i}-${j}`}>
+        {line}
+        {j < segment.split('\n').length - 1 && <br />}
       </React.Fragment>
-    );
+    ));
   });
 };

@@ -137,9 +137,9 @@ const TutorProfile: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Left Column - Tutor Info */}
             <div className="md:col-span-2">
-              <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+              <div className="bg-white rounded-md shadow-sm p-6 mb-6">
                 <div className="flex items-start gap-5">
-                  <div className="h-24 w-24 rounded-full bg-brightpair-50 flex items-center justify-center text-4xl font-medium text-brightpair overflow-hidden">
+                  <div className="h-24 w-24 rounded-md bg-brightpair-50 flex items-center justify-center text-4xl font-medium text-brightpair overflow-hidden">
                     {tutor.name.charAt(0)}
                   </div>
                   <div className="flex-1">
@@ -213,14 +213,14 @@ const TutorProfile: React.FC = () => {
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+              <div className="bg-white rounded-md shadow-sm p-6 mb-6">
                 <h2 className="text-xl font-bold mb-4">About Me</h2>
                 <p className="text-gray-700 whitespace-pre-line">
                   {tutor.bio || "No bio available for this tutor."}
                 </p>
               </div>
 
-              <div className="bg-white rounded-xl shadow-sm p-6">
+              <div className="bg-white rounded-md shadow-sm p-6">
                 <h2 className="text-xl font-bold mb-4">Subjects</h2>
                 <div className="flex flex-wrap gap-2">
                   {tutor.subjects.map((subject) => (
@@ -234,7 +234,7 @@ const TutorProfile: React.FC = () => {
 
             {/* Right Column - CTA */}
             <div>
-              <div className="bg-white rounded-xl shadow-sm p-6 sticky top-8">
+              <div className="bg-white rounded-md shadow-sm p-6 sticky top-8">
                 <h2 className="text-xl font-bold mb-4">Book a Session</h2>
                 <p className="text-gray-600 mb-4">
                   Ready to learn with {tutor.name.split(' ')[0]}? Schedule a session now!

@@ -1,0 +1,454 @@
+import { supabase } from "@/integrations/supabase/client";
+import { 
+  Homework, 
+  HomeworkListItem, 
+  HomeworkGenerationParams, 
+  HomeworkStatus,
+  HomeworkQuestion
+} from "@/types/homework";
+
+// Mock data for initial development
+const MOCK_STUDENTS = [
+  { id: "student-1", name: "Alex Smith" },
+  { id: "student-2", name: "Emma Johnson" },
+  { id: "student-3", name: "Michael Chen" },
+  { id: "student-4", name: "Jordan Lee" }
+];
+
+const MOCK_HOMEWORKS: HomeworkListItem[] = [
+  {
+    id: "hw1",
+    title: "Quadratic Equation Drill – Visual Style",
+    due: "2023-06-18",
+    student_id: "student-1",
+    student_name: "Alex Smith",
+    status: "assigned",
+    subject: "Mathematics",
+    topic: "Quadratic Equations"
+  },
+  {
+    id: "hw2",
+    title: "Cell Biology Fundamentals",
+    due: "2023-06-20",
+    student_id: "student-1",
+    student_name: "Alex Smith",
+    status: "draft",
+    subject: "Science",
+    topic: "Cell Structure"
+  },
+  {
+    id: "hw3",
+    title: "Literary Analysis Techniques",
+    due: "2023-06-15",
+    student_id: "student-2",
+    student_name: "Emma Johnson",
+    status: "submitted",
+    subject: "English",
+    score: 85,
+    total_possible: 100,
+    topic: "Literature Analysis"
+  },
+  {
+    id: "hw4",
+    title: "Algorithm Complexity and Efficiency",
+    due: "2023-06-22",
+    student_id: "student-3",
+    student_name: "Michael Chen",
+    status: "graded",
+    subject: "Computer Science",
+    score: 92,
+    total_possible: 100,
+    topic: "Algorithm Design"
+  },
+  {
+    id: "hw5",
+    title: "Newton's Laws of Motion",
+    due: "2023-06-19",
+    student_id: "student-4",
+    student_name: "Jordan Lee",
+    status: "assigned",
+    subject: "Physics",
+    topic: "Classical Mechanics"
+  }
+];
+
+const MOCK_HOMEWORK_DETAIL: Record<string, Homework> = {
+  "hw1": {
+    id: "hw1",
+    title: "Quadratic Equation Drill – Visual Style",
+    description: "Focus on factoring and the discriminant.",
+    due: "2023-06-18",
+    created_at: "2023-06-10T12:00:00Z",
+    updated_at: "2023-06-10T12:00:00Z",
+    tutor_id: "tutor-1",
+    student_id: "student-1",
+    status: "assigned",
+    topic: "Quadratic Equations",
+    questions: [
+      {
+        id: "q1",
+        type: "mcq",
+        stem: "Which expression factors to (x-3)(x+2)?",
+        choices: ["x²–5x+6", "x²–x–6", "x²–x+6", "x²+5x+6"],
+        answer: "B"
+      },
+      {
+        id: "q2",
+        type: "short",
+        stem: "For x²+6x+5=0, what is the discriminant?",
+        answer: "16"
+      },
+      {
+        id: "q3",
+        type: "diagram",
+        stem: "Draw a quick parabola showing roots at –5 and 1."
+      },
+      {
+        id: "q4",
+        type: "pdf_ref",
+        source_page: 2,
+        stem: "Complete #7 on the attached worksheet."
+      }
+    ]
+  }
+};
+
+/**
+ * Get a list of homeworks with filtering options
+ */
+export const getHomeworkList = async (
+  filters?: {
+    status?: HomeworkStatus | 'pending' | 'all';
+    student_id?: string;
+    subject?: string;
+    search?: string;
+  }
+): Promise<HomeworkListItem[]> => {
+  try {
+    // In a real implementation, this would fetch from Supabase
+    // const { data, error } = await supabase
+    //   .from('homeworks')
+    //   .select(`
+    //     id, title, due, status, topic, subject, score, total_possible,
+    //     student_id, profiles:student_id (name)
+    //   `)
+    //   .eq('tutor_id', tutorId);
+    
+    // For now, return filtered mock data
+    let filtered = [...MOCK_HOMEWORKS];
+    
+    if (filters) {
+      if (filters.status && filters.status !== 'all') {
+        if (filters.status === 'pending') {
+          filtered = filtered.filter(hw => hw.status === 'assigned' || hw.status === 'submitted');
+        } else {
+          filtered = filtered.filter(hw => hw.status === filters.status);
+        }
+      }
+      
+      if (filters.student_id) {
+        filtered = filtered.filter(hw => hw.student_id === filters.student_id);
+      }
+      
+      if (filters.subject) {
+        filtered = filtered.filter(hw => hw.subject === filters.subject);
+      }
+      
+      if (filters.search) {
+        const searchLower = filters.search.toLowerCase();
+        filtered = filtered.filter(hw => 
+          hw.title.toLowerCase().includes(searchLower) || 
+          hw.student_name.toLowerCase().includes(searchLower) ||
+          (hw.topic && hw.topic.toLowerCase().includes(searchLower))
+        );
+      }
+    }
+    
+    return filtered;
+  } catch (error) {
+    console.error("Error fetching homework list:", error);
+    return [];
+  }
+};
+
+/**
+ * Get details of a specific homework
+ */
+export const getHomework = async (homeworkId: string): Promise<Homework | null> => {
+  try {
+    // In a real implementation, this would fetch from Supabase
+    // const { data, error } = await supabase
+    //   .from('homeworks')
+    //   .select(`
+    //     id, title, description, due, created_at, updated_at,
+    //     tutor_id, student_id, pdf_path, status, topic,
+    //     score, total_possible, questions
+    //   `)
+    //   .eq('id', homeworkId)
+    //   .single();
+    
+    // For now, return mock data
+    return MOCK_HOMEWORK_DETAIL[homeworkId] || null;
+  } catch (error) {
+    console.error("Error fetching homework details:", error);
+    return null;
+  }
+};
+
+/**
+ * Generate a new homework assignment
+ */
+export const generateHomework = async (params: HomeworkGenerationParams): Promise<Homework | null> => {
+  try {
+    // In a real implementation, this would call the Supabase Edge Function
+    // const { data, error } = await supabase.functions.invoke('generate-homework', {
+    //   body: params
+    // });
+    
+    // For development, return a mock response
+    const student = MOCK_STUDENTS.find(s => s.id === params.student_id);
+    if (!student) return null;
+    
+    const mockHomework: Homework = {
+      id: `hw-${Date.now()}`,
+      title: params.topic 
+        ? `${params.topic} Practice` 
+        : "Quadratic Equation Drill – Visual Style",
+      description: params.notes || "Focus on factoring and the discriminant.",
+      due: params.due_date,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      tutor_id: params.tutor_id,
+      student_id: params.student_id,
+      pdf_path: params.pdf_path,
+      status: "draft",
+      topic: params.topic,
+      questions: [
+        {
+          id: "q1",
+          type: "mcq",
+          stem: "Which expression factors to (x-3)(x+2)?",
+          choices: ["x²–5x+6", "x²–x–6", "x²–x+6", "x²+5x+6"],
+          answer: "B"
+        },
+        {
+          id: "q2",
+          type: "short",
+          stem: "For x²+6x+5=0, what is the discriminant?",
+          answer: "16"
+        },
+        {
+          id: "q3",
+          type: "diagram",
+          stem: "Draw a quick parabola showing roots at –5 and 1."
+        }
+      ]
+    };
+    
+    // If there was a PDF uploaded, add a PDF reference question
+    if (params.pdf_path) {
+      mockHomework.questions.push({
+        id: "q4",
+        type: "pdf_ref",
+        source_page: 1,
+        stem: "Complete problem #7 on the attached worksheet."
+      });
+    }
+    
+    return mockHomework;
+  } catch (error) {
+    console.error("Error generating homework:", error);
+    return null;
+  }
+};
+
+/**
+ * Save a homework assignment (create or update)
+ */
+export const saveHomework = async (homework: Homework): Promise<boolean> => {
+  try {
+    // In a real implementation, this would upsert to Supabase
+    // const { data, error } = await supabase
+    //   .from('homeworks')
+    //   .upsert({
+    //     id: homework.id,
+    //     title: homework.title,
+    //     description: homework.description,
+    //     due: homework.due,
+    //     updated_at: new Date().toISOString(),
+    //     tutor_id: homework.tutor_id,
+    //     student_id: homework.student_id,
+    //     pdf_path: homework.pdf_path,
+    //     status: homework.status,
+    //     topic: homework.topic,
+    //     questions: homework.questions,
+    //     score: homework.score,
+    //     total_possible: homework.total_possible
+    //   });
+    
+    // For development, just log and return success
+    console.log("Saved homework:", homework);
+    return true;
+  } catch (error) {
+    console.error("Error saving homework:", error);
+    return false;
+  }
+};
+
+/**
+ * Update the status of a homework
+ */
+export const updateHomeworkStatus = async (
+  homeworkId: string,
+  status: HomeworkStatus
+): Promise<boolean> => {
+  try {
+    // In a real implementation, this would update Supabase
+    // const { data, error } = await supabase
+    //   .from('homeworks')
+    //   .update({ status, updated_at: new Date().toISOString() })
+    //   .eq('id', homeworkId);
+    
+    // For development, just log and return success
+    console.log(`Updated homework ${homeworkId} status to ${status}`);
+    return true;
+  } catch (error) {
+    console.error("Error updating homework status:", error);
+    return false;
+  }
+};
+
+/**
+ * Grade a homework submission with student answers
+ */
+export const gradeHomework = async (
+  homeworkId: string,
+  answers: Record<string, string | string[]>
+): Promise<{ 
+  score: number;
+  total: number;
+  feedback: Record<string, string>;
+}> => {
+  try {
+    // In a real implementation, this would call a Supabase RPC
+    // const { data, error } = await supabase.rpc('grade_homework', {
+    //   p_homework_id: homeworkId,
+    //   p_answers: answers
+    // });
+    
+    // For development, simulate auto-grading for MCQ and short answer questions
+    const homework = await getHomework(homeworkId);
+    if (!homework) throw new Error("Homework not found");
+    
+    let score = 0;
+    let total = 0;
+    const feedback: Record<string, string> = {};
+    
+    homework.questions.forEach(q => {
+      if ((q.type === 'mcq' || q.type === 'short') && q.answer) {
+        total++;
+        const studentAnswer = answers[q.id]?.toString() || '';
+        
+        if (q.type === 'mcq') {
+          // For MCQ, check if the answer matches exactly
+          if (studentAnswer.toUpperCase() === q.answer.toUpperCase()) {
+            score++;
+            feedback[q.id] = "Correct!";
+          } else {
+            feedback[q.id] = `Incorrect. The correct answer is ${q.answer}.`;
+          }
+        } else if (q.type === 'short') {
+          // For short answer, check if answer matches exactly (case-insensitive)
+          if (studentAnswer.toLowerCase() === q.answer.toLowerCase()) {
+            score++;
+            feedback[q.id] = "Correct!";
+          } else {
+            feedback[q.id] = `Incorrect. The expected answer is ${q.answer}.`;
+          }
+        }
+      } else if (q.type === 'diagram' || q.type === 'pdf_ref') {
+        // These types need manual grading
+        total++;
+        feedback[q.id] = "Awaiting tutor review.";
+      }
+    });
+    
+    // In a real implementation, update the homework with scores
+    
+    return { score, total, feedback };
+  } catch (error) {
+    console.error("Error grading homework:", error);
+    return { score: 0, total: 0, feedback: {} };
+  }
+};
+
+/**
+ * Upload a PDF file for homework
+ */
+export const uploadPdf = async (file: File): Promise<string | null> => {
+  try {
+    // In a real implementation, this would upload to Supabase Storage
+    // const fileName = `${Date.now()}_${file.name}`;
+    // const filePath = `homework-files/${fileName}`;
+    // const { data, error } = await supabase.storage
+    //   .from('homework-files')
+    //   .upload(filePath, file);
+    
+    // if (error) throw error;
+    // const { data: urlData } = supabase.storage.from('homework-files').getPublicUrl(filePath);
+    // return urlData.publicUrl;
+    
+    // Return a local URL that points to our sample PDF
+    return `/homework-files/sample.pdf`;
+  } catch (error) {
+    console.error("Error uploading PDF:", error);
+    return null;
+  }
+};
+
+/**
+ * Extract text from a PDF for AI processing
+ */
+export const extractPdfText = async (file: File): Promise<string | null> => {
+  try {
+    // In a real implementation, this would use the pdf.js library
+    // const pdfjs = await import('pdfjs-dist/build/pdf');
+    // const pdfjsWorker = await import('pdfjs-dist/build/pdf.worker.entry');
+    // pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker;
+    
+    // const arrayBuffer = await file.arrayBuffer();
+    // const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
+    // const firstPage = await pdf.getPage(1);
+    // const textContent = await firstPage.getTextContent();
+    // const text = textContent.items.map((item: any) => item.str).join(' ');
+    
+    // // Limit to first 3000 characters as specified
+    // return text.substring(0, 3000);
+    
+    // For development, return mock text
+    return "This is a sample PDF text extracted for homework generation. It contains math problems related to quadratic equations and factoring.";
+  } catch (error) {
+    console.error("Error extracting PDF text:", error);
+    return null;
+  }
+};
+
+/**
+ * Get a list of students for a tutor
+ */
+export const getStudents = async (): Promise<Array<{ id: string; name: string }>> => {
+  try {
+    // In a real implementation, this would fetch from Supabase
+    // const { data, error } = await supabase
+    //   .from('profiles')
+    //   .select('id, name')
+    //   .eq('role', 'student')
+    //   .eq('tutor_id', tutorId);
+    
+    // For development, return mock students
+    return MOCK_STUDENTS;
+  } catch (error) {
+    console.error("Error fetching students:", error);
+    return [];
+  }
+}; 

@@ -22,8 +22,8 @@ const WelcomeBanner: React.FC<WelcomeBannerProps> = ({ userName = "Student" }) =
             <p className="text-gray-600">Let's continue your learning journey.</p>
           </div>
           <div className="mt-4 md:mt-0 flex items-center">
-            <div className="bg-green-100 text-green-800 text-xs font-medium px-3 py-1.5 rounded-full flex items-center mr-4">
-              <div className="w-2 h-2 bg-green-500 rounded-full mr-1.5 animate-pulse"></div>
+            <div className="bg-green-100 text-green-800 text-xs font-medium px-3 py-1.5 rounded-md flex items-center mr-4">
+              <div className="w-2 h-2 bg-green-500 rounded-md mr-1.5 animate-pulse"></div>
               <span>7 Day Streak!</span>
             </div>
             <Button size="sm" className="bg-brightpair hover:bg-brightpair-600 transition-all hover:scale-105">
@@ -78,11 +78,11 @@ interface StatCardProps {
 const StatCard: React.FC<StatCardProps> = ({ icon, label, value, trend, trendUp }) => {
   return (
     <div className={cn(
-      "bg-white/80 backdrop-blur-sm rounded-lg p-4 shadow-sm border border-gray-100",
-      "hover:shadow-md hover:border-brightpair-100 transition-all duration-200 group"
+      "bg-white/80 backdrop-blur-sm rounded-md p-4 shadow-sm border border-gray-100",
+      "hover:shadow-card hover:border-brightpair-100 transition-all duration-200 group"
     )}>
       <div className="flex items-center">
-        <div className="bg-brightpair-100 p-2 rounded-full mr-3 group-hover:scale-110 transition-transform">
+        <div className="bg-brightpair-100 p-2 rounded-md mr-3 group-hover:scale-110 transition-transform">
           {icon}
         </div>
         <div>

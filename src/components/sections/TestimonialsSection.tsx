@@ -43,7 +43,7 @@ const TestimonialsSection: React.FC = () => {
           {testimonials.map((testimonial, index) => (
             <div 
               key={index} 
-              className="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition-all"
+              className="bg-white p-8 rounded-md shadow-sm hover:shadow-card transition-all"
             >
               <div className="flex mb-4">
                 {Array(testimonial.rating).fill(0).map((_, i) => (
@@ -52,7 +52,7 @@ const TestimonialsSection: React.FC = () => {
               </div>
               <p className="text-gray-700 mb-6 italic">"{testimonial.quote}"</p>
               <div className="flex items-center">
-                <div className="h-12 w-12 rounded-full overflow-hidden mr-4">
+                <div className="h-12 w-12 rounded-md overflow-hidden mr-4">
                   <img 
                     src={testimonial.image} 
                     alt={testimonial.name} 

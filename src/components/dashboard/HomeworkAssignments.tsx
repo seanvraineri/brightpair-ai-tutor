@@ -45,11 +45,11 @@ const HomeworkAssignments: React.FC = () => {
   const getStatusBadge = (status: HomeworkItem['status']) => {
     switch(status) {
       case 'not-started':
-        return <span className="px-2 py-1 text-xs rounded-full bg-red-100 text-red-700">Not Started</span>;
+        return <span className="px-2 py-1 text-xs rounded-md bg-red-100 text-red-700">Not Started</span>;
       case 'in-progress':
-        return <span className="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-700">In Progress</span>;
+        return <span className="px-2 py-1 text-xs rounded-md bg-yellow-100 text-yellow-700">In Progress</span>;
       case 'completed':
-        return <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700">Completed</span>;
+        return <span className="px-2 py-1 text-xs rounded-md bg-green-100 text-green-700">Completed</span>;
     }
   };
 

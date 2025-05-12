@@ -13,9 +13,9 @@ const PersonalizationCard: React.FC<PersonalizationCardProps> = ({
   title,
   description
 }) => (
-  <Card className="border-0 shadow-md hover:shadow-lg transition-all">
+  <Card className="border-0 shadow-card hover:shadow-lg transition-all">
     <CardContent className="p-6 flex flex-col items-start">
-      <div className="bg-brightpair-50 p-3 rounded-full mb-4 flex items-center justify-center text-2xl">
+      <div className="bg-brightpair-50 p-3 rounded-md mb-4 flex items-center justify-center text-2xl">
         {emoji}
       </div>
       <h3 className="font-display font-semibold text-lg mb-2">{title}</h3>
@@ -72,7 +72,7 @@ const PersonalizationSection: React.FC = () => {
           ))}
         </div>
         
-        <div className="mt-12 bg-brightpair-50 p-6 md:p-8 rounded-xl text-center">
+        <div className="mt-12 bg-brightpair-50 p-6 md:p-8 rounded-md text-center">
           <p className="text-lg font-medium">
             Our personalization isn't just about preferences—it's built on cognitive science and 
             real-time learning data that adapts with your child's growth.

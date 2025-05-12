@@ -62,10 +62,10 @@ const TutorCard: React.FC<TutorCardProps> = ({
   };
 
   return (
-    <Card className="h-full hover:shadow-md transition-shadow overflow-hidden">
+    <Card className="h-full hover:shadow-card transition-shadow overflow-hidden">
       <CardHeader className="pb-2">
         <div className="flex items-start gap-3">
-          <div className="h-16 w-16 rounded-full bg-brightpair-50 flex items-center justify-center text-2xl font-medium text-brightpair overflow-hidden">
+          <div className="h-16 w-16 rounded-md bg-brightpair-50 flex items-center justify-center text-2xl font-medium text-brightpair overflow-hidden">
             {image ? (
               <img src={image} alt={name} className="h-full w-full object-cover" />
             ) : (

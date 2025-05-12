@@ -40,20 +40,20 @@ const TaskItem: React.FC<TaskItemProps> = ({
   
   return (
     <div 
-      className="p-4 border rounded-lg transition-all duration-300 hover:shadow-md cursor-pointer"
+      className="p-4 border rounded-md transition-all duration-300 hover:shadow-card cursor-pointer"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={onClick}
     >
       <div className="flex items-start">
-        <div className={`bg-brightpair-50 p-2 rounded mr-4 transition-transform duration-300 ${isHovered ? 'scale-110' : ''}`}>
+        <div className={`bg-brightpair-50 p-2 rounded-md mr-4 transition-transform duration-300 ${isHovered ? 'scale-110' : ''}`}>
           {icon}
         </div>
         <div className="flex-1">
           <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
             <h4 className="font-medium">{title}</h4>
             <div className="flex items-center gap-1 text-xs">
-              <span className={`px-2 py-0.5 rounded-full ${difficultyColor}`}>
+              <span className={`px-2 py-0.5 rounded-md ${difficultyColor}`}>
                 {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
               </span>
             </div>
@@ -155,7 +155,7 @@ const RecommendedTasks: React.FC = () => {
   ];
 
   return (
-    <Card className="hover:shadow-md transition-shadow duration-200 h-full">
+    <Card className="hover:shadow-card transition-shadow duration-200 h-full">
       <CardHeader>
         <CardTitle>Recommended Next Tasks</CardTitle>
         <CardDescription>AI-suggested learning activities</CardDescription>

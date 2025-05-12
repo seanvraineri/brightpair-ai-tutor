@@ -290,8 +290,8 @@ const TimeTracking: React.FC = () => {
         <CardContent>
           <div className="space-y-4">
             {studySessions.map((session, idx) => (
-              <div key={idx} className="flex items-start gap-4 p-3 hover:bg-gray-50 rounded-lg transition-colors">
-                <div className="bg-gray-100 px-3 py-2 rounded text-center min-w-[80px]">
+              <div key={idx} className="flex items-start gap-4 p-3 hover:bg-gray-50 rounded-md transition-colors">
+                <div className="bg-gray-100 px-3 py-2 rounded-md text-center min-w-[80px]">
                   <div className="text-xs text-gray-500">{session.date.split(',')[0]}</div>
                   <div className="font-medium">{session.duration}</div>
                 </div>

@@ -11,7 +11,7 @@ const TrustBar: React.FC = () => {
         </div>
         <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-16">
           <div className="flex flex-col items-center">
-            <div className="w-20 h-20 mb-3 bg-white rounded-full flex items-center justify-center shadow-sm">
+            <div className="w-20 h-20 mb-3 bg-white rounded-md flex items-center justify-center shadow-sm">
               <svg className="w-12 h-12" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M16 2L4 7V15C4 22.1797 9.32031 28.9062 16 30C22.6797 28.9062 28 22.1797 28 15V7L16 2Z" stroke="#52A1F2" strokeWidth="2" strokeMiterlimit="10" strokeLinecap="square"/>
                 <path d="M11 16L15 20L22 13" stroke="#52A1F2" strokeWidth="2" strokeMiterlimit="10" strokeLinecap="square"/>
@@ -22,7 +22,7 @@ const TrustBar: React.FC = () => {
           </div>
           
           <div className="flex flex-col items-center">
-            <div className="w-20 h-20 mb-3 bg-white rounded-full flex items-center justify-center shadow-sm">
+            <div className="w-20 h-20 mb-3 bg-white rounded-md flex items-center justify-center shadow-sm">
               <svg className="w-12 h-12" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M27 11H5V27H27V11Z" stroke="#52A1F2" strokeWidth="2" strokeMiterlimit="10" strokeLinecap="square"/>
                 <path d="M9 11V7C9 5.93913 9.42143 4.92172 10.1716 4.17157C10.9217 3.42143 11.9391 3 13 3H19C20.0609 3 21.0783 3.42143 21.8284 4.17157C22.5786 4.92172 23 5.93913 23 7V11" stroke="#52A1F2" strokeWidth="2" strokeMiterlimit="10" strokeLinecap="square"/>
@@ -35,7 +35,7 @@ const TrustBar: React.FC = () => {
           </div>
           
           <div className="flex flex-col items-center">
-            <div className="w-20 h-20 mb-3 bg-white rounded-full flex items-center justify-center shadow-sm">
+            <div className="w-20 h-20 mb-3 bg-white rounded-md flex items-center justify-center shadow-sm">
               <svg className="w-12 h-12" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M16 2L4 7V15C4 22.1797 9.32031 28.9062 16 30C22.6797 28.9062 28 22.1797 28 15V7L16 2Z" stroke="#52A1F2" strokeWidth="2" strokeMiterlimit="10" strokeLinecap="square"/>
                 <path d="M12 16L16 20L20 16" stroke="#52A1F2" strokeWidth="2" strokeMiterlimit="10"/>

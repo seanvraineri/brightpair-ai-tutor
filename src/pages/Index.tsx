@@ -1,5 +1,4 @@
-
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom"; 
 import LandingPage from "./LandingPage";
 
@@ -17,6 +16,11 @@ const Index = () => {
       navigate('/signup?consultation_booked=true', { replace: true });
     }
   }, [location, navigate]);
+  
+  useEffect(() => {
+    document.body.classList.add("loaded");
+    return () => document.body.classList.remove("loaded");
+  }, []);
   
   return <LandingPage />;
 };

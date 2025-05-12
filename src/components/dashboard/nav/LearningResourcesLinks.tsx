@@ -1,18 +1,16 @@
-
 import React from "react";
 import { useLocation } from "react-router-dom";
-import { GraduationCap, ListTodo, BookOpen, HelpCircle } from "lucide-react";
+import { BookOpen, FlaskConical, ScrollText, FileText } from "lucide-react";
 import NavItem from "./NavItem";
-import { UserRole } from "@/contexts/UserTypes";
 
 interface LearningResourcesLinksProps {
   onItemClick?: () => void;
-  userRole: UserRole;
+  collapsed?: boolean;
 }
 
 const LearningResourcesLinks: React.FC<LearningResourcesLinksProps> = ({ 
   onItemClick,
-  userRole 
+  collapsed = false 
 }) => {
   const location = useLocation();
   
@@ -21,51 +19,48 @@ const LearningResourcesLinks: React.FC<LearningResourcesLinksProps> = ({
   };
 
   return (
-    <div className="pt-2 pb-1">
-      <div className="px-3 mb-2">
-        <p className="text-xs font-medium text-gray-500">LEARNING RESOURCES</p>
-      </div>
+    <div className={`pt-2 pb-1 ${collapsed ? 'text-center' : ''}`}>
+      {!collapsed && (
+        <div className="px-3 mb-2">
+          <p className="text-xs font-medium text-gray-500">LEARNING RESOURCES</p>
+        </div>
+      )}
       
       <NavItem 
         to="/lessons" 
-        icon={<GraduationCap size={20} />} 
+        icon={<BookOpen size={20} />} 
         label="Lessons"
         active={isActive("/lessons")}
         onClick={onItemClick}
+        collapsed={collapsed}
       />
       
-      {/* Show homework to students and teachers */}
-      {(userRole === "student" || userRole === "teacher") && (
-        <NavItem 
-          to="/homework" 
-          icon={<ListTodo size={20} />} 
-          label="Homework"
-          active={isActive("/homework")}
-          onClick={onItemClick}
-        />
-      )}
+      <NavItem 
+        to="/custom-lessons" 
+        icon={<FileText size={20} />} 
+        label="Custom Lessons"
+        active={isActive("/custom-lessons")}
+        onClick={onItemClick}
+        collapsed={collapsed}
+      />
       
-      {/* Show flashcards primarily to students */}
-      {userRole === "student" && (
-        <NavItem 
-          to="/flashcards" 
-          icon={<BookOpen size={20} />} 
-          label="Flashcards" 
-          active={isActive("/flashcards")}
-          onClick={onItemClick}
-        />
-      )}
+      <NavItem 
+        to="/flashcards" 
+        icon={<ScrollText size={20} />} 
+        label="Flashcards"
+        active={isActive("/flashcards")}
+        onClick={onItemClick}
+        collapsed={collapsed}
+      />
       
-      {/* Show quizzes to students and teachers */}
-      {(userRole === "student" || userRole === "teacher") && (
-        <NavItem 
-          to="/quizzes" 
-          icon={<HelpCircle size={20} />} 
-          label="Quizzes"
-          active={isActive("/quizzes")}
-          onClick={onItemClick}
-        />
-      )}
+      <NavItem 
+        to="/quizzes" 
+        icon={<FlaskConical size={20} />} 
+        label="Quizzes"
+        active={isActive("/quizzes")}
+        onClick={onItemClick}
+        collapsed={collapsed}
+      />
     </div>
   );
 };

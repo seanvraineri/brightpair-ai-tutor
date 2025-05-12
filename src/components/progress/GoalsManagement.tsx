@@ -222,7 +222,7 @@ const GoalsManagement: React.FC = () => {
                               <div key={idx} className="flex items-center">
                                 <input
                                   type="checkbox"
-                                  className="w-4 h-4 text-brightpair rounded border-gray-300 mr-2"
+                                  className="w-4 h-4 text-brightpair rounded-md border-gray-300 mr-2"
                                   checked={milestone.completed}
                                   onChange={() => toggleMilestone(goal.id, idx)}
                                   disabled={goal.status === "completed"}

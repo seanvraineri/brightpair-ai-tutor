@@ -804,7 +804,7 @@ const Settings: React.FC = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="bg-brightpair-50 p-4 rounded-lg border border-brightpair-100">
+                <div className="bg-brightpair-50 p-4 rounded-md border border-brightpair-100">
                   <p className="font-medium text-brightpair-700">Current Plan: Monthly</p>
                   <p className="text-sm text-gray-600 mt-1">$50/month • Renews on May 15, 2025</p>
                 </div>

@@ -1,0 +1,56 @@
+/* Math equation formatting */
+.equation-block {
+    background-color: rgba(66, 99, 235, 0.06);
+    border-radius: 0.375rem;
+    padding: 0.75rem;
+    margin: 0.75rem 0;
+    overflow-x: auto;
+    border-left: 3px solid var(--brightpair, #4263eb);
+}
+
+.katex-display {
+    margin: 1em 0 !important;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.katex {
+    font-size: 1.1em;
+    line-height: 1.2;
+}
+
+/* Ensure inline equations align properly with text */
+.katex-inline {
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
+    margin: 0 0.1em;
+}
+
+/* Improve scrolling for long equations */
+.katex-display>.katex {
+    display: inline-block;
+    white-space: nowrap;
+    max-width: 100%;
+    padding-right: 0.5rem;
+    padding-left: 0.5rem;
+}
+
+/* Ensure consistent font size in different contexts */
+.flashcard-content .katex,
+.quiz-question .katex,
+.lesson-content .katex {
+    font-size: 1.1em;
+}
+
+/* Dark mode support for equations */
+@media (prefers-color-scheme: dark) {
+    .equation-block {
+        background-color: rgba(66, 99, 235, 0.1);
+        border-left: 3px solid var(--brightpair, #4263eb);
+    }
+
+    .katex {
+        color: #e2e8f0;
+    }
+}

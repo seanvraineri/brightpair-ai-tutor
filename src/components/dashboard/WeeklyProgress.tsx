@@ -22,7 +22,7 @@ const ProgressItem: React.FC<ProgressItemProps> = ({ subject, progress, goal, da
           <h4 className="font-medium">{subject}</h4>
           <p className="text-sm text-gray-500">{goal}</p>
         </div>
-        <span className={`text-sm font-medium px-2 py-1 rounded-full ${
+        <span className={`text-sm font-medium px-2 py-1 rounded-md ${
           progress > 75 ? "bg-green-100 text-green-800" : 
           progress > 40 ? "bg-yellow-100 text-yellow-800" : "bg-red-100 text-red-800"
         }`}>{progress}%</span>
@@ -123,7 +123,7 @@ const WeeklyProgress: React.FC = () => {
   ];
 
   return (
-    <Card className="h-full overflow-hidden transition-all duration-300 hover:shadow-md">
+    <Card className="h-full overflow-hidden transition-all duration-300 hover:shadow-card">
       <CardHeader className="pb-2">
         <CardTitle>Weekly Progress</CardTitle>
         <CardDescription>Your learning activities this week</CardDescription>

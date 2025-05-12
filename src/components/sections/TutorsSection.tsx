@@ -1,8 +1,8 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Award, HandCoins, Users } from "lucide-react";
+import ButtonSecondary from "@/components/ButtonSecondary";
 
 const TutorsSection: React.FC = () => {
   return (
@@ -19,8 +19,8 @@ const TutorsSection: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
           {/* Card 1 */}
-          <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
-            <div className="mb-6 bg-brightpair-50 w-14 h-14 rounded-full flex items-center justify-center">
+          <div className="bg-white p-6 rounded-md border border-gray-100 shadow-sm hover:shadow-card transition-all duration-300">
+            <div className="mb-6 bg-brightpair-50 w-14 h-14 rounded-md flex items-center justify-center">
               <Award className="h-7 w-7 text-brightpair" />
             </div>
             <h3 className="text-xl font-display font-semibold mb-3">Enhance Student Success</h3>
@@ -33,8 +33,8 @@ const TutorsSection: React.FC = () => {
           </div>
 
           {/* Card 2 */}
-          <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
-            <div className="mb-6 bg-brightpair-50 w-14 h-14 rounded-full flex items-center justify-center">
+          <div className="bg-white p-6 rounded-md border border-gray-100 shadow-sm hover:shadow-card transition-all duration-300">
+            <div className="mb-6 bg-brightpair-50 w-14 h-14 rounded-md flex items-center justify-center">
               <HandCoins className="h-7 w-7 text-brightpair" />
             </div>
             <h3 className="text-xl font-display font-semibold mb-3">Grow Your Income</h3>
@@ -47,8 +47,8 @@ const TutorsSection: React.FC = () => {
           </div>
 
           {/* Card 3 */}
-          <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
-            <div className="mb-6 bg-brightpair-50 w-14 h-14 rounded-full flex items-center justify-center">
+          <div className="bg-white p-6 rounded-md border border-gray-100 shadow-sm hover:shadow-card transition-all duration-300">
+            <div className="mb-6 bg-brightpair-50 w-14 h-14 rounded-md flex items-center justify-center">
               <Users className="h-7 w-7 text-brightpair" />
             </div>
             <h3 className="text-xl font-display font-semibold mb-3">Join Our Community</h3>
@@ -61,7 +61,7 @@ const TutorsSection: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 md:p-10 text-center">
+        <div className="bg-white rounded-md border border-gray-200 shadow-sm p-8 md:p-10 text-center">
           <h3 className="text-2xl font-display font-bold mb-4">Ready to Transform Your Tutoring Business?</h3>
           <p className="text-gray-700 mb-6 max-w-2xl mx-auto">
             Apply to join our network of forward-thinking educators who are leveraging AI to provide better results for their students while growing their practices.
@@ -73,9 +73,9 @@ const TutorsSection: React.FC = () => {
               </Button>
             </Link>
             <Link to="/tutor-faq">
-              <Button size="lg" variant="outline">
+              <ButtonSecondary size="lg">
                 Learn More
-              </Button>
+              </ButtonSecondary>
             </Link>
           </div>
         </div>

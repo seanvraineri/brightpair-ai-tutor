@@ -1,32 +1,91 @@
+import { ReactNode, useState, useEffect } from "react";
+import DashboardNav from "@/components/dashboard/DashboardNav";
+import { Button } from "@/components/ui/button";
+import { ChevronRight, ChevronLeft, LogOut } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { supabase } from '@/integrations/supabase/client';
 
-import React from "react";
-import { Outlet, Navigate } from "react-router-dom";
-import DashboardNav from "./DashboardNav";
-import { useUser } from "@/contexts/UserContext";
+interface DashboardLayoutProps {
+  children: ReactNode;
+}
 
-const DashboardLayout: React.FC = () => {
-  const { user } = useUser();
+const DashboardLayout = ({ children }: DashboardLayoutProps) => {
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const [isNavCollapsed, setIsNavCollapsed] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
   
-  // Redirect based on role if user is authenticated
-  if (user) {
-    // If user is on a dashboard route that doesn't match their role, redirect them
-    if (window.location.pathname === "/dashboard" && user.role !== "student") {
-      return <Navigate to="/student-dashboard" />;
+  // Close mobile nav when route changes
+  useEffect(() => {
+    setIsMobileNavOpen(false);
+  }, [location.pathname]);
+  
+  // Check screen size for mobile view
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setIsNavCollapsed(true);
+      }
+    };
+    
+    // Initial check
+    handleResize();
+    
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+  
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      navigate('/login');
+    } catch (error) {
+      console.error('Error signing out:', error);
     }
-    if (window.location.pathname === "/teacher-dashboard" && user.role !== "teacher") {
-      return <Navigate to={user.role === "student" ? "/dashboard" : "/parent-dashboard"} />;
-    }
-    if (window.location.pathname === "/parent-dashboard" && user.role !== "parent") {
-      return <Navigate to={user.role === "student" ? "/dashboard" : "/teacher-dashboard"} />;
-    }
-  }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <DashboardNav />
-      <main className="md:ml-64 pt-16 md:pt-6 pb-20">
-        <div className="max-w-7xl mx-auto px-4">
-          <Outlet />
+    <div className="min-h-screen bg-background overflow-x-hidden">
+      <DashboardNav 
+        isMobileOpen={isMobileNavOpen} 
+        onMobileOpenChange={setIsMobileNavOpen}
+        isCollapsed={isNavCollapsed}
+      />
+      
+      <main 
+        className={`transition-all duration-300 ease-in-out pt-16 pb-28 px-2 sm:px-4 
+                   ${isNavCollapsed ? 'md:ml-20' : 'md:ml-64'} 
+                   ${isMobileNavOpen ? 'opacity-50 md:opacity-100' : 'opacity-100'}`}
+      >
+        <div 
+          className="fixed left-0 top-1/2 -translate-y-1/2 hidden md:block"
+        >
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`rounded-none rounded-r-lg h-12 w-6 opacity-20 hover:opacity-100 ${isNavCollapsed ? 'ml-20' : 'ml-64'}`}
+            onClick={() => setIsNavCollapsed(!isNavCollapsed)}
+          >
+            {isNavCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+          </Button>
+        </div>
+        
+        <div className="max-w-7xl mx-auto relative">
+          {children}
+        </div>
+        
+        {/* Fixed mobile sign out button */}
+        <div className="md:hidden fixed bottom-4 right-4 z-10">
+          <Button 
+            variant="destructive" 
+            size="icon" 
+            className="h-12 w-12 rounded-full shadow-lg"
+            onClick={handleSignOut}
+          >
+            <LogOut className="h-6 w-6" />
+          </Button>
         </div>
       </main>
     </div>

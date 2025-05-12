@@ -144,7 +144,7 @@ const TutorSearch: React.FC = () => {
           </div>
           
           {/* Search Bar */}
-          <div className="bg-white rounded-xl shadow-sm p-4 mb-8">
+          <div className="bg-white rounded-md shadow-sm p-4 mb-8">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
               <div className="md:col-span-5">
                 <div className="relative">
@@ -206,7 +206,7 @@ const TutorSearch: React.FC = () => {
                         <SelectValue placeholder="Any mode" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Any mode</SelectItem>
+                        <SelectItem value="all">Any mode</SelectItem>
                         <SelectItem value="remote">Remote</SelectItem>
                         <SelectItem value="in-person">In-Person</SelectItem>
                         <SelectItem value="both">Both</SelectItem>
@@ -249,7 +249,7 @@ const TutorSearch: React.FC = () => {
             </div>
             
             {filteredTutors.length === 0 ? (
-              <div className="bg-white rounded-xl shadow-sm p-8 text-center">
+              <div className="bg-white rounded-md shadow-sm p-8 text-center">
                 <h3 className="text-lg font-medium mb-2">No tutors found</h3>
                 <p className="text-gray-600 mb-4">Try adjusting your search criteria to find more tutors.</p>
                 <Button onClick={() => {
@@ -278,7 +278,7 @@ const TutorSearch: React.FC = () => {
                 
                 {/* Map View */}
                 {viewMode === "map" && (
-                  <div className="h-[70vh] bg-white rounded-xl shadow-sm overflow-hidden">
+                  <div className="h-[70vh] bg-white rounded-md shadow-sm overflow-hidden">
                     <TutorMapView className="h-full" />
                   </div>
                 )}

@@ -65,7 +65,7 @@ const ScheduleItem: React.FC<ScheduleItemProps> = ({
   return (
     <div 
       className={cn(
-        "rounded-lg border p-3 transition-all duration-300",
+        "rounded-md border p-3 transition-all duration-300",
         typeStyles.border,
         typeStyles.hover,
         "cursor-pointer transform",
@@ -155,7 +155,7 @@ const UpcomingSchedule: React.FC = () => {
   ];
 
   return (
-    <Card className="h-full hover:shadow-md transition-shadow duration-200">
+    <Card className="h-full hover:shadow-card transition-shadow duration-200">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <div>
@@ -206,7 +206,7 @@ const UpcomingSchedule: React.FC = () => {
             ))}
           </div>
         ) : (
-          <div className="bg-gray-50 rounded-lg p-4 text-center h-[200px] flex items-center justify-center">
+          <div className="bg-gray-50 rounded-md p-4 text-center h-[200px] flex items-center justify-center">
             <div className="text-gray-500">
               <CalendarIcon size={24} className="mx-auto mb-2" />
               <p>Calendar view coming soon</p>

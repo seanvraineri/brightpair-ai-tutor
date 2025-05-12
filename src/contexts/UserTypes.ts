@@ -1,6 +1,6 @@
-
 // Import Session from Supabase
 import { Session } from '@supabase/supabase-js';
+import { ActivityType } from '@/hooks/useGamification';
 
 // Define user onboarding status types
 export type OnboardingStatus = 'pending' | 'consultation-scheduled' | 'consultation-complete' | 'onboarding-complete' | 'active';
@@ -32,6 +32,7 @@ export interface GamificationData {
   xp: number;
   xpToNextLevel: number;
   streak: number;
+  lastLoginDate?: string; // Adding this to support streak tracking
   achievements: Achievement[];
   badges: Badge[];
   interests: string[];
@@ -39,13 +40,23 @@ export interface GamificationData {
   favoriteSubjects: string[];
 }
 
+// Activity log interface
+export interface ActivityLog {
+  type: ActivityType;
+  timestamp: string;
+  details?: any;
+  xpEarned: number;
+}
+
 // Define user interface
 export interface User {
-  name?: string;
-  email?: string;
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  photoURL?: string;
   onboardingStatus: OnboardingStatus;
   nextConsultationDate?: string;
-  role: UserRole;
   gamification?: GamificationData;
 }
 
@@ -59,5 +70,8 @@ export interface UserContextType {
   updateRole: (role: UserRole) => void;
   unlockAchievement: (achievementId: string) => void;
   earnXP: (amount: number) => void;
+  trackActivity: (activityType: ActivityType, details?: any) => Promise<ActivityLog | null>;
+  getActivitiesByType: (type: ActivityType) => ActivityLog[];
+  getTodayActivities: () => ActivityLog[];
   signOut: () => Promise<void>;
 }

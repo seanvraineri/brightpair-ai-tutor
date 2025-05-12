@@ -317,7 +317,7 @@ const TutorChat: React.FC = () => {
       // Highlight equations or formulas with special styling
       if (line.match(/^\d*[+\-*/=][^a-zA-Z]*$/)) {
         return (
-          <div key={i} className="bg-brightpair-50 px-2 py-1 rounded my-1 font-mono text-brightpair-700">
+          <div key={i} className="bg-brightpair-50 px-2 py-1 rounded-md my-1 font-mono text-brightpair-700">
             {line}
           </div>
         );
@@ -381,7 +381,7 @@ const TutorChat: React.FC = () => {
         </div>
         
         {/* Chat container with improved visuals */}
-        <div className="flex-1 overflow-hidden flex flex-col bg-white rounded-lg shadow-md border border-gray-100">
+        <div className="flex-1 overflow-hidden flex flex-col bg-white rounded-md shadow-card border border-gray-100">
           <ScrollArea className="flex-1 p-4">
             <div className="space-y-4">
               {messages.map((message) => (
@@ -422,9 +422,9 @@ const TutorChat: React.FC = () => {
                 <div className="flex justify-start">
                   <div className="max-w-[85%] rounded-2xl p-4 bg-white border border-gray-200 shadow-sm">
                     <div className="flex space-x-2 items-center">
-                      <div className="w-2 h-2 rounded-full bg-brightpair-300 animate-pulse"></div>
-                      <div className="w-2 h-2 rounded-full bg-brightpair-500 animate-pulse delay-150"></div>
-                      <div className="w-2 h-2 rounded-full bg-brightpair-700 animate-pulse delay-300"></div>
+                      <div className="w-2 h-2 rounded-md bg-brightpair-300 animate-pulse"></div>
+                      <div className="w-2 h-2 rounded-md bg-brightpair-500 animate-pulse delay-150"></div>
+                      <div className="w-2 h-2 rounded-md bg-brightpair-700 animate-pulse delay-300"></div>
                       <span className="text-sm text-gray-400 ml-2">AI Tutor is thinking...</span>
                     </div>
                   </div>
@@ -442,7 +442,7 @@ const TutorChat: React.FC = () => {
                 placeholder="Ask your AI tutor a question..."
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                className="pr-24 py-6 bg-white rounded-full shadow-sm border-gray-200 focus:border-brightpair focus:ring-brightpair"
+                className="pr-24 py-6 bg-white rounded-md shadow-sm border-gray-200 focus:border-brightpair focus:ring-brightpair"
                 disabled={isLoading}
               />
               <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex space-x-1">
@@ -452,7 +452,7 @@ const TutorChat: React.FC = () => {
                       type="button"
                       size="icon"
                       variant="ghost"
-                      className="h-8 w-8 rounded-full hover:bg-brightpair-50"
+                      className="h-8 w-8 rounded-md hover:bg-brightpair-50"
                       disabled={isLoading}
                     >
                       <Plus size={18} />
@@ -482,7 +482,7 @@ const TutorChat: React.FC = () => {
                 <Button
                   type="submit"
                   size="icon"
-                  className="h-8 w-8 rounded-full bg-brightpair hover:bg-brightpair-600 transition-colors"
+                  className="h-8 w-8 rounded-md bg-brightpair hover:bg-brightpair-600 transition-colors"
                   disabled={!input.trim() || isLoading}
                 >
                   <Send size={14} />

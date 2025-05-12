@@ -1,37 +1,56 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
-import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
-export interface NavItemProps {
+interface NavItemProps {
   to: string;
-  icon: React.ReactNode;
+  icon?: React.ReactNode;
   label: string;
   active?: boolean;
   onClick?: () => void;
-  badge?: number;
+  collapsed?: boolean;
+  badge?: string;
 }
 
-const NavItem: React.FC<NavItemProps> = ({ to, icon, label, active, onClick, badge }) => {
+const NavItem: React.FC<NavItemProps> = ({ 
+  to, 
+  icon, 
+  label, 
+  active = false,
+  onClick,
+  collapsed = false,
+  badge
+}) => {
   return (
-    <Link 
+    <Link
       to={to}
-      className={`flex items-center px-4 py-3 rounded-lg transition-colors ${
-        active ? "bg-brightpair text-white" : "text-gray-700 hover:bg-gray-100"
-      }`}
+      className={cn(
+        "flex items-center py-2 text-sm rounded-md transition-colors",
+        collapsed ? "justify-center px-2" : "px-3",
+        active 
+          ? "bg-accent text-accent-foreground" 
+          : "hover:bg-accent hover:text-accent-foreground"
+      )}
       onClick={onClick}
     >
-      <span className="mr-3">
-        {icon}
-      </span>
-      <span>{label}</span>
-      {badge !== undefined && badge > 0 && (
-        <Badge 
-          variant="default" 
-          className="ml-auto h-5 min-w-[20px] flex items-center justify-center text-xs bg-red-500 text-white"
-        >
+      {icon && <div className={collapsed ? "" : "mr-2"}>{icon}</div>}
+      {!collapsed && (
+        <div className="flex-1 flex items-center justify-between">
+          <span>{label}</span>
+          {badge && (
+            <span className="ml-2 text-xs bg-brightpair text-white px-1.5 py-0.5 rounded-full font-medium min-w-[1.2rem] text-center">
+              {badge}
+            </span>
+          )}
+        </div>
+      )}
+      {collapsed && badge && (
+        <span className="absolute -top-1 -right-1 text-xs bg-brightpair text-white w-4 h-4 flex items-center justify-center rounded-full font-medium">
           {badge}
-        </Badge>
+        </span>
+      )}
+      {collapsed && (
+        <span className="sr-only">{label}</span>
       )}
     </Link>
   );

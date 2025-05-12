@@ -1,8 +1,8 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useUser } from '@/contexts/UserContext';
 import { useToast } from '@/components/ui/use-toast';
+import { sendAITutorMessage } from '@/services/aiService';
 
 interface Message {
   id: string;
@@ -150,44 +150,33 @@ export const useAITutor = () => {
         throw new Error("You must be logged in to use the AI Tutor");
       }
       
-      // Prepare the user profile data to send to the AI
-      const userProfile = user ? {
-        name: user.name,
-        gamification: user.gamification
-      } : null;
-      
       // If we haven't loaded the history yet, fetch it now
       const history = learningHistory || await fetchLearningHistory();
       
-      // Call the AI Tutor edge function
-      const { data, error } = await supabase.functions.invoke('ai-tutor', {
-        body: { 
-          message: content,
-          userProfile,
-          trackId: activeTrackId,
-          studentId: session.user.id,
-          learningHistory: history
-        }
-      });
-      
-      if (error) throw error;
-      
-      if (!data.success) {
-        throw new Error(data.error || "Failed to get response from tutor");
-      }
+      // Call the AI service
+      const response = await sendAITutorMessage(
+        content, 
+        session.user.id,
+        activeTrackId || '',
+        history ? [
+          ...history.lessons,
+          ...history.quizzes,
+          ...history.recentConversations.slice(0, 5)
+        ] : []
+      );
       
       // Add AI response to the conversation
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: data.response,
+        content: response,
         timestamp: new Date(),
       };
       
       setMessages(prev => [...prev, assistantMessage]);
       
       // Log the chat interaction to the database
-      await logChatInteraction(content, data.response);
+      await logChatInteraction(content, response);
       
       return assistantMessage;
     } catch (error) {

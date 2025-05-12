@@ -78,7 +78,7 @@ const SubjectList = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {subjects.map(subject => (
-          <Card key={subject.id} className="shadow-md">
+          <Card key={subject.id} className="shadow-card">
             <CardHeader>
               <CardTitle>{subject.name}</CardTitle>
               <CardDescription>{subject.description}</CardDescription>

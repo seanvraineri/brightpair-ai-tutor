@@ -221,7 +221,7 @@ const SubjectProgress: React.FC = () => {
                           {Array.from({ length: skill.maxLevel }).map((_, i) => (
                             <div
                               key={i}
-                              className={`h-2 rounded-full flex-1 ${
+                              className={`h-2 rounded-md flex-1 ${
                                 i < skill.level ? "bg-brightpair" : "bg-gray-200"
                               }`}
                             />

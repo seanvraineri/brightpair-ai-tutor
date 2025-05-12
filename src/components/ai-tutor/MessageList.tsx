@@ -1,7 +1,5 @@
-
 import React, { useRef, useEffect } from "react";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import "katex/dist/katex.min.css";
+import ChatMarkdown from "@/components/ui/ChatMarkdown";
 
 interface Message {
   id: string;
@@ -18,82 +16,26 @@ interface MessageListProps {
 
 const MessageList: React.FC<MessageListProps> = ({ messages, isLoading, formatMessage }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-
+  
+  // Force scroll to bottom when new messages arrive
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
   };
   
   return (
-    <ScrollArea className="flex-1 p-4">
-      <style>
-        {`
-          .math-content {
-            font-family: 'Merriweather', serif;
-            line-height: 1.6;
-            padding: 0.25rem 0;
-            letter-spacing: 0.01em;
-          }
-          
-          .katex-display {
-            margin: 0.75rem 0;
-            overflow-x: auto;
-            overflow-y: hidden;
-            padding: 0.25rem;
-          }
-          
-          .katex {
-            font-size: 1.1rem;
-            line-height: 1.3;
-          }
-          
-          .quadratic-formula {
-            background-color: #f5f8ff;
-            border-radius: 0.375rem;
-            padding: 0.75rem;
-            margin: 0.75rem 0;
-            border-left: 3px solid #4263eb;
-          }
-
-          .ai-message h1, .ai-message h2, .ai-message h3, 
-          .ai-message h4, .ai-message h5, .ai-message h6 {
-            margin-top: 1rem;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            line-height: 1.25;
-            color: var(--brightpair-700, #4263eb);
-          }
-          
-          .ai-message h3 {
-            font-size: 1.25rem;
-          }
-          
-          .ai-message h4 {
-            font-size: 1rem;
-          }
-          
-          .ai-message p {
-            margin-bottom: 0.75rem;
-          }
-          
-          .ai-message ul, .ai-message ol {
-            margin-left: 1.5rem;
-            margin-bottom: 1rem;
-          }
-          
-          .ai-message ul {
-            list-style-type: disc;
-          }
-          
-          .ai-message ol {
-            list-style-type: decimal;
-          }
-        `}
-      </style>
-      <div className="space-y-4">
+    <div 
+      ref={containerRef} 
+      className="flex-1 p-4 overflow-y-auto h-full max-h-[calc(100vh-180px)]"
+      style={{ scrollbarWidth: 'thin' }}
+    >
+      <div className="space-y-4 pb-4">
         {messages.map((message) => (
           <div
             key={message.id}
@@ -102,27 +44,26 @@ const MessageList: React.FC<MessageListProps> = ({ messages, isLoading, formatMe
             }`}
           >
             <div
-              className={`max-w-[85%] rounded-2xl p-4 shadow-sm transition-all duration-200 animate-fade-in ${
+              className={`max-w-[85%] rounded-md p-3 ${
                 message.role === "user"
-                  ? "bg-gradient-to-r from-brightpair-500 to-brightpair-600 text-white font-sans"
-                  : "bg-white border border-gray-200 font-tutor ai-message"
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-100"
               }`}
             >
-              <div className={`text-sm leading-relaxed ${message.role === "assistant" ? "math-content" : ""}`}>{formatMessage(message.content)}</div>
+              <div className="text-sm">
+                {message.role === "user" 
+                  ? message.content  // Don't use markdown for user messages
+                  : <ChatMarkdown md={message.content} />}
+              </div>
               <div
-                className={`text-xs mt-2 flex justify-between items-center ${
-                  message.role === "user" ? "text-white/80" : "text-gray-400"
+                className={`text-xs mt-2 ${
+                  message.role === "user" ? "text-white/80" : "text-gray-500"
                 }`}
               >
-                <span className="font-medium">
-                  {message.role === "assistant" ? "AI Tutor" : "You"}
-                </span>
-                <span>
-                  {message.timestamp.toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </span>
+                {message.timestamp.toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
               </div>
             </div>
           </div>
@@ -130,20 +71,19 @@ const MessageList: React.FC<MessageListProps> = ({ messages, isLoading, formatMe
         
         {isLoading && (
           <div className="flex justify-start">
-            <div className="max-w-[85%] rounded-2xl p-4 bg-white border border-gray-200 shadow-sm font-tutor">
+            <div className="max-w-[85%] rounded-md p-3 bg-gray-100">
               <div className="flex space-x-2 items-center">
-                <div className="w-2 h-2 rounded-full bg-brightpair-300 animate-pulse"></div>
-                <div className="w-2 h-2 rounded-full bg-brightpair-500 animate-pulse delay-150"></div>
-                <div className="w-2 h-2 rounded-full bg-brightpair-700 animate-pulse delay-300"></div>
-                <span className="text-sm text-gray-400 ml-2">AI Tutor is thinking...</span>
+                <div className="w-2 h-2 rounded-md bg-gray-400 animate-pulse"></div>
+                <div className="w-2 h-2 rounded-md bg-gray-400 animate-pulse delay-150"></div>
+                <div className="w-2 h-2 rounded-md bg-gray-400 animate-pulse delay-300"></div>
               </div>
             </div>
           </div>
         )}
         
-        <div ref={messagesEndRef} />
+        <div ref={messagesEndRef} className="h-4" />
       </div>
-    </ScrollArea>
+    </div>
   );
 };
 

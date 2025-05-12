@@ -287,7 +287,7 @@ const AITutorChat: React.FC = () => {
 
   return (
     <div className="h-screen flex flex-col bg-gradient-to-br from-gray-50 to-brightpair-50 overflow-hidden">
-      <div className="max-w-4xl mx-auto w-full flex flex-col flex-1 p-4 md:p-6">
+      <div className="max-w-4xl mx-auto w-full flex flex-col flex-1 p-4 md:p-6 h-full">
         <ChatHeader 
           title="Your AI Tutor"
           subtitle={getSubtitle()}
@@ -304,7 +304,7 @@ const AITutorChat: React.FC = () => {
           onFunctionClick={handleTutorFunctionClick} 
         />
         
-        <div className="flex-1 overflow-hidden flex flex-col bg-white rounded-lg shadow-md border border-gray-100">
+        <div className="flex-1 overflow-hidden flex flex-col bg-white rounded-md shadow-card border border-gray-100 h-full">
           <MessageList 
             messages={messages}
             isLoading={isLoading}

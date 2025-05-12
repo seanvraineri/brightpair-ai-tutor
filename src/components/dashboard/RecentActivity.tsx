@@ -15,7 +15,7 @@ interface ActivityItemProps {
 const ActivityItem: React.FC<ActivityItemProps> = ({ icon, title, description, timestamp }) => {
   return (
     <div className="flex items-start">
-      <div className="bg-brightpair-50 p-2 rounded mr-4">
+      <div className="bg-brightpair-50 p-2 rounded-md mr-4">
         {icon}
       </div>
       <div>
@@ -68,7 +68,7 @@ const RecentActivity: React.FC = () => {
   ];
 
   return (
-    <Card className="hover:shadow-md transition-shadow duration-200">
+    <Card className="hover:shadow-card transition-shadow duration-200">
       <CardHeader>
         <CardTitle>Recent Activity</CardTitle>
       </CardHeader>

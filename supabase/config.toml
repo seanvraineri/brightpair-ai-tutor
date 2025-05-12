@@ -1,4 +1,3 @@
-
 project_id = "ijjawnbezcdqxuyhbbpq"
 
 [api]
@@ -27,12 +26,8 @@ site_url = "http://localhost:3000"
 [analytics]
 enabled = false
 
-[experimental]
-enabled = false
-
-[[open_authoring.policies]]
-path = "migrations/**/*"
-permissive = true
-
 [functions.generate-flashcards]
 verify_jwt = true
+
+[functions.generate-lesson]
+verify_jwt = false

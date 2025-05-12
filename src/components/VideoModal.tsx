@@ -19,7 +19,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <div className="relative cursor-pointer group rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
+        <div className="relative cursor-pointer group rounded-md overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
           <div className="aspect-video w-full max-w-3xl mx-auto relative">
             <img
               src={thumbnailUrl}
@@ -27,7 +27,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/40 transition-colors">
-              <div className="h-16 w-16 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
+              <div className="h-16 w-16 rounded-md bg-white/90 flex items-center justify-center shadow-lg">
                 <Play className="h-8 w-8 text-brightpair fill-brightpair" />
               </div>
             </div>

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,9 +7,16 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
-import { BookOpen, CheckCircle, Clock, Award, ArrowRight, Sparkles, Calendar } from "lucide-react";
+import { BookOpen, CheckCircle, Clock, Award, ArrowRight, Sparkles, Calendar, FileText } from "lucide-react";
+import { Quiz, QuizQuestion } from "@/services/quizService";
+import QuizGenerator from "@/components/quizzes/QuizGenerator";
+import QuizUploader from "@/components/quizzes/QuizUploader";
+import AdaptiveQuiz from "@/components/quizzes/AdaptiveQuiz";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-interface QuizQuestion {
+// Rename the old quiz interfaces to avoid conflicts
+interface LegacyQuizQuestion {
   id: number;
   question: string;
   options: string[];
@@ -18,15 +24,15 @@ interface QuizQuestion {
   explanation: string;
 }
 
-interface Quiz {
+interface LegacyQuiz {
   id: string;
   title: string;
   subject: string;
-  questions: QuizQuestion[];
+  questions: LegacyQuizQuestion[];
 }
 
 // Mock quiz data
-const mockQuizzes: Quiz[] = [
+const mockQuizzes: LegacyQuiz[] = [
   {
     id: "algebra-1",
     title: "Algebra Fundamentals",
@@ -90,8 +96,8 @@ const mockQuizHistory = [
 
 const Quizzes: React.FC = () => {
   const { toast } = useToast();
-  const [activeQuiz, setActiveQuiz] = useState<Quiz | null>(null);
-  const [quizMode, setQuizMode] = useState<"browse" | "taking" | "results">("browse");
+  const [activeQuiz, setActiveQuiz] = useState<LegacyQuiz | null>(null);
+  const [quizMode, setQuizMode] = useState<"browse" | "taking" | "results" | "adaptive">("browse");
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<(number | null)[]>([]);
   const [newQuizTopic, setNewQuizTopic] = useState("");
@@ -102,7 +108,10 @@ const Quizzes: React.FC = () => {
     correctAnswers: number;
   } | null>(null);
   
-  const startQuiz = (quiz: Quiz) => {
+  // New state for adaptive quiz
+  const [adaptiveQuiz, setAdaptiveQuiz] = useState<Quiz | null>(null);
+  
+  const startQuiz = (quiz: LegacyQuiz) => {
     setActiveQuiz(quiz);
     setQuizMode("taking");
     setCurrentQuestionIndex(0);
@@ -153,7 +162,7 @@ const Quizzes: React.FC = () => {
 
     setIsGenerating(true);
     
-    // Simulate API call to GPT-4o
+    // Simulate API call to GPT-4
     setTimeout(() => {
       toast({
         title: "Quiz Generated!",
@@ -166,14 +175,26 @@ const Quizzes: React.FC = () => {
 
   const exitQuiz = () => {
     setActiveQuiz(null);
+    setAdaptiveQuiz(null);
     setQuizMode("browse");
     setUserAnswers([]);
     setQuizResults(null);
   };
+  
+  // Handler for when a new adaptive quiz is generated
+  const handleQuizGenerated = (quiz: Quiz) => {
+    setAdaptiveQuiz(quiz);
+    setQuizMode("adaptive");
+  };
+  
+  // Handler for when the adaptive quiz is completed
+  const handleAdaptiveQuizComplete = () => {
+    exitQuiz();
+  };
 
   const renderBrowseMode = () => {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div>
           <Card className="mb-6">
             <CardHeader>
@@ -183,15 +204,15 @@ const Quizzes: React.FC = () => {
               {mockQuizzes.map((quiz) => (
                 <div 
                   key={quiz.id}
-                  className="p-4 border rounded-lg hover:border-brightpair hover:bg-brightpair-50 transition-colors cursor-pointer"
+                  className="p-4 border rounded-md hover:border-brightpair hover:bg-brightpair-50 transition-colors cursor-pointer"
                   onClick={() => startQuiz(quiz)}
                 >
-                  <div className="flex justify-between items-center">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                     <div>
                       <h3 className="font-medium">{quiz.title}</h3>
                       <p className="text-sm text-gray-500">{quiz.subject} • {quiz.questions.length} questions</p>
                     </div>
-                    <Button size="sm" className="bg-brightpair hover:bg-brightpair-600">
+                    <Button size="sm" className="bg-brightpair hover:bg-brightpair-600 text-white border">
                       Start
                     </Button>
                   </div>
@@ -208,9 +229,9 @@ const Quizzes: React.FC = () => {
               {mockQuizHistory.map((quiz) => (
                 <div 
                   key={quiz.id}
-                  className="p-4 border rounded-lg"
+                  className="p-4 border rounded"
                 >
-                  <div className="flex justify-between items-start">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
                     <div>
                       <h3 className="font-medium">{quiz.title}</h3>
                       <div className="flex items-center mt-1 text-sm text-gray-500">
@@ -218,7 +239,7 @@ const Quizzes: React.FC = () => {
                         <span>{quiz.date}</span>
                       </div>
                     </div>
-                    <div className="text-right">
+                    <div className="text-left sm:text-right">
                       <div className="text-lg font-semibold">{quiz.score}%</div>
                       <p className="text-xs text-gray-500">{Math.round(quiz.score / 10 * quiz.questionCount) / 10} of {quiz.questionCount} correct</p>
                     </div>
@@ -230,7 +251,7 @@ const Quizzes: React.FC = () => {
               ))}
               
               <div className="flex justify-center mt-4">
-                <Button variant="outline" className="w-full">
+                <Button variant="outline" className="w-full border-gray-300 bg-white text-gray-800 hover:bg-gray-100">
                   View All Quiz History
                 </Button>
               </div>
@@ -239,43 +260,29 @@ const Quizzes: React.FC = () => {
         </div>
         
         <div>
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Generate Custom Quiz</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="quiz-topic">Quiz Topic</Label>
-                  <Input 
-                    id="quiz-topic"
-                    placeholder="e.g., Quadratic Equations, French Revolution"
-                    value={newQuizTopic}
-                    onChange={(e) => setNewQuizTopic(e.target.value)}
-                  />
-                </div>
-                <Button 
-                  className="w-full bg-brightpair hover:bg-brightpair-600"
-                  onClick={generateNewQuiz}
-                  disabled={isGenerating}
-                >
-                  {isGenerating ? "Generating..." : "Generate Quiz"}
-                </Button>
-                <div className="text-sm text-gray-500">
-                  Your AI tutor will create a custom quiz with multiple-choice questions based on your learning profile.
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <Tabs defaultValue="topic">
+            <TabsList className="w-full mb-4">
+              <TabsTrigger value="topic" className="flex-1">Generate from Topic</TabsTrigger>
+              <TabsTrigger value="upload" className="flex-1">Generate from Notes</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="topic">
+              <QuizGenerator onQuizGenerated={handleQuizGenerated} />
+            </TabsContent>
+            
+            <TabsContent value="upload">
+              <QuizUploader onQuizGenerated={handleQuizGenerated} />
+            </TabsContent>
+          </Tabs>
           
-          <Card>
+          <Card className="mt-6">
             <CardHeader>
               <CardTitle>Quiz Tips</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="flex items-start">
-                  <div className="bg-brightpair-50 p-2 rounded-full mr-3">
+                  <div className="bg-brightpair-50 p-2 rounded-md mr-3 flex-shrink-0">
                     <Calendar size={16} className="text-brightpair" />
                   </div>
                   <div>
@@ -287,7 +294,7 @@ const Quizzes: React.FC = () => {
                 </div>
                 
                 <div className="flex items-start">
-                  <div className="bg-brightpair-50 p-2 rounded-full mr-3">
+                  <div className="bg-brightpair-50 p-2 rounded-md mr-3 flex-shrink-0">
                     <BookOpen size={16} className="text-brightpair" />
                   </div>
                   <div>
@@ -299,13 +306,13 @@ const Quizzes: React.FC = () => {
                 </div>
                 
                 <div className="flex items-start">
-                  <div className="bg-brightpair-50 p-2 rounded-full mr-3">
-                    <Sparkles size={16} className="text-brightpair" />
+                  <div className="bg-brightpair-50 p-2 rounded-md mr-3 flex-shrink-0">
+                    <FileText size={16} className="text-brightpair" />
                   </div>
                   <div>
-                    <h4 className="font-medium">Flashcard Integration</h4>
+                    <h4 className="font-medium">Upload Your Material</h4>
                     <p className="text-sm text-gray-600">
-                      Convert quiz questions you struggled with into flashcards for additional review.
+                      Upload your own study notes or materials to create custom quizzes tailored to what you're studying.
                     </p>
                   </div>
                 </div>
@@ -351,7 +358,7 @@ const Quizzes: React.FC = () => {
               {currentQuestion.options.map((option, index) => (
                 <div 
                   key={index} 
-                  className={`flex items-center space-x-2 p-3 rounded-lg border ${
+                  className={`flex items-center space-x-2 p-3 rounded-md border ${
                     userAnswers[currentQuestionIndex] === index ? 'border-brightpair bg-brightpair-50' : 'border-gray-200'
                   }`}
                 >
@@ -383,7 +390,7 @@ const Quizzes: React.FC = () => {
         <Card className="mb-8">
           <CardContent className="pt-6">
             <div className="text-center mb-6">
-              <div className="inline-flex items-center justify-center h-24 w-24 rounded-full bg-brightpair-50 mb-4">
+              <div className="inline-flex items-center justify-center h-24 w-24 rounded-md bg-brightpair-50 mb-4">
                 <Award size={40} className="text-brightpair" />
               </div>
               <h2 className="text-2xl font-bold mb-2">Quiz Completed!</h2>
@@ -396,39 +403,39 @@ const Quizzes: React.FC = () => {
               <Progress value={quizResults.score} className="h-3" />
             </div>
             
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div className="p-4 bg-gray-50 rounded-lg">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+              <div className="p-4 bg-gray-50 rounded">
                 <p className="text-sm text-gray-500">Questions</p>
                 <p className="text-xl font-semibold">{quizResults.totalQuestions}</p>
               </div>
-              <div className="p-4 bg-green-50 rounded-lg">
+              <div className="p-4 bg-green-50 rounded">
                 <p className="text-sm text-gray-500">Correct</p>
                 <p className="text-xl font-semibold text-green-600">{quizResults.correctAnswers}</p>
               </div>
-              <div className="p-4 bg-red-50 rounded-lg">
+              <div className="p-4 bg-red-50 rounded">
                 <p className="text-sm text-gray-500">Incorrect</p>
                 <p className="text-xl font-semibold text-red-600">{quizResults.totalQuestions - quizResults.correctAnswers}</p>
               </div>
             </div>
             
-            <div className="mt-8 flex flex-col md:flex-row justify-center space-y-3 md:space-y-0 md:space-x-3">
-              <Button onClick={exitQuiz} variant="outline">
+            <div className="mt-8 flex flex-wrap gap-3 justify-center">
+              <Button onClick={exitQuiz} variant="outline" className="w-full sm:w-auto bg-white text-gray-800 border border-gray-300 hover:bg-gray-100">
                 Return to Quizzes
               </Button>
-              <Button className="bg-brightpair hover:bg-brightpair-600">
+              <Button className="bg-brightpair hover:bg-brightpair-600 text-white w-full sm:w-auto border">
                 Review Answers
               </Button>
-              <Button variant="outline">
+              <Button variant="outline" className="w-full sm:w-auto bg-white text-gray-800 border border-gray-300 hover:bg-gray-100">
                 <Sparkles size={16} className="mr-2" />
-                Create Flashcards from Mistakes
+                Create Flashcards
               </Button>
             </div>
           </CardContent>
         </Card>
         
-        <div className="bg-brightpair-50 p-4 rounded-lg mb-4">
+        <div className="bg-brightpair-50 p-4 rounded-md mb-4">
           <div className="flex items-start">
-            <div className="p-2 bg-white rounded-full mr-3">
+            <div className="p-2 bg-white rounded-md mr-3">
               <Sparkles size={16} className="text-brightpair" />
             </div>
             <div>
@@ -452,7 +459,7 @@ const Quizzes: React.FC = () => {
                 const isCorrect = userAnswer === question.correctAnswer;
                 
                 return (
-                  <div key={qIndex} className="border rounded-lg overflow-hidden">
+                  <div key={qIndex} className="border rounded-md overflow-hidden">
                     <div className={`p-4 ${isCorrect ? 'bg-green-50' : 'bg-red-50'}`}>
                       <div className="flex justify-between items-center mb-2">
                         <h3 className="font-medium">Question {qIndex + 1}</h3>
@@ -505,11 +512,11 @@ const Quizzes: React.FC = () => {
   };
 
   return (
-    <div className="p-6 md:p-8">
+    <div className="p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
         {quizMode === "browse" && (
           <>
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold font-display mb-1">Quizzes</h1>
                 <p className="text-gray-600">Test your knowledge and track your progress</p>
@@ -521,6 +528,19 @@ const Quizzes: React.FC = () => {
         
         {quizMode === "taking" && renderTakingQuizMode()}
         {quizMode === "results" && renderResultsMode()}
+        
+        {quizMode === "adaptive" && adaptiveQuiz && (
+          <>
+            <div className="flex justify-between items-center mb-6">
+              <h1 className="text-2xl font-bold">Adaptive Quiz</h1>
+              <Button variant="outline" onClick={exitQuiz}>Exit Quiz</Button>
+            </div>
+            <AdaptiveQuiz 
+              quiz={adaptiveQuiz}
+              onQuizComplete={handleAdaptiveQuizComplete}
+            />
+          </>
+        )}
       </div>
     </div>
   );

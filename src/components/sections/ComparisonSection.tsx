@@ -63,7 +63,7 @@ const ComparisonSection: React.FC = () => {
         </h2>
 
         <div className="overflow-x-auto">
-          <table className="w-full shadow-lg rounded-lg overflow-hidden">
+          <table className="w-full shadow-lg rounded-md overflow-hidden">
             <thead>
               <tr className="bg-white border-b">
                 <th className="p-4 text-left font-display">Feature</th>

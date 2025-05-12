@@ -1,9 +1,70 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Merriweather:wght@300;400;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+body {
+  background-color: #f8fafc;
+  background-image: url('data:image/svg+xml;utf8,<svg width="100%25" height="100%25" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop stop-color="%234D8BF9" offset="0%25"/><stop stop-color="%23f8fafc" offset="100%25"/></linearGradient></defs><rect fill="url(%23g1)" width="100%25" height="100%25"/><circle cx="80" cy="80" r="60" fill="%234D8BF9" fill-opacity="0.08"/><circle cx="90%25" cy="20%25" r="120" fill="%234D8BF9" fill-opacity="0.06"/><circle cx="60%25" cy="80%25" r="80" fill="%234D8BF9" fill-opacity="0.04"/></svg>');
+  background-attachment: fixed;
+  background-size: cover;
+  min-height: 100vh;
+  transition: background 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Add 3D bubble effects */
+.bubble-card {
+  @apply rounded-lg shadow-card border border-white/50 bg-white/95;
+  backdrop-filter: blur(5px);
+  transition: all 0.3s ease;
+}
+
+.bubble-card:hover {
+  @apply shadow-lg transform translate-y-[-3px];
+}
+
+/* Rounded buttons with 3D effects */
+.bubble-btn {
+  @apply rounded-lg shadow-button relative overflow-hidden;
+  transition: all 0.3s ease;
+}
+
+.bubble-btn:hover {
+  transform: translateY(-2px);
+  @apply shadow-md;
+}
+
+.bubble-btn:active {
+  transform: translateY(1px);
+  @apply shadow-sm;
+}
+
+/* Pill-shaped elements */
+.pill {
+  @apply rounded-full px-4 py-2;
+}
+
+/* Glass effect for cards */
+.glass-card {
+  @apply bg-white/70 backdrop-blur-md border border-white/50 rounded-xl;
+  box-shadow: 0 8px 32px rgba(77, 139, 249, 0.08);
+  transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+  @apply bg-white/80;
+  box-shadow: 0 10px 40px rgba(77, 139, 249, 0.12);
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+img {
+  image-rendering: -webkit-optimize-contrast;
+}
 
 @layer base {
   :root {
@@ -23,7 +84,7 @@
     --secondary-foreground: 222 47% 11%;
 
     --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted-foreground: 215 25% 27%;
 
     --accent: 210 40% 96%;
     --accent-foreground: 222 47% 11%;
@@ -38,13 +99,15 @@
     --radius: 1rem;
 
     --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5% 26%;
+    --sidebar-foreground: 240 10% 20%;
     --sidebar-primary: 240 6% 10%;
     --sidebar-primary-foreground: 0 0% 98%;
     --sidebar-accent: 240 5% 96%;
     --sidebar-accent-foreground: 240 6% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217 91% 60%;
+
+    scroll-behavior: smooth;
   }
 
   .dark {
@@ -64,7 +127,7 @@
     --secondary-foreground: 210 40% 98%;
 
     --muted: 217 33% 18%;
-    --muted-foreground: 215 20% 65%;
+    --muted-foreground: 215 30% 80%;
 
     --accent: 217 33% 18%;
     --accent-foreground: 210 40% 98%;
@@ -85,39 +148,156 @@
     --sidebar-border: 240 4% 16%;
     --sidebar-ring: 217 91% 60%;
   }
-}
 
-@layer base {
   * {
-    @apply border-border;
+    @apply border-[hsl(var(--border))];
   }
 
   body {
     @apply bg-background text-foreground font-sans;
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-display;
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-mont;
   }
-  
+
   .tutor-text {
-    @apply font-['Merriweather',serif];
+    @apply font-serif;
+    font-family: 'Merriweather', serif;
   }
+}
+
+@layer components {
+
+  /* Override button styles for bubble effect */
+  .btn,
+  button {
+    @apply rounded-lg transition-all duration-300;
+  }
+
+  /* Override card styles */
+  .card,
+  [class*="rounded"] {
+    @apply overflow-hidden transition-all duration-300;
+  }
+
+  /* Make shadows more pronounced */
+  [class*="shadow"] {
+    @apply transition-shadow duration-300;
+  }
+
+  /* Enhanced default button styling for better visibility */
+  .btn-default,
+  button[variant="default"],
+  button[data-variant="default"] {
+    @apply bg-white text-gray-800 border border-gray-300 hover:bg-gray-50;
+  }
+
+  .btn-outline,
+  button[variant="outline"],
+  button[data-variant="outline"] {
+    @apply bg-white text-gray-800 border border-gray-300 hover:bg-gray-50;
+  }
+
+  .btn-primary,
+  button[variant="primary"],
+  button[data-variant="primary"],
+  .bg-brightpair {
+    @apply text-white border;
+  }
+}
+
+/* Dashboard specific styles for better visibility */
+.dashboard-card h3,
+.dashboard-card .card-title,
+.sidebar-nav .nav-item-text {
+  @apply font-medium;
+  /* Medium font weight for better readability */
+}
+
+.dashboard-item-label,
+.dashboard-stat-label,
+.sidebar-nav .nav-item-text {
+  @apply text-foreground;
+  /* Use full contrast for important labels */
+}
+
+.table-header th {
+  @apply font-medium text-foreground;
+  /* Improved table header visibility */
+}
+
+/* Improved button visibility */
+button[disabled] {
+  @apply opacity-70;
+}
+
+/* Ensure buttons are properly sized and spaced on mobile */
+@media (max-width: 640px) {
+  .button-container {
+    @apply flex flex-col w-full gap-2;
+  }
+
+  .button-container button {
+    @apply w-full mb-2;
+  }
+}
+
+/* Fix small buttons on tight spaces */
+.button-sm-fixed {
+  @apply min-w-[80px] justify-center;
+}
+
+/* KaTeX styling */
+.katex {
+  color: #1e293b;
+  /* slate-800 */
+}
+
+.dark .katex {
+  color: #f1f5f9;
+  /* slate-100 */
+}
+
+.katex-display {
+  text-align: center;
+  margin: 1rem 0;
+  overflow-x: auto;
 }
 
 @layer utilities {
   .animate-fadeIn {
     animation: fadeIn 0.3s ease-in-out;
   }
-  
+
   @keyframes fadeIn {
     from {
       opacity: 0;
       transform: translateY(-10px);
     }
+
     to {
       opacity: 1;
       transform: translateY(0);
     }
+  }
+
+  .scroll-smooth {
+    scroll-behavior: smooth;
+  }
+
+  .scroll-reveal {
+    opacity: 0;
+    transition: all 0.5s ease-in-out;
+  }
+
+  .scroll-reveal.active {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

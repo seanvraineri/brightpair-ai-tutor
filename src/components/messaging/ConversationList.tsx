@@ -29,7 +29,7 @@ const ConversationList: React.FC = () => {
   };
 
   return (
-    <div className="border rounded-lg overflow-hidden bg-white">
+    <div className="border rounded-md overflow-hidden bg-white">
       <div className="p-3 border-b">
         <h2 className="font-semibold">Conversations</h2>
       </div>
@@ -49,7 +49,7 @@ const ConversationList: React.FC = () => {
                 } ${conversation.unreadCount > 0 ? "bg-blue-50" : ""}`}
                 onClick={() => setCurrentConversation(conversation)}
               >
-                <div className="w-10 h-10 rounded-full bg-gray-300 flex-shrink-0 flex items-center justify-center text-lg font-medium text-gray-600">
+                <div className="w-10 h-10 rounded-md bg-gray-300 flex-shrink-0 flex items-center justify-center text-lg font-medium text-gray-600">
                   {otherParticipant.name.charAt(0)}
                 </div>
                 <div className="ml-3 flex-grow min-w-0">

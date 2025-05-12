@@ -193,7 +193,7 @@ const TutorMapView: React.FC<TutorMapViewProps> = ({
       <Card className="h-full shadow-sm">
         {/* Mapbox Token Input */}
         {!mapboxToken && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-white z-10 p-6 rounded-lg">
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-white z-10 p-6 rounded">
             <MapPin className="h-12 w-12 text-brightpair mb-4" />
             <h3 className="text-lg font-medium mb-2">Enter your Mapbox Public Token</h3>
             <p className="text-sm text-gray-500 mb-4 text-center">
@@ -203,12 +203,12 @@ const TutorMapView: React.FC<TutorMapViewProps> = ({
             </p>
             <input
               type="text"
-              className="w-full p-2 border rounded mb-2"
+              className="w-full p-2 border rounded-md mb-2"
               placeholder="pk.eyJ1IjoieW91..."
               onChange={(e) => setMapboxToken(e.target.value)}
             />
             <button
-              className="bg-brightpair text-white px-4 py-2 rounded hover:bg-brightpair-600"
+              className="bg-brightpair text-white px-4 py-2 rounded-md hover:bg-brightpair-600"
               onClick={initializeMap}
             >
               Load Map
@@ -219,15 +219,15 @@ const TutorMapView: React.FC<TutorMapViewProps> = ({
         {/* Map Container */}
         <div 
           ref={mapContainerRef} 
-          className="h-full min-h-[500px] w-full rounded-lg"
+          className="h-full min-h-[500px] w-full rounded"
         />
         
         {/* Selected Tutor Info Card */}
         {selectedTutor && (
-          <div className="absolute bottom-4 left-4 right-4 bg-white p-4 shadow-lg rounded-lg max-w-md">
+          <div className="absolute bottom-4 left-4 right-4 bg-white p-4 shadow-lg rounded-md max-w-md">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
-                <div className="h-12 w-12 rounded-full bg-brightpair-50 flex items-center justify-center text-xl font-medium text-brightpair overflow-hidden">
+                <div className="h-12 w-12 rounded-md bg-brightpair-50 flex items-center justify-center text-xl font-medium text-brightpair overflow-hidden">
                   {selectedTutor.name.charAt(0)}
                 </div>
                 <div>

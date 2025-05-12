@@ -1,14 +1,14 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { User, UserRole, OnboardingStatus, UserContextType, Achievement, Badge } from './UserTypes';
 import { useUserProfile } from '@/hooks/useUserProfile';
-import { useGamification } from '@/hooks/useGamification';
+import { useGamification, ActivityType } from '@/hooks/useGamification';
 import { useAuth } from '@/hooks/useAuth';
 
 // Export types from UserTypes.ts
 export type { UserRole, OnboardingStatus, User, Achievement, Badge };
+export { ActivityType };
 
 // Create context with default values
 const UserContext = createContext<UserContextType>({
@@ -20,6 +20,9 @@ const UserContext = createContext<UserContextType>({
   updateRole: () => {},
   unlockAchievement: () => {},
   earnXP: () => {},
+  trackActivity: async () => null,
+  getActivitiesByType: () => [],
+  getTodayActivities: () => [],
   signOut: async () => {},
 });
 
@@ -39,7 +42,13 @@ export const UserProvider: React.FC<{children: ReactNode}> = ({ children }) => {
   } = useUserProfile();
   
   const { session, setSession, signOut } = useAuth();
-  const { unlockAchievement, earnXP } = useGamification(setUser);
+  const { 
+    unlockAchievement, 
+    earnXP, 
+    trackActivity, 
+    getActivitiesByType,
+    getTodayActivities
+  } = useGamification(setUser);
 
   useEffect(() => {
     // Set up auth state listener
@@ -92,6 +101,14 @@ export const UserProvider: React.FC<{children: ReactNode}> = ({ children }) => {
     updateUserRole(session, role);
   };
   
+  // Track activity when user is logged in
+  const handleTrackActivity = async (activityType: ActivityType, details?: any) => {
+    if (user?.email) {
+      return trackActivity(user.email, activityType, details);
+    }
+    return null;
+  };
+  
   return (
     <UserContext.Provider 
       value={{ 
@@ -103,6 +120,9 @@ export const UserProvider: React.FC<{children: ReactNode}> = ({ children }) => {
         updateRole,
         unlockAchievement,
         earnXP,
+        trackActivity: handleTrackActivity,
+        getActivitiesByType,
+        getTodayActivities,
         signOut
       }}
     >

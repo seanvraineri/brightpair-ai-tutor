@@ -1,10 +1,10 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { MapPin, Users, Calendar } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import ButtonPrimary from "@/components/ButtonPrimary";
+import ButtonSecondary from "@/components/ButtonSecondary";
 
 const FindTutorsSection: React.FC = () => {
   return (
@@ -21,10 +21,10 @@ const FindTutorsSection: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-          <Card className="shadow-sm hover:shadow-md transition-all">
+          <Card className="shadow-sm hover:shadow-card transition-all">
             <CardContent className="pt-6">
               <div className="flex flex-col items-center text-center">
-                <div className="h-14 w-14 bg-brightpair-50 rounded-full flex items-center justify-center mb-4">
+                <div className="h-14 w-14 bg-brightpair-50 rounded-md flex items-center justify-center mb-4">
                   <MapPin className="h-7 w-7 text-brightpair" />
                 </div>
                 <h3 className="text-xl font-semibold mb-2">Find Local Tutors</h3>
@@ -35,10 +35,10 @@ const FindTutorsSection: React.FC = () => {
             </CardContent>
           </Card>
 
-          <Card className="shadow-sm hover:shadow-md transition-all">
+          <Card className="shadow-sm hover:shadow-card transition-all">
             <CardContent className="pt-6">
               <div className="flex flex-col items-center text-center">
-                <div className="h-14 w-14 bg-brightpair-50 rounded-full flex items-center justify-center mb-4">
+                <div className="h-14 w-14 bg-brightpair-50 rounded-md flex items-center justify-center mb-4">
                   <Users className="h-7 w-7 text-brightpair" />
                 </div>
                 <h3 className="text-xl font-semibold mb-2">Perfect Matching</h3>
@@ -49,10 +49,10 @@ const FindTutorsSection: React.FC = () => {
             </CardContent>
           </Card>
 
-          <Card className="shadow-sm hover:shadow-md transition-all">
+          <Card className="shadow-sm hover:shadow-card transition-all">
             <CardContent className="pt-6">
               <div className="flex flex-col items-center text-center">
-                <div className="h-14 w-14 bg-brightpair-50 rounded-full flex items-center justify-center mb-4">
+                <div className="h-14 w-14 bg-brightpair-50 rounded-md flex items-center justify-center mb-4">
                   <Calendar className="h-7 w-7 text-brightpair" />
                 </div>
                 <h3 className="text-xl font-semibold mb-2">Flexible Scheduling</h3>
@@ -64,7 +64,7 @@ const FindTutorsSection: React.FC = () => {
           </Card>
         </div>
 
-        <div className="relative rounded-xl overflow-hidden bg-gray-100 mb-12">
+        <div className="relative rounded-md overflow-hidden bg-gray-100 mb-12">
           <div className="grid md:grid-cols-2 gap-6">
             <div className="p-8 md:p-12 flex flex-col justify-center">
               <h3 className="text-2xl md:text-3xl font-bold font-display mb-4">
@@ -74,13 +74,13 @@ const FindTutorsSection: React.FC = () => {
                 Our network includes tutors with advanced degrees, teaching certifications, and years of experience in their respective fields. Each tutor is thoroughly vetted to ensure they meet our high standards.
               </p>
               <div className="flex flex-wrap gap-3 mb-6">
-                <span className="bg-white px-3 py-1 rounded-full text-sm font-medium">Mathematics</span>
-                <span className="bg-white px-3 py-1 rounded-full text-sm font-medium">Science</span>
-                <span className="bg-white px-3 py-1 rounded-full text-sm font-medium">English</span>
-                <span className="bg-white px-3 py-1 rounded-full text-sm font-medium">History</span>
-                <span className="bg-white px-3 py-1 rounded-full text-sm font-medium">Languages</span>
-                <span className="bg-white px-3 py-1 rounded-full text-sm font-medium">Test Prep</span>
-                <span className="bg-white px-3 py-1 rounded-full text-sm font-medium">And More!</span>
+                <span className="bg-white px-3 py-1 rounded-md text-sm font-medium">Mathematics</span>
+                <span className="bg-white px-3 py-1 rounded-md text-sm font-medium">Science</span>
+                <span className="bg-white px-3 py-1 rounded-md text-sm font-medium">English</span>
+                <span className="bg-white px-3 py-1 rounded-md text-sm font-medium">History</span>
+                <span className="bg-white px-3 py-1 rounded-md text-sm font-medium">Languages</span>
+                <span className="bg-white px-3 py-1 rounded-md text-sm font-medium">Test Prep</span>
+                <span className="bg-white px-3 py-1 rounded-md text-sm font-medium">And More!</span>
               </div>
               <div>
                 <Link to="/tutor-search">
@@ -94,9 +94,9 @@ const FindTutorsSection: React.FC = () => {
               <div className="grid grid-cols-2 gap-4 h-full">
                 {/* Sample tutor profiles */}
                 {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="bg-white p-4 rounded-lg shadow-sm flex flex-col justify-between">
+                  <div key={i} className="bg-white p-4 rounded-md shadow-sm flex flex-col justify-between">
                     <div className="flex items-center mb-3">
-                      <div className="h-10 w-10 rounded-full bg-gray-200 overflow-hidden mr-3">
+                      <div className="h-10 w-10 rounded-md bg-gray-200 overflow-hidden mr-3">
                         <img 
                           src={`https://randomuser.me/api/portraits/${i % 2 === 0 ? 'women' : 'men'}/${i + 20}.jpg`} 
                           alt={`Tutor ${i}`}
@@ -143,7 +143,9 @@ const FindTutorsSection: React.FC = () => {
               <Button size="lg">Browse All Tutors</Button>
             </Link>
             <Link to="/signup">
-              <Button variant="outline" size="lg">Create Account</Button>
+              <ButtonSecondary size="lg" className="bg-blue-100 border-blue-200 text-blue-900 hover:bg-blue-200 hover:text-blue-900 font-semibold shadow-sm">
+                Create Account
+              </ButtonSecondary>
             </Link>
           </div>
         </div>

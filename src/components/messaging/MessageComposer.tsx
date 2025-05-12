@@ -110,7 +110,7 @@ const MessageComposer: React.FC<MessageComposerProps> = ({
   };
   
   return (
-    <div className="border rounded-lg p-4 bg-white">
+    <div className="border rounded-md p-4 bg-white">
       <h2 className="font-semibold mb-4">New Message</h2>
       
       <div className="mb-4">

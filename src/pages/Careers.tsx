@@ -63,7 +63,7 @@ const Careers: React.FC = () => {
             <h2 className="text-3xl font-bold font-display mb-12 text-center">Why Work With BrightPair</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="text-center">
-                <div className="w-16 h-16 bg-brightpair-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-brightpair-100 rounded-md flex items-center justify-center mx-auto mb-4">
                   <span className="text-2xl">🚀</span>
                 </div>
                 <h3 className="text-xl font-semibold mb-3">Meaningful Impact</h3>
@@ -73,7 +73,7 @@ const Careers: React.FC = () => {
               </div>
               
               <div className="text-center">
-                <div className="w-16 h-16 bg-brightpair-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-brightpair-100 rounded-md flex items-center justify-center mx-auto mb-4">
                   <span className="text-2xl">💡</span>
                 </div>
                 <h3 className="text-xl font-semibold mb-3">Innovation</h3>
@@ -83,7 +83,7 @@ const Careers: React.FC = () => {
               </div>
               
               <div className="text-center">
-                <div className="w-16 h-16 bg-brightpair-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-brightpair-100 rounded-md flex items-center justify-center mx-auto mb-4">
                   <span className="text-2xl">🌱</span>
                 </div>
                 <h3 className="text-xl font-semibold mb-3">Growth</h3>
@@ -100,7 +100,7 @@ const Careers: React.FC = () => {
           <div className="container max-w-6xl mx-auto">
             <h2 className="text-3xl font-bold font-display mb-12 text-center">Our Benefits</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="bg-white p-8 rounded-xl shadow">
+              <div className="bg-white p-8 rounded-md shadow">
                 <h3 className="text-xl font-semibold mb-4">For Tutors</h3>
                 <ul className="space-y-3 text-gray-700">
                   <li className="flex items-center">
@@ -122,7 +122,7 @@ const Careers: React.FC = () => {
                 </ul>
               </div>
               
-              <div className="bg-white p-8 rounded-xl shadow">
+              <div className="bg-white p-8 rounded-md shadow">
                 <h3 className="text-xl font-semibold mb-4">For Student Ambassadors</h3>
                 <ul className="space-y-3 text-gray-700">
                   <li className="flex items-center">
@@ -144,7 +144,7 @@ const Careers: React.FC = () => {
                 </ul>
               </div>
               
-              <div className="bg-white p-8 rounded-xl shadow">
+              <div className="bg-white p-8 rounded-md shadow">
                 <h3 className="text-xl font-semibold mb-4">For Student Tutors</h3>
                 <ul className="space-y-3 text-gray-700">
                   <li className="flex items-center">
@@ -166,7 +166,7 @@ const Careers: React.FC = () => {
                 </ul>
               </div>
               
-              <div className="bg-white p-8 rounded-xl shadow">
+              <div className="bg-white p-8 rounded-md shadow">
                 <h3 className="text-xl font-semibold mb-4">Team & Culture</h3>
                 <ul className="space-y-3 text-gray-700">
                   <li className="flex items-center">

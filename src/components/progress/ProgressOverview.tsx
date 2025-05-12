@@ -194,8 +194,8 @@ const ProgressOverview: React.FC = () => {
         <CardContent>
           <div className="space-y-4">
             {recentAchievements.map((achievement, index) => (
-              <div key={index} className="flex items-start gap-3 p-3 rounded-lg border border-gray-100 bg-white hover:bg-gray-50 transition-colors">
-                <div className="bg-gray-100 p-2 rounded-full">
+              <div key={index} className="flex items-start gap-3 p-3 rounded-md border border-gray-100 bg-white hover:bg-gray-50 transition-colors">
+                <div className="bg-gray-100 p-2 rounded">
                   {achievement.icon}
                 </div>
                 <div className="flex-1">

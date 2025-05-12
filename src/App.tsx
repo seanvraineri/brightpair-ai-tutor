@@ -2,9 +2,10 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation, Outlet } from "react-router-dom";
 import { UserProvider, useUser } from "./contexts/UserContext";
 import { MessageProvider } from "./contexts/MessageContext";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 
 import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
@@ -13,13 +14,14 @@ import ConsultationScheduling from "./pages/ConsultationScheduling";
 import OnboardingForm from "./pages/OnboardingForm";
 import Dashboard from "./pages/Dashboard";
 import TeacherDashboard from "./pages/TeacherDashboard";
-import ParentDashboard from "./pages/ParentDashboard";
+import ParentDashboard from "./pages/parent/dashboard";
 import TutorChat from "./pages/TutorChat";
 import Flashcards from "./pages/Flashcards";
 import Quizzes from "./pages/Quizzes";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import DashboardLayout from "./components/dashboard/DashboardLayout";
+import DashboardNav from "./components/dashboard/DashboardNav";
 import TutorSignup from "./pages/TutorSignup";
 import TutorSearch from "./pages/TutorSearch";
 import TutorProfile from "./pages/TutorProfile";
@@ -33,8 +35,40 @@ import Progress from "./pages/Progress";
 import Messages from "./pages/Messages";
 import Lessons from "./pages/Lessons";
 import AITutor from "./pages/AITutor";
+import StudentNotes from "./pages/StudentNotes";
+import BillingManagement from "./pages/BillingManagement";
+import Curriculum from "./pages/Curriculum";
+import Reports from "./pages/Reports";
+import CustomLessonPage from "./pages/CustomLessonPage";
 import { useEffect, useState } from "react";
 import { supabase } from "./integrations/supabase/client";
+
+// Import TutorDashboard
+import TutorDashboard from "./pages/tutor/dashboard";
+
+// Import our newly created components
+import StudentDetailComponent from './pages/parent/StudentDetail';
+import MessageComposerPageComponent from './pages/parent/MessageComposerPage';
+import ReportViewPageComponent from './pages/parent/ReportViewPage';
+import StudentOnboarding from "./pages/tutor/StudentOnboarding";
+import HomeworkCreator from './pages/tutor/HomeworkCreator';
+
+// Import the new StudentAssignments component
+import StudentAssignments from "./pages/tutor/StudentAssignments";
+import TutorAssignments from "./pages/tutor/TutorAssignments";
+
+// Import the new homework components
+import HomeworkBuilder from './pages/tutor/HomeworkBuilder';
+import HomeworkViewer from './pages/student/HomeworkViewer';
+
+// Import the new curriculum builder component
+import CurriculumBuilder from './pages/tutor/CurriculumBuilder';
+import CurriculumManager from './pages/tutor/CurriculumManager';
+
+// Update the placeholder components
+const StudentDetail = ({ isParentView }: { isParentView?: boolean }) => <StudentDetailComponent isParentView={isParentView} />;
+const MessageComposerPage = ({ isParentView }: { isParentView?: boolean }) => <MessageComposerPageComponent isParentView={isParentView} />;
+const ReportViewPage = () => <ReportViewPageComponent />;
 
 const queryClient = new QueryClient();
 
@@ -116,6 +150,20 @@ const AuthRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+// Public Dashboard layout that includes navigation but no auth checks
+const PublicDashboardLayout = () => {
+  return (
+    <div className="min-h-screen bg-background overflow-x-hidden">
+      <DashboardNav />
+      <main className="md:ml-64 pt-16 md:pt-6 pb-28 px-2 sm:px-4">
+        <div className="max-w-7xl mx-auto">
+          <Outlet />
+        </div>
+      </main>
+    </div>
+  );
+};
+
 function App() {
   return (
     <>
@@ -139,44 +187,213 @@ function App() {
                 <Route path="/about" element={<AboutUs />} />
                 <Route path="/careers" element={<Careers />} />
                 
-                {/* Dashboard Routes */}
-                <Route element={<AuthRoute><DashboardLayout /></AuthRoute>}>
+                {/* Tutor Dashboard Routes */}
+                <Route path="/tutor/dashboard" element={
+                  <DashboardLayout>
+                    <TutorDashboard />
+                  </DashboardLayout>
+                } />
+                <Route path="/tutor/student/:studentId" element={<StudentDetail />} />
+                <Route path="/tutor/student/:studentId/assignments" element={<StudentAssignments />} />
+                <Route path="/tutor/assignments" element={<TutorAssignments />} />
+                <Route path="/tutor/students/onboard" element={<StudentOnboarding />} />
+                <Route path="/tutor/students/new" element={
+                  <DashboardLayout>
+                    <div>New Student Form</div>
+                  </DashboardLayout>
+                } />
+                
+                {/* Tutor Messaging Routes */}
+                <Route path="/tutor/messages" element={
+                  <DashboardLayout>
+                    <Messages />
+                  </DashboardLayout>
+                } />
+                <Route path="/tutor/messages/new" element={
+                  <DashboardLayout>
+                    <MessageComposerPage />
+                  </DashboardLayout>
+                } />
+
+                {/* Tutor Homework Routes */}
+                <Route path="/tutor/homework/create" element={
+                  <DashboardLayout>
+                    <HomeworkCreator />
+                  </DashboardLayout>
+                } />
+                <Route path="/tutor/homework/view/:id" element={
+                  <DashboardLayout>
+                    <div>Homework Detail View</div>
+                  </DashboardLayout>
+                } />
+                <Route path="/tutor/homework/builder" element={
+                  <DashboardLayout>
+                    <HomeworkBuilder />
+                  </DashboardLayout>
+                } />
+                <Route path="/tutor/homework/builder/:studentId" element={
+                  <DashboardLayout>
+                    <HomeworkBuilder />
+                  </DashboardLayout>
+                } />
+                
+                {/* Student Homework Routes */}
+                <Route path="/student/homework/:homeworkId" element={
+                  <DashboardLayout>
+                    <HomeworkViewer />
+                  </DashboardLayout>
+                } />
+                
+                {/* Parent Portal Direct Routes */}
+                <Route path="/parent/dashboard" element={<ParentDashboard />} />
+                <Route path="/parent/students/:id" element={<StudentDetail isParentView={true} />} />
+                <Route path="/parent/messages/new" element={<MessageComposerPage isParentView={true} />} />
+                <Route path="/parent/reports/view/:id" element={<ReportViewPage />} />
+                
+                {/* Public Dashboard Routes - no auth required but with nav */}
+                <Route element={<PublicDashboardLayout />}>
+                  <Route path="/quizzes" element={<Quizzes />} />
+                </Route>
+                
+                {/* Dashboard Routes - auth required */}
+                <Route element={<AuthRoute><Outlet /></AuthRoute>}>
                   {/* Student routes */}
                   <Route path="/dashboard" element={
                     <ProtectedRoute allowedRole="student">
-                      <Dashboard />
+                      <DashboardLayout>
+                        <Dashboard />
+                      </DashboardLayout>
                     </ProtectedRoute>
                   } />
                   
                   {/* Teacher routes */}
                   <Route path="/teacher-dashboard" element={
                     <ProtectedRoute allowedRole="teacher">
-                      <TeacherDashboard />
+                      <DashboardLayout>
+                        <TeacherDashboard />
+                      </DashboardLayout>
                     </ProtectedRoute>
                   } />
                   
                   {/* Parent routes */}
                   <Route path="/parent-dashboard" element={
                     <ProtectedRoute allowedRole="parent">
-                      <ParentDashboard />
+                      <DashboardLayout>
+                        <ParentDashboard />
+                      </DashboardLayout>
                     </ProtectedRoute>
                   } />
                   
-                  {/* Shared routes that all roles can access */}
-                  <Route path="/homework" element={<Homework />} />
-                  <Route path="/scheduling" element={<Scheduling />} />
-                  <Route path="/lessons" element={<Lessons />} />
-                  <Route path="/progress" element={<Progress />} />
+                  {/* Shared routes */}
+                  <Route path="/homework" element={
+                    <DashboardLayout>
+                      <Homework />
+                    </DashboardLayout>
+                  } />
+                  
+                  {/* Curriculum route */}
+                  <Route path="/curriculum" element={
+                    <ProtectedRoute allowedRole="teacher">
+                      <DashboardLayout>
+                        <CurriculumBuilder />
+                      </DashboardLayout>
+                    </ProtectedRoute>
+                  } />
+                  
+                  {/* Reports route */}
+                  <Route path="/reports" element={
+                    <ProtectedRoute allowedRole="teacher">
+                      <DashboardLayout>
+                        <Reports />
+                      </DashboardLayout>
+                    </ProtectedRoute>
+                  } />
+                  
+                  {/* Other routes... */}
+                  <Route path="/scheduling" element={
+                    <DashboardLayout>
+                      <Scheduling />
+                    </DashboardLayout>
+                  } />
+                  <Route path="/lessons" element={
+                    <DashboardLayout>
+                      <Lessons />
+                    </DashboardLayout>
+                  } />
+                  <Route path="/progress" element={
+                    <DashboardLayout>
+                      <Progress />
+                    </DashboardLayout>
+                  } />
                   <Route path="/messages" element={
                     <MessageProvider>
-                      <Messages />
+                      <DashboardLayout>
+                        <Messages />
+                      </DashboardLayout>
                     </MessageProvider>
                   } />
-                  <Route path="/ai-tutor" element={<AITutor />} />
-                  <Route path="/tutor-chat" element={<TutorChat />} />
-                  <Route path="/flashcards" element={<Flashcards />} />
-                  <Route path="/quizzes" element={<Quizzes />} />
-                  <Route path="/settings" element={<Settings />} />
+                  <Route path="/ai-tutor" element={
+                    <DashboardLayout>
+                      <AITutor />
+                    </DashboardLayout>
+                  } />
+                  <Route path="/tutor-chat" element={
+                    <DashboardLayout>
+                      <TutorChat />
+                    </DashboardLayout>
+                  } />
+                  <Route path="/flashcards" element={
+                    <DashboardLayout>
+                      <Flashcards />
+                    </DashboardLayout>
+                  } />
+                  <Route path="/settings" element={
+                    <DashboardLayout>
+                      <Settings />
+                    </DashboardLayout>
+                  } />
+                  <Route path="/student-notes" element={
+                    <ProtectedRoute allowedRole="teacher">
+                      <DashboardLayout>
+                        <StudentNotes />
+                      </DashboardLayout>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/billing" element={
+                    <ProtectedRoute allowedRole="parent">
+                      <DashboardLayout>
+                        <BillingManagement />
+                      </DashboardLayout>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/tutors" element={
+                    <ProtectedRoute allowedRole="parent">
+                      <DashboardLayout>
+                        <Card>
+                          <CardHeader>
+                            <CardTitle>Find Tutors</CardTitle>
+                            <CardDescription>Discover qualified tutors for your child</CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <TutorSearch />
+                          </CardContent>
+                        </Card>
+                      </DashboardLayout>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/custom-lessons" element={
+                    <DashboardLayout>
+                      <CustomLessonPage />
+                    </DashboardLayout>
+                  } />
+                  {/* Curriculum manager */}
+                  <Route path="/curricula" element={
+                    <ProtectedRoute allowedRole="teacher">
+                      <DashboardLayout>
+                        <CurriculumManager />
+                      </DashboardLayout>
+                    </ProtectedRoute>
+                  } />
                 </Route>
                 
                 <Route path="*" element={<NotFound />} />

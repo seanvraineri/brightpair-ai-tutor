@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -9,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Link } from "react-router-dom";
+import LessonContent from "./LessonContent";
 
 interface LessonModalProps {
   open: boolean;
@@ -56,107 +56,104 @@ const LessonModal: React.FC<LessonModalProps> = ({
     }
   };
 
-  // This would come from an API in a real implementation
+  // This updated content includes math examples
   const lessonContent = [
     {
       title: "Introduction",
-      content: (
-        <div className="space-y-4">
-          <p>Welcome to {lesson.title}! In this lesson, you will learn about the core concepts and gain a solid understanding of this subject.</p>
-          <p>This lesson is designed to be interactive and engaging. You'll find explanations, examples, and practice questions to help you master the material.</p>
-          <p>By the end of this lesson, you should be able to:</p>
-          <ul className="list-disc pl-5 space-y-1">
-            <li>Understand the fundamental principles of {lesson.subject}</li>
-            <li>Apply these concepts to solve related problems</li>
-            <li>Connect this knowledge to other areas of study</li>
-          </ul>
-        </div>
-      )
+      content: `Welcome to ${lesson.title}! In this lesson, you will learn about the core concepts and gain a solid understanding of this subject.
+
+This lesson is designed to be interactive and engaging. You'll find explanations, examples, and practice questions to help you master the material.
+
+By the end of this lesson, you should be able to:
+- Understand the fundamental principles of ${lesson.subject}
+- Apply these concepts to solve related problems
+- Connect this knowledge to other areas of study`
     },
     {
       title: "Key Concepts",
-      content: (
-        <div className="space-y-4">
-          <p>Let's explore the key concepts of {lesson.title}:</p>
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h4 className="font-medium text-brightpair mb-2">First Principle</h4>
-            <p>The first principle explains how elements interact within this system. This forms the foundation for understanding more complex concepts later.</p>
-          </div>
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h4 className="font-medium text-brightpair mb-2">Second Principle</h4>
-            <p>Building on the first principle, we can now explore how these interactions lead to predictable outcomes and patterns.</p>
-          </div>
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h4 className="font-medium text-brightpair mb-2">Practical Applications</h4>
-            <p>These principles have wide-ranging applications in real-world scenarios, from everyday problem solving to advanced research.</p>
-          </div>
-        </div>
-      )
+      content: `Let's explore the key concepts of ${lesson.title}:
+
+The First Principle explains how elements interact within this system. This forms the foundation for understanding more complex concepts later.
+
+${lesson.subject === "Mathematics" || lesson.subject === "Calculus" || lesson.subject === "Algebra" ? 
+`For example, in mathematics, the fundamental concepts include:
+
+$$y = mx + b$$
+
+Where $m$ represents the slope and $b$ is the y-intercept of a line.
+
+Another core concept is the quadratic formula:
+
+$$x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$$
+
+Which is used to solve equations of the form $ax^2 + bx + c = 0$` : 
+
+lesson.subject === "Physics" ?
+`For example, in physics, Newton's Second Law is expressed as:
+
+$$F = ma$$
+
+Where $F$ is force, $m$ is mass, and $a$ is acceleration.
+
+Another important concept is the conservation of energy:
+
+$$E_{potential} + E_{kinetic} = \\text{constant}$$` :
+
+lesson.subject === "Chemistry" ?
+`For example, in chemistry, the ideal gas law is expressed as:
+
+$$PV = nRT$$
+
+Where $P$ is pressure, $V$ is volume, $n$ is the number of moles, $R$ is the gas constant, and $T$ is temperature.` :
+
+`The key principles in this field form the foundation for more advanced topics.`}
+
+Building on the first principle, we can now explore how these interactions lead to predictable outcomes and patterns.`
     },
     {
       title: "Examples & Practice",
-      content: (
-        <div className="space-y-4">
-          <p>Let's see these concepts in action with some examples:</p>
-          
-          <div className="border border-gray-200 rounded-lg p-4 mb-4">
-            <h4 className="font-medium mb-2">Example 1</h4>
-            <p className="mb-3">Here's a practical example of how these concepts are applied:</p>
-            <div className="bg-gray-50 p-3 rounded-md mb-2">
-              <p className="font-mono text-sm">Example implementation or problem</p>
-            </div>
-            <p>The solution demonstrates how the principles work together to achieve the desired outcome.</p>
-          </div>
-          
-          <div className="border border-gray-200 rounded-lg p-4">
-            <h4 className="font-medium mb-2">Practice Question</h4>
-            <p className="mb-3">Try solving this problem using what you've learned:</p>
-            <div className="bg-gray-50 p-3 rounded-md mb-3">
-              <p className="font-mono text-sm">Practice problem statement</p>
-            </div>
-            <Button variant="outline" className="w-full justify-between">
-              View Solution <ArrowRight size={16} />
-            </Button>
-          </div>
-        </div>
-      )
+      content: `Let's see these concepts in action with some examples:
+
+Example 1: 
+${lesson.subject === "Mathematics" || lesson.subject === "Calculus" || lesson.subject === "Algebra" ? 
+`Find the derivative of $f(x) = x^2 \\sin(x)$.
+
+Solution:
+Using the product rule, we get:
+$$f'(x) = 2x\\sin(x) + x^2\\cos(x)$$` :
+
+lesson.subject === "Physics" ?
+`A 2 kg object is subjected to a force of 10 N. What is its acceleration?
+
+Solution:
+Using $F = ma$, we get:
+$$a = \\frac{F}{m} = \\frac{10 \\text{ N}}{2 \\text{ kg}} = 5 \\text{ m/s}^2$$` :
+
+lesson.subject === "Chemistry" ?
+`Calculate the pH of a solution with a hydrogen ion concentration of $1.0 \\times 10^{-5}$ mol/L.
+
+Solution:
+Using $\\text{pH} = -\\log[\\text{H}^+]$, we get:
+$$\\text{pH} = -\\log(1.0 \\times 10^{-5}) = 5.0$$` :
+
+`Let's explore how these concepts apply in a practical example.`}
+
+Try solving this problem using what you've learned:`
     },
     {
       title: "Summary & Next Steps",
-      content: (
-        <div className="space-y-4">
-          <h4 className="font-medium">Key Takeaways</h4>
-          <ul className="list-disc pl-5 space-y-1">
-            <li>You've learned the fundamental principles of {lesson.title}</li>
-            <li>You understand how to apply these concepts in different contexts</li>
-            <li>You can recognize patterns and solve related problems</li>
-          </ul>
-          
-          <h4 className="font-medium mt-4">Next Steps</h4>
-          <p>To further your understanding:</p>
-          <div className="space-y-2 mt-2">
-            <div className="flex items-center gap-2">
-              <CheckCircle size={16} className="text-green-500" />
-              <span>Complete the related homework assignment</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle size={16} className="text-green-500" />
-              <span>Practice with the flashcards to reinforce key terms</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle size={16} className="text-green-500" />
-              <span>Test your knowledge with the quiz</span>
-            </div>
-          </div>
-          
-          <div className="mt-6 pt-4 border-t border-gray-100">
-            <p className="text-sm text-gray-600 mb-4">Ready to demonstrate your understanding?</p>
-            <ButtonPrimary onClick={handleComplete} className="w-full">
-              Mark Lesson as Complete
-            </ButtonPrimary>
-          </div>
-        </div>
-      )
+      content: `Key Takeaways:
+- You've learned the fundamental principles of ${lesson.title}
+- You understand how to apply these concepts in different contexts
+- You can recognize patterns and solve related problems
+
+Next Steps:
+To further your understanding:
+- Complete the related homework assignment
+- Practice with the flashcards to reinforce key terms
+- Test your knowledge with the quiz
+
+Ready to demonstrate your understanding?`
     }
   ];
 
@@ -198,9 +195,9 @@ const LessonModal: React.FC<LessonModalProps> = ({
                   <span>Step {currentStep + 1} of {lessonContent.length}</span>
                   <span>{Math.round((currentStep + 1) / lessonContent.length * 100)}% complete</span>
                 </div>
-                <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div className="w-full h-2 bg-gray-100 rounded-md overflow-hidden">
                   <div 
-                    className="h-full bg-brightpair rounded-full"
+                    className="h-full bg-brightpair rounded"
                     style={{ width: `${((currentStep + 1) / lessonContent.length) * 100}%` }}
                   ></div>
                 </div>
@@ -211,53 +208,34 @@ const LessonModal: React.FC<LessonModalProps> = ({
                 {lessonContent[currentStep].title}
               </h3>
               
-              {/* Step content */}
+              {/* Step content - now using LessonContent component */}
               <div className="prose prose-gray max-w-none space-y-4">
-                {lessonContent[currentStep].content}
+                <LessonContent 
+                  content={lessonContent[currentStep].content} 
+                  className="lesson-step-content"
+                />
               </div>
               
               {/* Navigation buttons */}
-              {!isCompleted && (
-                <div className="flex justify-between mt-8 pt-5 border-t border-gray-100">
-                  <Button 
-                    variant="outline"
-                    onClick={handlePreviousStep}
-                    disabled={currentStep === 0}
-                  >
-                    Previous
+              <div className="flex justify-between mt-6 pt-4 border-t border-gray-100">
+                <Button
+                  variant="outline"
+                  onClick={handlePreviousStep}
+                  disabled={currentStep === 0}
+                >
+                  Previous
+                </Button>
+                
+                {currentStep < lessonContent.length - 1 ? (
+                  <Button onClick={handleNextStep}>
+                    Next
                   </Button>
-                  
-                  {currentStep < lessonContent.length - 1 ? (
-                    <ButtonPrimary onClick={handleNextStep}>
-                      Next <ArrowRight className="ml-2 h-4 w-4" />
-                    </ButtonPrimary>
-                  ) : (
-                    <ButtonPrimary onClick={handleComplete}>
-                      Complete Lesson <CheckCircle className="ml-2 h-4 w-4" />
-                    </ButtonPrimary>
-                  )}
-                </div>
-              )}
-              
-              {isCompleted && (
-                <div className="mt-8 pt-5 border-t border-gray-100 bg-green-50 p-5 rounded-lg">
-                  <div className="flex items-center gap-3 text-green-700 mb-3">
-                    <CheckCircle className="h-5 w-5 text-green-500" />
-                    <span className="font-medium">Lesson Completed!</span>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-4">
-                    Great job! You've completed this lesson. Continue your learning journey with the related resources.
-                  </p>
-                  <div className="flex gap-3">
-                    <Button variant="outline" onClick={() => onOpenChange(false)}>
-                      Close
-                    </Button>
-                    <ButtonPrimary asChild>
-                      <Link to="/quizzes">Take Quiz</Link>
-                    </ButtonPrimary>
-                  </div>
-                </div>
-              )}
+                ) : (
+                  <ButtonPrimary onClick={handleComplete}>
+                    {isCompleted ? "Review Complete" : "Mark as Complete"}
+                  </ButtonPrimary>
+                )}
+              </div>
             </div>
           </TabsContent>
           
@@ -272,10 +250,10 @@ const LessonModal: React.FC<LessonModalProps> = ({
                 <div className="space-y-4">
                   <Link 
                     to="/homework" 
-                    className="flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
+                    className="flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 rounded-md transition-colors border border-gray-200"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="h-10 w-10 rounded-full bg-brightpair-50 flex items-center justify-center">
+                      <div className="h-10 w-10 rounded-md bg-brightpair-50 flex items-center justify-center">
                         <BookOpen className="h-5 w-5 text-brightpair" />
                       </div>
                       <div>
@@ -288,10 +266,10 @@ const LessonModal: React.FC<LessonModalProps> = ({
                   
                   <Link 
                     to="/flashcards" 
-                    className="flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
+                    className="flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 rounded-md transition-colors border border-gray-200"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="h-10 w-10 rounded-full bg-brightpair-50 flex items-center justify-center">
+                      <div className="h-10 w-10 rounded-md bg-brightpair-50 flex items-center justify-center">
                         <BookOpen className="h-5 w-5 text-brightpair" />
                       </div>
                       <div>
@@ -304,10 +282,10 @@ const LessonModal: React.FC<LessonModalProps> = ({
                   
                   <Link 
                     to="/quizzes" 
-                    className="flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
+                    className="flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 rounded-md transition-colors border border-gray-200"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="h-10 w-10 rounded-full bg-brightpair-50 flex items-center justify-center">
+                      <div className="h-10 w-10 rounded-md bg-brightpair-50 flex items-center justify-center">
                         <BookOpen className="h-5 w-5 text-brightpair" />
                       </div>
                       <div>
@@ -354,7 +332,7 @@ const LessonModal: React.FC<LessonModalProps> = ({
                 Take notes while studying to help reinforce your learning.
               </p>
               
-              <div className="border border-gray-200 rounded-lg p-5 bg-gray-50">
+              <div className="border border-gray-200 rounded-md p-5 bg-gray-50">
                 <textarea 
                   className="w-full h-40 p-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brightpair focus:border-transparent"
                   placeholder="Type your notes here..."

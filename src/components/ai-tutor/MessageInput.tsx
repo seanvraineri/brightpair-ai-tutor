@@ -47,7 +47,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
           placeholder="Ask your AI tutor a question..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          className="pr-24 py-6 bg-white rounded-full shadow-sm border-gray-200 focus:border-brightpair focus:ring-brightpair"
+          className="pr-24 py-6 bg-white rounded-md shadow-sm border-gray-200 focus:border-brightpair focus:ring-brightpair"
           disabled={isLoading}
         />
         <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex space-x-1">
@@ -57,7 +57,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
                 type="button"
                 size="icon"
                 variant="ghost"
-                className="h-8 w-8 rounded-full hover:bg-brightpair-50"
+                className="h-8 w-8 rounded-md hover:bg-brightpair-50"
                 disabled={isLoading}
               >
                 <Plus size={18} />
@@ -87,7 +87,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
           <Button
             type="submit"
             size="icon"
-            className="h-8 w-8 rounded-full bg-brightpair hover:bg-brightpair-600 transition-colors"
+            className="h-8 w-8 rounded-md bg-brightpair hover:bg-brightpair-600 transition-colors"
             disabled={!input.trim() || isLoading}
           >
             <Send size={14} />

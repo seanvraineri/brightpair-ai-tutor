@@ -2,11 +2,14 @@ import React from "react";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import ButtonSecondary from "@/components/ButtonSecondary";
 
 // The actual Calendly link
 const CALENDLY_URL = "https://calendly.com/seanvraineri/brightpair-tutoring-onboarding";
+
 const PricingSection: React.FC = () => {
-  return <section id="pricing" className="py-16 md:py-24 px-4 bg-white">
+  return (
+    <section id="pricing" className="py-16 md:py-24 px-4 bg-white">
       <div className="container max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold font-display mb-4">
@@ -19,7 +22,7 @@ const PricingSection: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {/* Free Consultation */}
-          <div className="border rounded-xl p-8 shadow-sm hover:shadow-md transition-all bg-white">
+          <div className="border rounded-md p-8 shadow-sm hover:shadow-card transition-all bg-white">
             <div className="mb-6">
               <h3 className="text-xl font-bold font-display mb-2">Free Consultation</h3>
               <div className="mb-4">
@@ -54,14 +57,16 @@ const PricingSection: React.FC = () => {
                 </Button>
               </a>
               <Link to="/signup" className="block">
-                <Button variant="outline" className="w-full">Create Account </Button>
+                <ButtonSecondary className="w-full bg-blue-100 border-blue-200 text-blue-900 hover:bg-blue-200 hover:text-blue-900 font-semibold shadow-sm">
+                  Create Account
+                </ButtonSecondary>
               </Link>
             </div>
           </div>
 
           {/* Monthly Subscription */}
-          <div className="border-2 border-brightpair rounded-xl p-8 shadow-lg relative bg-white">
-            <div className="absolute top-0 right-0 transform translate-x-1 -translate-y-1/2 bg-brightpair text-white py-1 px-4 rounded-full text-sm font-medium">
+          <div className="border-2 border-brightpair rounded-md p-8 shadow-lg relative bg-white">
+            <div className="absolute top-0 right-0 transform translate-x-1 -translate-y-1/2 bg-brightpair text-white py-1 px-4 rounded-md text-sm font-medium">
               Most Popular
             </div>
             <div className="mb-6">
@@ -108,7 +113,7 @@ const PricingSection: React.FC = () => {
           </div>
 
           {/* Additional Tutoring */}
-          <div className="border rounded-xl p-8 shadow-sm hover:shadow-md transition-all bg-white">
+          <div className="border rounded-md p-8 shadow-sm hover:shadow-card transition-all bg-white">
             <div className="mb-6">
               <h3 className="text-xl font-bold font-display mb-2">Additional Tutoring</h3>
               <div className="mb-4">
@@ -141,9 +146,9 @@ const PricingSection: React.FC = () => {
                 <span>Session recordings & notes</span>
               </li>
             </ul>
-            <Button variant="outline" className="w-full" disabled>
+            <ButtonSecondary className="w-full" disabled>
               Available for Subscribers
-            </Button>
+            </ButtonSecondary>
           </div>
         </div>
         
@@ -156,6 +161,8 @@ const PricingSection: React.FC = () => {
           </Link>
         </div>
       </div>
-    </section>;
+    </section>
+  );
 };
+
 export default PricingSection;

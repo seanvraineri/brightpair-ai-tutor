@@ -35,7 +35,7 @@ const SessionItem: React.FC<SessionItemProps> = ({
   onCancel,
 }) => (
   <div
-    className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+    className="border rounded-md p-4 hover:bg-gray-50 transition-colors"
   >
     <div className="flex justify-between items-start mb-2">
       <h3 className="font-medium">{title}</h3>

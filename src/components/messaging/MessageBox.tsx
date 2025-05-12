@@ -137,7 +137,7 @@ const MessageBox: React.FC = () => {
                   </CardContent>
                 </Card>
               ) : (
-                <div className="text-center p-8 bg-gray-50 rounded-lg">
+                <div className="text-center p-8 bg-gray-50 rounded">
                   <p className="text-gray-500 mb-4">
                     No messages in this conversation yet.
                   </p>
@@ -146,7 +146,7 @@ const MessageBox: React.FC = () => {
               )}
             </>
           ) : (
-            <div className="text-center p-8 bg-gray-50 rounded-lg">
+            <div className="text-center p-8 bg-gray-50 rounded">
               <p className="text-gray-500 mb-4">
                 Select a conversation or start a new one.
               </p>

@@ -216,13 +216,13 @@ const QuizModal: React.FC<QuizModalProps> = ({ open, onOpenChange, topic }) => {
         <ScrollArea className="max-h-[70vh]">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center p-6">
-              <div className="w-10 h-10 border-4 border-t-brightpair border-brightpair-200 border-solid rounded-full animate-spin"></div>
+              <div className="w-10 h-10 border-4 border-t-brightpair border-brightpair-200 border-solid rounded-md animate-spin"></div>
               <p className="mt-3 text-sm text-gray-500">Generating {topic} questions...</p>
             </div>
           ) : quizCompleted ? (
             <div className="p-4">
               <div className="text-center mb-4">
-                <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-brightpair-50 mb-3">
+                <div className="inline-flex items-center justify-center h-16 w-16 rounded-md bg-brightpair-50 mb-3">
                   {calculateScore().percentage >= 70 ? (
                     <Trophy size={28} className="text-brightpair" />
                   ) : (

@@ -68,9 +68,9 @@ const AboutUs: React.FC = () => {
                 </div>
               </div>
               
-              <div className="rounded-xl overflow-hidden shadow-xl bg-gray-100 flex items-center justify-center p-12">
+              <div className="rounded-md overflow-hidden shadow-xl bg-gray-100 flex items-center justify-center p-12">
                 <div className="text-center">
-                  <div className="w-24 h-24 bg-brightpair rounded-full flex items-center justify-center mx-auto mb-6">
+                  <div className="w-24 h-24 bg-brightpair rounded-md flex items-center justify-center mx-auto mb-6">
                     <span className="text-white text-2xl font-bold">SR</span>
                   </div>
                   <h3 className="text-2xl font-bold mb-2">Sean Raineri</h3>
@@ -86,8 +86,8 @@ const AboutUs: React.FC = () => {
           <div className="container max-w-6xl mx-auto">
             <h2 className="text-3xl font-bold font-display mb-12 text-center">Our Values</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="bg-white p-8 rounded-xl shadow">
-                <div className="w-12 h-12 bg-brightpair-100 rounded-full flex items-center justify-center mb-4">
+              <div className="bg-white p-8 rounded-md shadow">
+                <div className="w-12 h-12 bg-brightpair-100 rounded-md flex items-center justify-center mb-4">
                   <span className="text-2xl">🧠</span>
                 </div>
                 <h3 className="text-xl font-semibold mb-3">Personalization</h3>
@@ -96,8 +96,8 @@ const AboutUs: React.FC = () => {
                 </p>
               </div>
               
-              <div className="bg-white p-8 rounded-xl shadow">
-                <div className="w-12 h-12 bg-brightpair-100 rounded-full flex items-center justify-center mb-4">
+              <div className="bg-white p-8 rounded-md shadow">
+                <div className="w-12 h-12 bg-brightpair-100 rounded-md flex items-center justify-center mb-4">
                   <span className="text-2xl">🤝</span>
                 </div>
                 <h3 className="text-xl font-semibold mb-3">Human Connection</h3>
@@ -106,8 +106,8 @@ const AboutUs: React.FC = () => {
                 </p>
               </div>
               
-              <div className="bg-white p-8 rounded-xl shadow">
-                <div className="w-12 h-12 bg-brightpair-100 rounded-full flex items-center justify-center mb-4">
+              <div className="bg-white p-8 rounded-md shadow">
+                <div className="w-12 h-12 bg-brightpair-100 rounded-md flex items-center justify-center mb-4">
                   <span className="text-2xl">📈</span>
                 </div>
                 <h3 className="text-xl font-semibold mb-3">Continuous Growth</h3>

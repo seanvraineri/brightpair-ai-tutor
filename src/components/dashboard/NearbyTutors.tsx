@@ -94,9 +94,9 @@ const NearbyTutors: React.FC = () => {
         {viewMode === "list" ? (
           <div className="grid grid-cols-1 gap-4">
             {NEARBY_TUTORS.slice(0, 3).map((tutor) => (
-              <div key={tutor.id} className="p-3 rounded-lg hover:bg-gray-50 transition-colors border border-gray-100">
+              <div key={tutor.id} className="p-3 rounded-md hover:bg-gray-50 transition-colors border border-gray-100">
                 <div className="flex items-center gap-3">
-                  <div className="h-12 w-12 rounded-full bg-brightpair-50 flex items-center justify-center text-xl font-medium text-brightpair flex-shrink-0">
+                  <div className="h-12 w-12 rounded-md bg-brightpair-50 flex items-center justify-center text-xl font-medium text-brightpair flex-shrink-0">
                     {tutor.name.charAt(0)}
                   </div>
                   <div className="flex-grow">

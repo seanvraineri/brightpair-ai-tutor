@@ -4,10 +4,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { Plus, Sparkles, ChevronLeft, ChevronRight, RotateCcw, Clock, CheckCircle, XCircle } from "lucide-react";
 import FlashcardGenerator from "@/components/flashcards/FlashcardGenerator";
+import FileUploader from "@/components/flashcards/FileUploader";
 import { getFlashcardSets, Flashcard, FlashcardSet } from "@/services/flashcardService";
 import { useUser } from "@/contexts/UserContext";
 import PrettyMath from "@/components/ui/PrettyMath";
 import { formatMessage } from "@/utils/messageFormatters";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Mock flashcard sets (we'll replace with actual data)
 const mockFlashcardSets = [
@@ -210,7 +212,7 @@ const Flashcards: React.FC = () => {
                       {mockFlashcardSets.map((set) => (
                         <div 
                           key={set.id}
-                          className={`p-3 rounded-lg cursor-pointer border transition-colors ${
+                          className={`p-3 rounded-md cursor-pointer border transition-colors ${
                             selectedSet === set.id 
                               ? 'border-brightpair bg-brightpair-50' 
                               : 'border-gray-200 hover:bg-gray-50'
@@ -228,7 +230,7 @@ const Flashcards: React.FC = () => {
                       
                       {generatedFlashcards.length > 0 && (
                         <div 
-                          className={`p-3 rounded-lg cursor-pointer border transition-colors ${
+                          className={`p-3 rounded-md cursor-pointer border transition-colors ${
                             selectedSet === 'generated' 
                               ? 'border-brightpair bg-brightpair-50' 
                               : 'border-gray-200 hover:bg-gray-50'
@@ -268,9 +270,9 @@ const Flashcards: React.FC = () => {
                             <p className="text-xs text-gray-500">{item.time}</p>
                           </div>
                         </div>
-                        <div className="w-16 h-1 bg-gray-200 rounded-full">
+                        <div className="w-16 h-1 bg-gray-200 rounded">
                           <div 
-                            className="h-1 bg-brightpair rounded-full" 
+                            className="h-1 bg-brightpair rounded" 
                             style={{ width: `${item.progress}%` }}
                           />
                         </div>
@@ -281,7 +283,21 @@ const Flashcards: React.FC = () => {
               </CardContent>
             </Card>
             
-            <FlashcardGenerator onFlashcardsGenerated={handleFlashcardsGenerated} />
+            {/* Generator tabs - Topic input or File upload */}
+            <Tabs defaultValue="topic">
+              <TabsList className="w-full mb-4">
+                <TabsTrigger value="topic" className="flex-1">Generate from Topic</TabsTrigger>
+                <TabsTrigger value="upload" className="flex-1">Upload Document</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="topic">
+                <FlashcardGenerator onFlashcardsGenerated={handleFlashcardsGenerated} />
+              </TabsContent>
+              
+              <TabsContent value="upload">
+                <FileUploader onFlashcardsGenerated={handleFlashcardsGenerated} />
+              </TabsContent>
+            </Tabs>
           </div>
         )}
         
@@ -321,7 +337,7 @@ const Flashcards: React.FC = () => {
                 style={{ transformStyle: "preserve-3d" }}
               >
                 <div
-                  className={`absolute w-full h-full backface-hidden rounded-xl p-6 flex flex-col justify-center items-center 
+                  className={`absolute w-full h-full backface-hidden rounded-md p-6 flex flex-col justify-center items-center 
                   ${flipped ? "opacity-0" : "bg-white shadow-lg border border-gray-200"}`}
                 >
                   <div className="text-xl font-medium text-center font-tutor">
@@ -330,7 +346,7 @@ const Flashcards: React.FC = () => {
                   <div className="mt-4 text-sm text-gray-500">Click to reveal answer</div>
                 </div>
                 <div
-                  className={`absolute w-full h-full backface-hidden rounded-xl p-6 flex flex-col justify-center items-center 
+                  className={`absolute w-full h-full backface-hidden rounded-md p-6 flex flex-col justify-center items-center 
                   bg-brightpair-50 shadow-lg border border-brightpair-100
                   ${flipped ? "" : "opacity-0"}`}
                   style={{ transform: "rotateY(180deg)" }}
@@ -399,7 +415,7 @@ const Flashcards: React.FC = () => {
             </div>
             <p className="text-lg font-medium mb-2">No flashcards found</p>
             <p className="text-gray-500 mb-4 text-center">
-              Create your first set of flashcards by generating them from a topic
+              Create your first set of flashcards by generating them from a topic or uploading a document
             </p>
             <Button className="bg-brightpair hover:bg-brightpair-600">
               Create Flashcards

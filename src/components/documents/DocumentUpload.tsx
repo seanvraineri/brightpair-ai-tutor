@@ -283,7 +283,7 @@ const DocumentUpload: React.FC = () => {
                         {doc.tags.length > 0 && (
                           <div className="flex flex-wrap gap-1 mt-2">
                             {doc.tags.map((tag, index) => (
-                              <span key={index} className="px-2 py-1 bg-gray-100 text-xs rounded-full">
+                              <span key={index} className="px-2 py-1 bg-gray-100 text-xs rounded">
                                 {tag}
                               </span>
                             ))}
