@@ -54,17 +54,17 @@ CREATE POLICY "Users can insert own lesson results"
 -- nightly mastery decay job helper
 create or replace function decay_mastery() returns void language sql as $$
   update student_skills
-  set mastery = greatest(0.01, mastery - 0.01)
-  where mastery > 0.3;
+  set mastery_level = greatest(0.01, mastery_level - 0.01)
+  where mastery_level > 0.3;
 $$;
 
 -- RPC to update mastery
 create or replace function update_student_skill(p_student uuid, p_skill uuid, p_delta numeric)
 returns void language sql as $$
-  insert into student_skills (student_id, skill_id, mastery)
+  insert into student_skills (student_id, skill_id, mastery_level)
   values (p_student, p_skill, 0.5 + p_delta)
   on conflict (student_id, skill_id)
-  do update set mastery = greatest(0.01, least(0.99, student_skills.mastery + p_delta));
+  do update set mastery_level = greatest(0.01, least(0.99, student_skills.mastery_level + p_delta));
 $$;
 
 -- Function to build a snapshot of student data for the AI system
@@ -79,12 +79,12 @@ returns json language sql as $$
       select json_agg(json_build_object(
         'skill_id', s.id,
         'name', s.name,
-        'mastery', ss.mastery
+        'mastery', ss.mastery_level
       ))
       from student_skills ss
       join skills s on ss.skill_id = s.id
       where ss.student_id = p_student
-      order by ss.mastery asc
+      order by ss.mastery_level asc
       limit 3
     ),
     'current_track', (
