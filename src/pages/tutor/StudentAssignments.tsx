@@ -16,7 +16,7 @@ const StudentAssignments = () => {
   const navigate = useNavigate();
   const { studentId } = useParams();
   const [studentName, setStudentName] = useState("Student");
-  const { assignments, isLoading: dataLoading, error: dataError, addAssignment } = useStudentAssignments(studentId);
+  const { assignments, isLoading: dataLoading, error: dataError, addAssignment, completeAssignment, isCompleting } = useStudentAssignments(studentId);
   const [metaLoading, setMetaLoading] = useState(true);
   const [metaError, setMetaError] = useState<string | null>(null);
   const [title, setTitle] = useState("");
@@ -121,14 +121,14 @@ const StudentAssignments = () => {
                 <div className="flex justify-between items-center mb-2">
                   <h3 className="font-medium">Assignment Progress</h3>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-500">0 of {assignments.length} completed</span>
-                    <span className="font-medium">0%</span>
+                    <span className="text-sm text-gray-500">{assignments.filter(a => a.status === "completed").length} of {assignments.length} completed</span>
+                    <span className="font-medium">{assignments.length === 0 ? 0 : Math.round((assignments.filter(a => a.status === "completed").length / assignments.length) * 100)}%</span>
                   </div>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2.5">
                   <div 
                     className="bg-brightpair h-2.5 rounded-full" 
-                    style={{ width: `0%` }}
+                    style={{ width: `${assignments.length === 0 ? 0 : (assignments.filter(a => a.status === "completed").length / assignments.length) * 100}%` }}
                   ></div>
                 </div>
                 <div className="flex justify-between mt-4">
@@ -229,11 +229,11 @@ const StudentAssignments = () => {
                               </div>
                             </div>
                             <Badge className="bg-brightpair-50 text-brightpair border-brightpair-100">
-                              Not Started
+                              {assignment.status === "completed" ? "Completed" : "Not Started"}
                             </Badge>
                           </div>
                           <div className="mt-2 text-sm">
-                            <p><span className="text-gray-500">Due:</span> {assignment.dueDate}</p>
+                            <p><span className="text-gray-500">Due:</span> {assignment.due_at ? assignment.due_at.split("T")[0] : ""}</p>
                           </div>
                         </div>
                         <div className="bg-gray-50 p-4 flex items-center">
@@ -244,14 +244,18 @@ const StudentAssignments = () => {
                           >
                             View Details
                           </Button>
-                          <Button 
-                            variant="outline"
-                            size="sm"
-                            className="flex items-center border-gray-300"
-                          >
-                            <Check className="h-4 w-4 mr-2" />
-                            Mark Complete
-                          </Button>
+                          {assignment.status !== "completed" && (
+                            <Button 
+                              variant="outline"
+                              size="sm"
+                              className="flex items-center border-gray-300"
+                              disabled={isCompleting}
+                              onClick={() => completeAssignment(assignment.id)}
+                            >
+                              <Check className="h-4 w-4 mr-2" />
+                              Mark Complete
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </Card>
