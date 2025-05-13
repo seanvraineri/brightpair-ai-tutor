@@ -184,7 +184,85 @@ go run . help
 
 # BrightPair AI Tutor
 
-A personalized AI-powered tutoring platform that generates personalized lessons, flashcards, quizzes, and provides one-on-one tutoring assistance.
+A personalized AI-powered tutoring platform powered by React, TypeScript and Supabase.
+
+---
+
+## Quick-start
+
+### 1. Clone & install
+
+```bash
+# Using pnpm (recommended) or npm / yarn
+pnpm install
+```
+
+### 2. Environment variables
+
+Copy `.env.example` → `.env.local` and fill in your project credentials:
+
+```env
+VITE_SUPABASE_URL=your-supabase-url
+VITE_SUPABASE_ANON_KEY=your-anon-key
+```
+
+### 3. Database
+
+If you only use the cloud database:
+
+```bash
+supabase link --project-ref <your-project-ref>
+supabase db push            # runs ./supabase/migrations/*
+```
+
+For full local workflow you'll need Docker and can run `supabase start` instead.
+
+### 4. Run the app
+
+```bash
+pnpm dev      # vite dev server on http://localhost:5173 (or 8083 if you changed it)
+```
+
+### 5. Type checking & linting
+
+```bash
+pnpm lint      # eslint + prettier
+pnpm typecheck # tsc --noEmit
+```
+
+---
+
+## Project structure (apps only)
+
+```
+src/
+  pages/           route based views
+  components/      shared UI + feature components
+  routes/          React-Router bundled route groups
+  services/        thin API / Supabase callers
+supabase/
+  migrations/      SQL change scripts (RLS policies etc.)
+```
+
+---
+
+## Current readiness score
+
+We're tracking progress across 5 pillars: Data, Auth, UX, Tests, DevOps.
+
+| Pillar | Status |
+| ------ | ------ |
+| Data layer & migrations | 70 % (core tables & RLS scripted; remaining: replace all mock fetches) |
+| Auth / role gates        | 80 % (role-based routing finished; signup flow TBD) |
+| UI / UX                  | 75 % (layout alignment fixed; responsive + a11y pass pending) |
+| Testing                  | 20 % (typecheck ok, tests not written) |
+| DevOps / docs            | 60 % (README updated, CI + monitoring todo) |
+
+**Overall completion ≈ 62 %.**
+
+Next milestone: wire live Supabase queries (students, assignments, messages) and push remaining migrations.
+
+---
 
 ## Features
 

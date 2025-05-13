@@ -9,7 +9,7 @@ interface NavItemProps {
   active?: boolean;
   onClick?: () => void;
   collapsed?: boolean;
-  badge?: string;
+  badge?: string | number;
 }
 
 const NavItem: React.FC<NavItemProps> = ({ 

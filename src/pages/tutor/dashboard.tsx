@@ -394,7 +394,7 @@ const TutorDashboard: React.FC = () => {
   
   return (
     <DashboardLayout>
-      <div className="max-w-5xl mx-auto space-y-6 px-4">
+      <div className="w-full space-y-6 px-6">
         {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <Card>

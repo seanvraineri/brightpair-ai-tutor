@@ -104,7 +104,7 @@ const StudentReportGenerator: React.FC<StudentReportGeneratorProps> = ({
       }
       
       // Save to database
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('student_progress_reports')
         .insert({
           student_id: studentId,
@@ -126,7 +126,7 @@ const StudentReportGenerator: React.FC<StudentReportGeneratorProps> = ({
       }
       
       if (data && onReportGenerated) {
-        onReportGenerated(data.id);
+        onReportGenerated((data as any).id);
       }
       
     } catch (error) {

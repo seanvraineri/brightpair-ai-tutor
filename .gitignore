@@ -75,3 +75,6 @@ storybook-static
 # User-specific files
 notes.md
 TODO.md
+
+# Ignore local MCP configuration
+.cursor

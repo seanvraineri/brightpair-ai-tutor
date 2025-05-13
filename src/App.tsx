@@ -3,9 +3,12 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useLocation, Outlet } from "react-router-dom";
+import React, { Suspense, lazy } from 'react';
 import { UserProvider, useUser } from "./contexts/UserContext";
 import { MessageProvider } from "./contexts/MessageContext";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import Spinner from '@/components/ui/spinner';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
 
 import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
@@ -37,43 +40,14 @@ import Lessons from "./pages/Lessons";
 import AITutor from "./pages/AITutor";
 import StudentNotes from "./pages/StudentNotes";
 import BillingManagement from "./pages/BillingManagement";
-import Curriculum from "./pages/Curriculum";
 import Reports from "./pages/Reports";
 import CustomLessonPage from "./pages/CustomLessonPage";
 import { useEffect, useState } from "react";
 import { supabase } from "./integrations/supabase/client";
-
-// Import TutorDashboard
-import TutorDashboard from "./pages/tutor/dashboard";
-
-// Import our newly created components
-import StudentDetailComponent from './pages/parent/StudentDetail';
-import MessageComposerPageComponent from './pages/parent/MessageComposerPage';
-import ReportViewPageComponent from './pages/parent/ReportViewPage';
-import StudentOnboarding from "./pages/tutor/StudentOnboarding";
-import HomeworkCreator from './pages/tutor/HomeworkCreator';
-
-// Import the new StudentAssignments component
-import StudentAssignments from "./pages/tutor/StudentAssignments";
-import TutorAssignments from "./pages/tutor/TutorAssignments";
-
-// Import the new homework components
-import HomeworkBuilder from './pages/tutor/HomeworkBuilder';
-import HomeworkViewer from './pages/student/HomeworkViewer';
-
-// Import the new curriculum builder component
 import CurriculumBuilder from './pages/tutor/CurriculumBuilder';
-import CurriculumManager from './pages/tutor/CurriculumManager';
-
-// Update the placeholder components
-const StudentDetail = ({ isParentView }: { isParentView?: boolean }) => <StudentDetailComponent isParentView={isParentView} />;
-const MessageComposerPage = ({ isParentView }: { isParentView?: boolean }) => <MessageComposerPageComponent isParentView={isParentView} />;
-const ReportViewPage = () => <ReportViewPageComponent />;
-
-const queryClient = new QueryClient();
 
 // Protected Route component to check role and authentication
-const ProtectedRoute = ({ children, allowedRole }: { children: React.ReactNode, allowedRole: string }) => {
+const ProtectedRoute = ({ children, allowedRole }: { children: React.ReactNode, allowedRole: string | string[] }) => {
   const { user, session } = useUser();
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(true);
@@ -103,8 +77,10 @@ const ProtectedRoute = ({ children, allowedRole }: { children: React.ReactNode, 
     return null;
   }
   
-  // If user doesn't have the required role, redirect to appropriate dashboard
-  if (user.role !== allowedRole) {
+  // Normalize allowed roles to array for flexible checks
+  const allowedRoles = Array.isArray(allowedRole) ? allowedRole : [allowedRole];
+  // If user doesn't have one of the required roles, redirect to appropriate dashboard
+  if (!allowedRoles.includes(user.role)) {
     // Redirect to appropriate dashboard based on role
     switch(user.role) {
       case "teacher":
@@ -164,6 +140,12 @@ const PublicDashboardLayout = () => {
   );
 };
 
+const TutorRoutes = lazy(() => import('./routes/TutorRoutes'));
+const StudentRoutes = lazy(() => import('./routes/StudentRoutes'));
+const ParentRoutes = lazy(() => import('./routes/ParentRoutes'));
+
+const queryClient = new QueryClient();
+
 function App() {
   return (
     <>
@@ -187,68 +169,38 @@ function App() {
                 <Route path="/about" element={<AboutUs />} />
                 <Route path="/careers" element={<Careers />} />
                 
-                {/* Tutor Dashboard Routes */}
-                <Route path="/tutor/dashboard" element={
-                  <DashboardLayout>
-                    <TutorDashboard />
-                  </DashboardLayout>
-                } />
-                <Route path="/tutor/student/:studentId" element={<StudentDetail />} />
-                <Route path="/tutor/student/:studentId/assignments" element={<StudentAssignments />} />
-                <Route path="/tutor/assignments" element={<TutorAssignments />} />
-                <Route path="/tutor/students/onboard" element={<StudentOnboarding />} />
-                <Route path="/tutor/students/new" element={
-                  <DashboardLayout>
-                    <div>New Student Form</div>
-                  </DashboardLayout>
+                {/* Tutor bundle (teachers & tutors) */}
+                <Route path="/tutor/*" element={
+                  <ProtectedRoute allowedRole={["teacher", "tutor"]}>
+                    <ErrorBoundary>
+                      <Suspense fallback={<Spinner />}>
+                        <TutorRoutes />
+                      </Suspense>
+                    </ErrorBoundary>
+                  </ProtectedRoute>
                 } />
                 
-                {/* Tutor Messaging Routes */}
-                <Route path="/tutor/messages" element={
-                  <DashboardLayout>
-                    <Messages />
-                  </DashboardLayout>
-                } />
-                <Route path="/tutor/messages/new" element={
-                  <DashboardLayout>
-                    <MessageComposerPage />
-                  </DashboardLayout>
-                } />
-
-                {/* Tutor Homework Routes */}
-                <Route path="/tutor/homework/create" element={
-                  <DashboardLayout>
-                    <HomeworkCreator />
-                  </DashboardLayout>
-                } />
-                <Route path="/tutor/homework/view/:id" element={
-                  <DashboardLayout>
-                    <div>Homework Detail View</div>
-                  </DashboardLayout>
-                } />
-                <Route path="/tutor/homework/builder" element={
-                  <DashboardLayout>
-                    <HomeworkBuilder />
-                  </DashboardLayout>
-                } />
-                <Route path="/tutor/homework/builder/:studentId" element={
-                  <DashboardLayout>
-                    <HomeworkBuilder />
-                  </DashboardLayout>
+                {/* Student bundle */}
+                <Route path="/student/*" element={
+                  <AuthRoute>
+                    <ErrorBoundary>
+                      <Suspense fallback={<Spinner />}>
+                        <StudentRoutes />
+                      </Suspense>
+                    </ErrorBoundary>
+                  </AuthRoute>
                 } />
                 
-                {/* Student Homework Routes */}
-                <Route path="/student/homework/:homeworkId" element={
-                  <DashboardLayout>
-                    <HomeworkViewer />
-                  </DashboardLayout>
+                {/* Parent bundle */}
+                <Route path="/parent/*" element={
+                  <ProtectedRoute allowedRole="parent">
+                    <ErrorBoundary>
+                      <Suspense fallback={<Spinner />}>
+                        <ParentRoutes />
+                      </Suspense>
+                    </ErrorBoundary>
+                  </ProtectedRoute>
                 } />
-                
-                {/* Parent Portal Direct Routes */}
-                <Route path="/parent/dashboard" element={<ParentDashboard />} />
-                <Route path="/parent/students/:id" element={<StudentDetail isParentView={true} />} />
-                <Route path="/parent/messages/new" element={<MessageComposerPage isParentView={true} />} />
-                <Route path="/parent/reports/view/:id" element={<ReportViewPage />} />
                 
                 {/* Public Dashboard Routes - no auth required but with nav */}
                 <Route element={<PublicDashboardLayout />}>
@@ -386,15 +338,12 @@ function App() {
                       <CustomLessonPage />
                     </DashboardLayout>
                   } />
-                  {/* Curriculum manager */}
-                  <Route path="/curricula" element={
-                    <ProtectedRoute allowedRole="teacher">
-                      <DashboardLayout>
-                        <CurriculumManager />
-                      </DashboardLayout>
-                    </ProtectedRoute>
-                  } />
                 </Route>
+                
+                <Route path="/student/dashboard" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/teacher/dashboard" element={<Navigate to="/teacher-dashboard" replace />} />
+                <Route path="/parent/dashboard" element={<Navigate to="/parent-dashboard" replace />} />
+                <Route path="/curricula" element={<Navigate to="/curriculum" replace />} />
                 
                 <Route path="*" element={<NotFound />} />
               </Routes>

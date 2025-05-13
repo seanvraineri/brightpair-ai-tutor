@@ -12,6 +12,10 @@ const ParentNavLinks: React.FC<ParentNavLinksProps> = ({ onItemClick, collapsed 
   const location = useLocation();
   
   const isActive = (path: string) => {
+    // Consider query params when checking for tabbed dashboard links
+    if (path.startsWith('/parent-dashboard')) {
+      return location.pathname === '/parent-dashboard';
+    }
     return location.pathname === path;
   };
 
@@ -24,10 +28,10 @@ const ParentNavLinks: React.FC<ParentNavLinksProps> = ({ onItemClick, collapsed 
       )}
       
       <NavItem 
-        to="/parent/dashboard" 
+        to="/parent-dashboard" 
         icon={<Users size={20} />} 
         label="Student Dashboard"
-        active={isActive("/parent/dashboard")}
+        active={isActive("/parent-dashboard")}
         onClick={onItemClick}
         collapsed={collapsed}
       />
@@ -60,19 +64,19 @@ const ParentNavLinks: React.FC<ParentNavLinksProps> = ({ onItemClick, collapsed 
       />
       
       <NavItem 
-        to="/schedule" 
+        to="/scheduling" 
         icon={<Calendar size={20} />} 
         label="Schedule"
-        active={isActive("/schedule")}
+        active={isActive("/scheduling")}
         onClick={onItemClick}
         collapsed={collapsed}
       />
       
       <NavItem 
-        to="/parent/reports" 
+        to="/parent-dashboard?tab=reports" 
         icon={<FileText size={20} />} 
         label="Reports"
-        active={isActive("/parent/reports")}
+        active={isActive("/parent-dashboard") && location.search.includes('tab=reports')}
         onClick={onItemClick}
         collapsed={collapsed}
       />

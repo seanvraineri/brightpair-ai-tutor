@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, UserRole, OnboardingStatus } from '@/contexts/UserTypes';
@@ -19,6 +18,7 @@ export const useUserProfile = () => {
       
       if (data) {
         setUser({
+          id: data.id,
           name: data.name,
           email: data.email,
           role: data.role as UserRole,

@@ -72,7 +72,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           </Button>
         </div>
         
-        <div className="max-w-7xl mx-auto relative">
+        <div className="w-full relative">
           {children}
         </div>
         

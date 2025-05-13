@@ -169,7 +169,7 @@ export const StudentDetail = () => {
   
   return (
     <DashboardLayout>
-      <div className="max-w-5xl mx-auto space-y-6 px-4">
+      <div className="w-full space-y-6 px-6">
         {/* Header with back button */}
         <div className="flex justify-between items-center">
           <Button
@@ -247,7 +247,7 @@ export const StudentDetail = () => {
           onValueChange={handleTabChange}
           className="w-full mt-8"
         >
-          <TabsList className="grid grid-cols-4 w-full max-w-3xl mx-auto">
+          <TabsList className="grid grid-cols-4 w-full justify-center">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="progress">Progress</TabsTrigger>
             <TabsTrigger value="assignments" onClick={handleNavigateToAssignments}>Assignments</TabsTrigger>

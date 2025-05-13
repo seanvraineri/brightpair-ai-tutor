@@ -33,7 +33,7 @@ export const useCustomLesson = () => {
       title: string;
       topic: string;
       focus?: string;
-      difficulty?: string;
+      difficulty?: "easy" | "medium" | "hard";
       learningGoal?: string;
     }) => {
       if (!session?.user?.id) {
@@ -70,11 +70,8 @@ export const useCustomLesson = () => {
         variant: "default",
       });
       
-      // Add the lesson to the query cache so it can be accessed immediately
-      queryClient.setQueryData(
-        ['custom-lesson', data.lesson.title], 
-        { success: true, lesson: data.lesson }
-      );
+      // Optimistically update documents list
+      queryClient.invalidateQueries({ queryKey: ['user-documents'] });
     },
     onError: (error: Error) => {
       toast({

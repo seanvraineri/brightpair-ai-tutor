@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useLocation } from "react-router-dom";
 import { User, Settings } from "lucide-react";
@@ -44,7 +43,7 @@ const NavLinks: React.FC<NavLinksProps> = ({ onItemClick }) => {
       {userRole === "parent" && <ParentNavLinks onItemClick={onItemClick} />}
       
       {/* Learning Resources - shown to all users */}
-      <LearningResourcesLinks userRole={userRole} onItemClick={onItemClick} />
+      <LearningResourcesLinks onItemClick={onItemClick} />
       
       {/* Tools Group - available to all users */}
       <ToolsLinks userRole={userRole} onItemClick={onItemClick} />

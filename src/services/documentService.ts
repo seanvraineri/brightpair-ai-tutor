@@ -2,6 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { generateLessonFromContent, extractPDFText } from "./aiService";
 import { IS_DEVELOPMENT } from "@/config/env";
 import { v4 as uuidv4 } from "uuid";
+import { ReactNode } from "react";
 
 // Interface for document upload parameters
 export interface DocumentUploadParams {
@@ -11,7 +12,7 @@ export interface DocumentUploadParams {
   userId: string;
   topic: string;
   focus?: string;
-  difficulty?: string;
+  difficulty?: "easy" | "medium" | "hard";
   learningGoal?: string;
   learningPreferences?: {
     style?: string;
@@ -21,22 +22,19 @@ export interface DocumentUploadParams {
 
 // Interface for the document in storage
 export interface UserDocument {
-  topic: ReactNode;
-  contentType(contentType: any): import("react").ReactNode;
-  createdAt(createdAt: any): import("react").ReactNode;
-  url(url: any): void;
   id: string;
   title: string;
+  topic: string;
+  contentType: "pdf" | "document" | "notes";
+  createdAt: string;
+  url: string;
+
+  // Optional metadata
   description?: string;
-  content?: string;
-  file_url?: string;
-  file_type: string;
-  file_name: string;
-  file_size: number;
-  created_at: string;
-  student_id: string;
   difficulty?: "beginner" | "intermediate" | "advanced";
   subject?: string;
+  fileName?: string;
+  fileSize?: number;
 }
 
 // Interface for document database record
@@ -60,27 +58,29 @@ const mockDocuments: UserDocument[] = [
   {
     id: "doc-1",
     title: "Calculus Notes",
+    topic: "Calculus",
+    contentType: "pdf",
+    createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+    url: "/user_documents/user-1/calculus_notes.pdf",
     description: "My notes from Calculus I",
-    file_type: "pdf",
-    file_name: "calculus_notes.pdf",
-    file_size: 1024000,
-    created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-    student_id: "user-1",
     difficulty: "intermediate",
-    subject: "Mathematics"
+    subject: "Mathematics",
+    fileName: "calculus_notes.pdf",
+    fileSize: 1024000,
   },
   {
     id: "doc-2",
     title: "Physics Lab Report",
+    topic: "Physics",
+    contentType: "pdf",
+    createdAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
+    url: "/user_documents/user-1/physics_lab.pdf",
     description: "Lab report on Newton's Laws",
-    file_type: "pdf",
-    file_name: "physics_lab.pdf",
-    file_size: 2048000,
-    created_at: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
-    student_id: "user-1",
     difficulty: "advanced",
-    subject: "Physics"
-  }
+    subject: "Physics",
+    fileName: "physics_lab.pdf",
+    fileSize: 2048000,
+  },
 ];
 
 /**
@@ -90,9 +90,9 @@ export const extractTextFromPDF = async (fileUrl: string): Promise<string | null
   try {
     console.log("Extracting text from PDF", fileUrl);
     // Call the AI service to extract text from the PDF
-    const text = await extractPDFText(fileUrl);
+    const { text, success } = await extractPDFText(fileUrl);
     
-    if (!text) {
+    if (!success || !text) {
       console.error("Failed to extract text from PDF");
       return null;
     }
@@ -114,7 +114,7 @@ export const processDocumentForLesson = async (params: DocumentUploadParams): Pr
   try {
     let content = text || "";
     let documentUrl: string | null = null;
-    let contentType = "notes";
+    let contentType: UserDocument["contentType"] = "notes";
     
     // Handle file upload if a file is provided
     if (file) {
@@ -149,7 +149,7 @@ export const processDocumentForLesson = async (params: DocumentUploadParams): Pr
       }
       
       // Save document reference to database
-      const docData = {
+      const docData: Partial<UserDocumentRecord> = {
         title: title || file.name,
         description: focus || '',
         content,
@@ -162,9 +162,9 @@ export const processDocumentForLesson = async (params: DocumentUploadParams): Pr
         subject: topic,
       };
       
-      const { data: document, error: dbError } = await supabase
+      const { data: document, error: dbError } = await (supabase as any)
         .from('user_documents')
-        .insert(docData)
+        .insert(docData as any)
         .select()
         .single();
       
@@ -173,7 +173,7 @@ export const processDocumentForLesson = async (params: DocumentUploadParams): Pr
         return null;
       }
       
-      return document as UserDocument;
+      return document as unknown as UserDocument;
     }
     
     // Make sure we have some content to work with
@@ -188,7 +188,7 @@ export const processDocumentForLesson = async (params: DocumentUploadParams): Pr
       {
         topic: topic,
         contentType: contentType,
-        difficulty: (difficulty || "medium") as "easy" | "medium" | "hard"
+        difficulty: (difficulty || "medium")
       }
     );
     
@@ -196,13 +196,18 @@ export const processDocumentForLesson = async (params: DocumentUploadParams): Pr
       ...result.lesson,
       id: uuidv4(),
       description: focus || '',
-      file_type: contentType,
-      file_name: title || 'Untitled',
-      file_size: 0,
-      created_at: new Date().toISOString(),
-      student_id: userId,
-      difficulty: difficulty || "medium",
+      topic,
+      contentType,
+      fileName: title || 'Untitled',
+      fileSize: 0,
+      createdAt: new Date().toISOString(),
+      difficulty: ((): UserDocument["difficulty"] => {
+        if (difficulty === "easy") return "beginner";
+        if (difficulty === "hard") return "advanced";
+        return "intermediate";
+      })(),
       subject: topic,
+      url: "", // no file URL for text-only lessons
     };
   } catch (error) {
     console.error('Document processing error:', error);
@@ -215,7 +220,7 @@ export const processDocumentForLesson = async (params: DocumentUploadParams): Pr
  */
 export const getUserDocuments = async (studentId: string): Promise<UserDocument[]> => {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('user_documents')
       .select('*')
       .eq('student_id', studentId)
@@ -231,9 +236,23 @@ export const getUserDocuments = async (studentId: string): Promise<UserDocument[
     }
     
     // Convert UserDocumentRecord to UserDocument with correct type handling
-    return data.map(doc => ({
-      ...doc,
-      difficulty: doc.difficulty as "beginner" | "intermediate" | "advanced" | undefined,
+    return data.map<UserDocument>(doc => ({
+      id: doc.id,
+      title: doc.title,
+      topic: doc.subject || doc.title,
+      contentType: (doc.file_type as UserDocument["contentType"]) || "notes",
+      createdAt: doc.created_at,
+      url: doc.file_url || "",
+      description: doc.description,
+      difficulty: ((): UserDocument["difficulty"] => {
+        if (doc.difficulty === "easy" || doc.difficulty === "beginner") return "beginner";
+        if (doc.difficulty === "hard" || doc.difficulty === "advanced") return "advanced";
+        if (doc.difficulty === "intermediate" || doc.difficulty === "medium") return "intermediate";
+        return undefined;
+      })(),
+      subject: doc.subject,
+      fileName: doc.file_name,
+      fileSize: doc.file_size,
     }));
   } catch (error) {
     console.error("Error in getUserDocuments:", error);

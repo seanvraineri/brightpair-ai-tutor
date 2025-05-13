@@ -139,7 +139,7 @@ const Dashboard: React.FC = () => {
     <div className="flex flex-col min-h-screen">
       <div className="flex-1">
         <DashboardHeader />
-        <div className="container px-4 py-6 mx-auto">
+        <div className="w-full px-6 py-6">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
             <div className="md:col-span-12">
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome back!</h1>

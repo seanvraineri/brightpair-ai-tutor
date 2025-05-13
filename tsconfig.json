@@ -1,21 +1,11 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
   "display": "BrightPair Root",
-  "references": [
-    {
-      "path": "./tsconfig.app.json"
-    },
-    {
-      "path": "./tsconfig.node.json"
-    }
-  ],
   "compilerOptions": {
-    "composite": true,
     "target": "ES2022",
     "module": "ES2022",
     "moduleResolution": "bundler",
     "types": [
-      "deno.ns",
       "tailwindcss"
     ],
     "jsx": "react-jsx",
@@ -35,8 +25,7 @@
     "strictNullChecks": false
   },
   "include": [
-    "src",
-    "supabase/functions"
+    "src"
   ],
   "exclude": [
     "node_modules"

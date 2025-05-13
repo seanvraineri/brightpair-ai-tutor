@@ -101,7 +101,7 @@ const DashboardNav: React.FC<DashboardNavProps> = ({
                   to={user?.role === "teacher" 
                     ? "/teacher-dashboard" 
                     : user?.role === "parent" 
-                      ? "/parent/dashboard" 
+                      ? "/parent-dashboard" 
                       : "/dashboard"
                   }
                   className="flex items-center px-3 py-2 text-sm rounded-md hover:bg-accent"
@@ -184,7 +184,7 @@ const DashboardNav: React.FC<DashboardNavProps> = ({
               to={user?.role === "teacher" 
                 ? "/teacher-dashboard" 
                 : user?.role === "parent" 
-                  ? "/parent/dashboard" 
+                  ? "/parent-dashboard" 
                   : "/dashboard"
               }
               className={`flex items-center ${isCollapsed ? 'justify-center' : 'px-2'} py-2 text-sm rounded-md hover:bg-accent

@@ -24,7 +24,7 @@ export function CustomLessonCreator() {
   const [topic, setTopic] = useState('');
   const [notes, setNotes] = useState('');
   const [file, setFile] = useState<File | null>(null);
-  const [difficulty, setDifficulty] = useState('medium');
+  const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">('medium');
   const [focus, setFocus] = useState('');
   const [learningGoal, setLearningGoal] = useState('');
   
@@ -116,7 +116,7 @@ export function CustomLessonCreator() {
             
             <div className="space-y-2">
               <Label htmlFor="difficulty">Difficulty Level</Label>
-              <Select value={difficulty} onValueChange={setDifficulty}>
+              <Select value={difficulty} onValueChange={(v) => setDifficulty(v as "easy" | "medium" | "hard")}>
                 <SelectTrigger id="difficulty">
                   <SelectValue placeholder="Select difficulty" />
                 </SelectTrigger>

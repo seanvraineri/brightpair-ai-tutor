@@ -53,10 +53,10 @@ const TeacherNavLinks: React.FC<TeacherNavLinksProps> = ({ onItemClick, collapse
       />
       
       <NavItem 
-        to="/curricula" 
+        to="/curriculum" 
         icon={<BookOpen size={20} />} 
         label="Curriculum"
-        active={isActive("/curricula")}
+        active={isActive("/curriculum")}
         onClick={onItemClick}
         collapsed={collapsed}
       />

@@ -202,7 +202,7 @@ const TutorAssignments = () => {
   
   return (
     <DashboardLayout>
-      <div className="max-w-7xl mx-auto px-4 py-6">
+      <div className="w-full px-6 py-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="text-3xl font-bold">Assignments</h1>
