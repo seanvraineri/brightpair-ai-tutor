@@ -10,13 +10,15 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { getStudentDocuments } from "@/services/userDocumentService";
+import { useStudentAssignments } from "@/hooks/useStudentAssignments";
 
 const StudentAssignments = () => {
   const navigate = useNavigate();
   const { studentId } = useParams();
   const [studentName, setStudentName] = useState("Student");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { assignments, isLoading: dataLoading, error: dataError, addAssignment } = useStudentAssignments(studentId);
+  const [metaLoading, setMetaLoading] = useState(true);
+  const [metaError, setMetaError] = useState<string | null>(null);
   const [title, setTitle] = useState("");
   const [subject, setSubject] = useState("");
   const [dueDate, setDueDate] = useState("");
@@ -29,28 +31,11 @@ const StudentAssignments = () => {
     "student-3": "Michael Chen"
   };
   
-  const [assignments, setAssignments] = useState([
-    {
-      id: "1",
-      title: "Algebra Practice Set",
-      subject: "Mathematics",
-      dueDate: "2023-06-18",
-      status: "not-started"
-    },
-    {
-      id: "2",
-      title: "Cell Structure Quiz",
-      subject: "Science",
-      dueDate: "2023-06-20",
-      status: "not-started"
-    }
-  ]);
-  
   // Load student data and assignments
   useEffect(() => {
     const loadData = async () => {
       try {
-        setLoading(true);
+        setMetaLoading(true);
         
         // Set student name
         if (studentId && studentId in mockStudents) {
@@ -65,33 +50,29 @@ const StudentAssignments = () => {
           await getStudentDocuments(studentId);
         }
         
-        setLoading(false);
+        setMetaLoading(false);
       } catch (err) {
         console.error("Error loading student data:", err);
-        setError("Failed to load student data. Please try again.");
-        setLoading(false);
+        setMetaError("Failed to load student data. Please try again.");
+        setMetaLoading(false);
       }
     };
     
     loadData();
   }, [studentId]);
 
-  const handleAssignTask = () => {
-    if (!title || !subject || !dueDate) return;
-    
-    // Add new assignment
-    setAssignments([
-      ...assignments,
-      {
-        id: Date.now().toString(),
-        title,
-        subject,
-        dueDate,
-        status: "not-started"
-      }
-    ]);
-    
-    // Reset form
+  const handleAssignTask = async () => {
+    if (!title || !subject || !dueDate || !studentId) return;
+
+    await addAssignment({
+      student_id: studentId,
+      title,
+      content_md: instructions || null,
+      due_at: new Date(dueDate).toISOString(),
+      status: "not-started",
+    } as any);
+
+    // Reset form inputs
     setTitle("");
     setSubject("");
     setDueDate("");
@@ -117,16 +98,16 @@ const StudentAssignments = () => {
         </div>
 
         {/* Error message if any */}
-        {error && (
+        {(metaError || dataError) && (
           <Card className="mb-6 bg-red-50 border-red-200">
             <CardContent className="p-4 text-red-800">
-              {error}
+              {metaError || dataError?.message}
             </CardContent>
           </Card>
         )}
 
         {/* Loading indicator */}
-        {loading ? (
+        {metaLoading || dataLoading ? (
           <Card className="mb-6">
             <CardContent className="p-4 text-center">
               Loading assignments...
