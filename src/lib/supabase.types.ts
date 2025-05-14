@@ -219,6 +219,7 @@ export type Database = {
           subject: string
           title: string
           track_id: string | null
+          tutor_id: string | null
           updated_at: string
         }
         Insert: {
@@ -233,6 +234,7 @@ export type Database = {
           subject: string
           title: string
           track_id?: string | null
+          tutor_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -247,6 +249,7 @@ export type Database = {
           subject?: string
           title?: string
           track_id?: string | null
+          tutor_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -255,6 +258,13 @@ export type Database = {
             columns: ["track_id"]
             isOneToOne: false
             referencedRelation: "learning_tracks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "homework_tutor_id_fkey"
+            columns: ["tutor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
