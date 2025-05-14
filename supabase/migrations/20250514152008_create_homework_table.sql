@@ -12,7 +12,9 @@ create table if not exists public.homework (
 
 alter table public.homework enable row level security;
 
-create policy if not exists sel_homework
+drop policy if exists sel_homework on public.homework;
+
+create policy sel_homework
   on public.homework
   for select
   using (
@@ -22,12 +24,16 @@ create policy if not exists sel_homework
     or public.is_parent_of(student_id)
   );
 
-create policy if not exists ins_homework_tutor
+drop policy if exists ins_homework_tutor on public.homework;
+
+create policy ins_homework_tutor
   on public.homework
   for insert
   with check ( tutor_id = auth.uid() );
 
-create policy if not exists upd_homework_tutor
+drop policy if exists upd_homework_tutor on public.homework;
+
+create policy upd_homework_tutor
   on public.homework
   for update
   using ( tutor_id = auth.uid() );
