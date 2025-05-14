@@ -11,6 +11,7 @@ import StudentManagement from "@/components/tutor/StudentManagement";
 import { useUser } from "@/contexts/UserContext";
 import { useNavigate } from "react-router-dom";
 import { Users, BookOpen, BarChart, Calendar as CalendarIcon, Clock } from "lucide-react";
+import { IS_DEVELOPMENT } from "@/config/env";
 
 const TeacherDashboard: React.FC = () => {
   const { toast } = useToast();
@@ -19,17 +20,19 @@ const TeacherDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [date, setDate] = useState<Date | undefined>(new Date());
 
-  // Mock data
-  const studentCount = 12;
-  const upcomingSessions = 5;
-  const pendingAssignments = 8;
-  
-  // Mock upcoming sessions
-  const upcomingSessionsData = [
-    { id: "s1", student: "Alex Smith", subject: "Mathematics", date: "2023-06-17", time: "10:00 AM", duration: "1 hour" },
-    { id: "s2", student: "Jamie Johnson", subject: "English", date: "2023-06-17", time: "2:00 PM", duration: "1 hour" },
-    { id: "s3", student: "Taylor Brown", subject: "Computer Science", date: "2023-06-18", time: "4:00 PM", duration: "1 hour" },
-  ];
+  // Development-only mock metrics (replace with live queries)
+  const studentCount = IS_DEVELOPMENT ? 12 : 0;
+  const upcomingSessions = IS_DEVELOPMENT ? 5 : 0;
+  const pendingAssignments = IS_DEVELOPMENT ? 8 : 0;
+
+  // Development-only mock upcoming sessions
+  const upcomingSessionsData = IS_DEVELOPMENT
+    ? [
+        { id: "s1", student: "Alex Smith", subject: "Mathematics", date: "2023-06-17", time: "10:00 AM", duration: "1 hour" },
+        { id: "s2", student: "Jamie Johnson", subject: "English", date: "2023-06-17", time: "2:00 PM", duration: "1 hour" },
+        { id: "s3", student: "Taylor Brown", subject: "Computer Science", date: "2023-06-18", time: "4:00 PM", duration: "1 hour" },
+      ]
+    : [];
   
   // Navigation handlers
   const handleNavToStudentNotes = () => navigate("/student-notes");

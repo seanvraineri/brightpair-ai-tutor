@@ -1,6 +1,6 @@
 import React from "react";
 import { useLocation } from "react-router-dom";
-import { Users, NotebookPen, BookOpen, BarChart, MessageSquare, FileText, BookOpenCheck } from "lucide-react";
+import { Users, NotebookPen, BookOpen, BarChart, MessageSquare, BookOpenCheck } from "lucide-react";
 import NavItem from "./NavItem";
 
 interface TeacherNavLinksProps {
@@ -14,11 +14,6 @@ const TeacherNavLinks: React.FC<TeacherNavLinksProps> = ({ onItemClick, collapse
   const isActive = (path: string) => {
     if (path === "/tutor/dashboard") {
       return location.pathname === "/tutor/dashboard";
-    }
-    // Check for specific tutor subpaths
-    if (path === "/tutor/assignments") {
-      return location.pathname === "/tutor/assignments" || 
-        location.pathname.includes("/tutor/student") && location.pathname.includes("/assignments");
     }
     if (path === "/tutor/homework/builder") {
       return location.pathname.includes("/tutor/homework/builder");
@@ -81,15 +76,6 @@ const TeacherNavLinks: React.FC<TeacherNavLinksProps> = ({ onItemClick, collapse
         icon={<Users size={20} />} 
         label="Students"
         active={isActive("/tutor/dashboard")}
-        onClick={onItemClick}
-        collapsed={collapsed}
-      />
-      
-      <NavItem 
-        to="/tutor/assignments" 
-        icon={<FileText size={20} />} 
-        label="Assignments"
-        active={isActive("/tutor/assignments")}
         onClick={onItemClick}
         collapsed={collapsed}
       />

@@ -79,8 +79,8 @@ const StudentTable: React.FC<StudentTableProps> = ({
   };
   
   const handleManageAssignments = (studentId: string) => {
-    // Navigate directly to the dedicated assignments page
-    navigate(`/tutor/student/${studentId}/assignments`);
+    // Navigate to Homework Builder, pre-filtered for the student
+    navigate(`/tutor/homework/builder?studentId=${studentId}`);
   };
   
   const handleGenerateReport = (studentId: string) => {
@@ -242,7 +242,7 @@ const StudentTable: React.FC<StudentTableProps> = ({
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleManageAssignments(student.id)}>
                           <BookOpen className="mr-2 h-4 w-4" />
-                          Assignments
+                          Homework
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleGenerateReport(student.id)}>
                           <FileText className="mr-2 h-4 w-4" />

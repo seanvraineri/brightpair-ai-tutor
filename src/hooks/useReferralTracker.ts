@@ -80,7 +80,7 @@ export function useReferralTracker(referralData: Referral[]) {
     if (timeRange === 'all') return referralData;
     
     const now = new Date();
-    let cutoffDate = new Date();
+    const cutoffDate = new Date();
     
     switch(timeRange) {
       case 'month':

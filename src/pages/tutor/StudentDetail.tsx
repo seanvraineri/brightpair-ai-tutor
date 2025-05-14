@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { IS_DEVELOPMENT } from "@/config/env";
 
 export const StudentDetail = () => {
   const { studentId } = useParams();
@@ -35,7 +36,7 @@ export const StudentDetail = () => {
   });
   
   // Mock homework data - would be fetched from API in a real app
-  const [homeworkAssignments, setHomeworkAssignments] = useState([
+  const [homeworkAssignments, setHomeworkAssignments] = useState(IS_DEVELOPMENT ? [
     {
       id: "1",
       title: "Algebra Equations Practice",
@@ -69,10 +70,10 @@ export const StudentDetail = () => {
       grade: null,
       feedback: null
     }
-  ]);
+  ] : []);
   
   // Mock session data
-  const [sessions, setSessions] = useState([
+  const [sessions, setSessions] = useState(IS_DEVELOPMENT ? [
     {
       id: "1",
       date: "May 5, 2023",
@@ -91,7 +92,7 @@ export const StudentDetail = () => {
       notes: "",
       completed: false
     }
-  ]);
+  ] : []);
   
   // Get data from API in a real application
   useEffect(() => {
@@ -153,12 +154,6 @@ export const StudentDetail = () => {
   
   const handleTabChange = (value: string) => {
     setActiveTab(value);
-  };
-
-  const handleNavigateToAssignments = () => {
-    if (studentId) {
-      navigate(`/tutor/student/${studentId}/assignments`);
-    }
   };
 
   // Force browser to reload the component (added to help with caching issues)
@@ -250,7 +245,6 @@ export const StudentDetail = () => {
           <TabsList className="grid grid-cols-4 w-full justify-center">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="progress">Progress</TabsTrigger>
-            <TabsTrigger value="assignments" onClick={handleNavigateToAssignments}>Assignments</TabsTrigger>
             <TabsTrigger value="notes">Notes</TabsTrigger>
           </TabsList>
           

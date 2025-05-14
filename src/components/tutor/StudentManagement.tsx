@@ -11,11 +11,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import { FilterX, Plus, Search, UserPlus, BookOpen, CheckCircle, Clock, FileText, MailIcon, MessagesSquare, User, X } from "lucide-react";
+import { IS_DEVELOPMENT } from "@/config/env";
 
 import StudentNotes from "./StudentNotes";
 
-// Mock student data - would come from backend in production
-const mockStudents = [
+// Development-only mock data (replace with live queries)
+const mockStudents = IS_DEVELOPMENT ? [
   { 
     id: "1", 
     name: "Alex Smith", 
@@ -64,10 +65,10 @@ const mockStudents = [
     nextSession: "2023-06-18",
     avatarUrl: ""
   },
-];
+] : [];
 
-// Mock assignments
-const mockAssignments = [
+// Development-only mock assignments
+const mockAssignments = IS_DEVELOPMENT ? [
   {
     id: "a1",
     studentId: "1",
@@ -116,7 +117,7 @@ const mockAssignments = [
     subject: "Physics",
     status: "pending"
   }
-];
+] : [];
 
 const gradeOptions = ["6th", "7th", "8th", "9th", "10th", "11th", "12th"];
 const subjectOptions = ["Mathematics", "Science", "English", "History", "Physics", "Chemistry", "Biology", "Computer Science"];

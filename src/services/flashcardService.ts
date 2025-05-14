@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
 import { generateFlashcards as aiGenerateFlashcards } from "@/services/aiService";
@@ -173,8 +171,8 @@ export const processUploadedDocument = async (params: ProcessDocumentParams): Pr
 export const getFlashcardSets = async (studentId?: string): Promise<FlashcardSet[]> => {
   try {
     // Using type assertion to bypass TypeScript error
-    let query = (supabase
-      .from('flashcards_sets') as any)
+    let query = (supabase as any)
+      .from('flashcards_sets')
       .select('*')
       .order('created_at', { ascending: false });
       
@@ -233,8 +231,8 @@ function getMockFlashcardSets(studentId?: string): FlashcardSet[] {
 export const getFlashcardSetById = async (id: string): Promise<FlashcardSet | null> => {
   try {
     // Using type assertion to bypass TypeScript error
-    const { data, error } = await (supabase
-      .from('flashcards_sets') as any)
+    const { data, error } = await (supabase as any)
+      .from('flashcards_sets')
       .select('*')
       .eq('id', id)
       .single();
@@ -267,8 +265,8 @@ export const getFlashcardSetById = async (id: string): Promise<FlashcardSet | nu
 // Add a function to save a flashcard set
 export const saveFlashcardSet = async (flashcardSet: Omit<FlashcardSet, 'id' | 'createdAt'>): Promise<FlashcardSet | null> => {
   try {
-    const { data, error } = await (supabase
-      .from('flashcards_sets') as any)
+    const { data, error } = await (supabase as any)
+      .from('flashcards_sets')
       .insert({
         name: flashcardSet.name,
         description: flashcardSet.description,
