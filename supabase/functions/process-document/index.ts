@@ -24,7 +24,9 @@ serve(async (req) => {
 
   try {
     // Parse the request body
-    const { documentUrl, title, userId, learningPreferences } = await req.json();
+    const body = await req.json();
+    const documentUrl = body.documentUrl || body.document_url || body.url;
+    const { title, userId, learningPreferences } = body;
 
     // Validate required parameters
     if (!documentUrl) {

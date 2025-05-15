@@ -11,6 +11,11 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// In-memory rate limiter (per function instance)
+const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
+const RATE_LIMIT_MAX_REQUESTS = 10;
+const rateLimitMap = new Map(); // key: user, value: { count, windowStart }
+
 // Handle CORS preflight requests
 const handleCors = (req: Request) => {
   if (req.method === 'OPTIONS') {
@@ -428,33 +433,113 @@ The student is asking about homework. Focus on guiding them through the problem-
   return finalPrompt;
 };
 
+/*
+BrightPair AI Tutor Edge Function
+================================
+
+API Endpoint: POST /functions/v1/ai-tutor
+
+Request Body (JSON):
+{
+  "message": string,           // Required. The user's message/question.
+  "userProfile": object,       // Required. The user's profile object.
+  "trackId": string,           // Optional. The active learning track ID.
+  "studentId": string,         // Optional. The student ID.
+  "learningHistory": object    // Required. The student's learning history.
+}
+
+Headers:
+- Authorization: Bearer <token> (required)
+
+Responses:
+- 200: { success: true, response: string }
+- 400: { success: false, error: string } (bad input)
+- 401: { success: false, error: string } (missing/invalid auth)
+- 429: { success: false, error: string } (rate limit exceeded)
+- 500: { success: false, error: string } (internal error)
+
+*/
 serve(async (req) => {
   const corsResponse = handleCors(req);
   if (corsResponse) return corsResponse;
   
-  try {
-    // Check authentication
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
+  // Rate limiting (by Authorization header)
+  const authHeader = req.headers.get('Authorization') || '';
+  const now = Date.now();
+  let rl = rateLimitMap.get(authHeader);
+  if (!rl || now - rl.windowStart > RATE_LIMIT_WINDOW_MS) {
+    rl = { count: 1, windowStart: now };
+    rateLimitMap.set(authHeader, rl);
+  } else {
+    rl.count++;
+    if (rl.count > RATE_LIMIT_MAX_REQUESTS) {
+      console.warn(`[${new Date().toISOString()}] Rate limit exceeded for user: ${authHeader.substring(0, 8)}...`);
       return new Response(
-        JSON.stringify({ success: false, error: 'Missing authorization header' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+        JSON.stringify({ success: false, error: `Rate limit exceeded: max ${RATE_LIMIT_MAX_REQUESTS} requests per minute.` }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 429 }
       );
     }
-    // Create Supabase client with admin privileges
-    const supabaseUrl = process.env.SUPABASE_URL || '';
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    
+  }
+
+  try {
     // Parse request data
-    const { message, userProfile, trackId, studentId, learningHistory } = await req.json();
-    
-    if (!message) {
+    let body;
+    try {
+      body = await req.json();
+    } catch (e) {
+      console.error(`[${new Date().toISOString()}] Invalid JSON in request body.`);
       return new Response(
-        JSON.stringify({ success: false, error: 'Message is required' }),
+        JSON.stringify({ success: false, error: 'Invalid JSON in request body' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       );
     }
+    // Input validation
+    const isString = (v) => typeof v === 'string' && v.length > 0;
+    const isObject = (v) => v && typeof v === 'object' && !Array.isArray(v);
+    const {
+      message,
+      userProfile,
+      trackId,
+      studentId,
+      learningHistory
+    } = body;
+    if (!isString(message)) {
+      console.error(`[${new Date().toISOString()}] Missing or invalid 'message' field.`);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Field "message" (string) is required.' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
+    }
+    if (!isObject(userProfile)) {
+      console.error(`[${new Date().toISOString()}] Missing or invalid 'userProfile' field.`);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Field "userProfile" (object) is required.' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
+    }
+    if (trackId && !isString(trackId)) {
+      console.error(`[${new Date().toISOString()}] Invalid 'trackId' field.`);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Field "trackId" must be a string if provided.' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
+    }
+    if (studentId && !isString(studentId)) {
+      console.error(`[${new Date().toISOString()}] Invalid 'studentId' field.`);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Field "studentId" must be a string if provided.' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
+    }
+    if (!isObject(learningHistory)) {
+      console.error(`[${new Date().toISOString()}] Missing or invalid 'learningHistory' field.`);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Field "learningHistory" (object) is required.' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
+    }
+    // Log incoming request (summary)
+    console.log(`[${new Date().toISOString()}] Request from user: ${authHeader.substring(0, 8)}... | Message: ${message.substring(0, 60)}${message.length > 60 ? '...' : ''}`);
     
     // Fetch student context if studentId is provided
     const studentContext = studentId 
@@ -508,7 +593,7 @@ serve(async (req) => {
       
       if (!openAIResponse.ok) {
         const errorData = await openAIResponse.json();
-        console.error('OpenAI API error:', errorData);
+        console.error(`[${new Date().toISOString()}] OpenAI API error:`, errorData);
         throw new Error(`OpenAI API error: ${errorData.error?.message || 'Unknown error'}`);
       }
       
@@ -524,7 +609,7 @@ serve(async (req) => {
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     } catch (openAIError) {
-      console.error('Error calling OpenAI API:', openAIError);
+      console.error(`[${new Date().toISOString()}] Error calling OpenAI API:`, openAIError);
       return new Response(
         JSON.stringify({
           success: false,
@@ -534,8 +619,7 @@ serve(async (req) => {
       );
     }
   } catch (error) {
-    console.error('Error in AI tutor function:', error);
-    
+    console.error(`[${new Date().toISOString()}] Error in AI tutor function:`, error);
     return new Response(
       JSON.stringify({
         success: false,

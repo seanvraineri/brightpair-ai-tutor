@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import ReactMarkdown from 'react-markdown';
 import {
   Dialog,
   DialogContent,
@@ -286,24 +287,30 @@ const PreviewModal: React.FC<PreviewModalProps> = ({
   
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl overflow-y-auto max-h-[90vh]">
         <DialogHeader>
-          <div className="flex justify-between items-center">
-            <DialogTitle>Homework Preview</DialogTitle>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsEditing(!isEditing)}
-              className="flex items-center"
-            >
-              <Edit2 className="h-4 w-4 mr-1" />
-              {isEditing ? 'Done Editing' : 'Edit'}
-            </Button>
-          </div>
+          <DialogTitle className="flex items-center">
+            {isEditing ? (
+              <Input value={editedHomework.title} onChange={handleTitleChange} className="mr-2" />
+            ) : (
+              editedHomework.title
+            )}
+          </DialogTitle>
           <DialogDescription>
-            Review and edit the auto-generated homework before assigning it to the student.
+            {isEditing ? (
+              <Textarea value={editedHomework.description} onChange={handleDescriptionChange} className="mt-2" />
+            ) : (
+              editedHomework.description
+            )}
           </DialogDescription>
         </DialogHeader>
+        
+        {/* If AI returned markdown content, show preview */}
+        {editedHomework.content_md && !isEditing && (
+          <div className="prose prose-sm max-w-none mb-6">
+            <ReactMarkdown>{editedHomework.content_md}</ReactMarkdown>
+          </div>
+        )}
         
         <div className="space-y-6 py-4">
           {/* Title & Description */}

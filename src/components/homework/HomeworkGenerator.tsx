@@ -45,6 +45,8 @@ export const HomeworkGenerator: React.FC<HomeworkGeneratorProps> = ({
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [notes, setNotes] = useState<string>('');
+  const [numQuestions, setNumQuestions] = useState(5);
+  const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
   const [availableTopics, setAvailableTopics] = useState<string[]>(DEFAULT_TOPICS);
   
   // Calculate default due date (7 days from now)
@@ -87,6 +89,8 @@ export const HomeworkGenerator: React.FC<HomeworkGeneratorProps> = ({
         topic: topic === 'custom' ? customTopic : topic,
         due_date: new Date(dueDateTime || getDefaultDueDateTime()).toISOString(),
         notes: notes.trim() || undefined,
+        num_questions: numQuestions,
+        difficulty,
       };
       
       if (pdfUrl) {
@@ -219,6 +223,32 @@ export const HomeworkGenerator: React.FC<HomeworkGeneratorProps> = ({
                   className="mt-2"
                 />
               )}
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="difficulty-select">Difficulty</Label>
+              <Select value={difficulty} onValueChange={(val) => setDifficulty(val as any)}>
+                <SelectTrigger id="difficulty-select">
+                  <SelectValue placeholder="Medium" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="easy">Easy</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="hard">Hard</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="num-questions">Number of Questions</Label>
+              <Input
+                id="num-questions"
+                type="number"
+                min={1}
+                max={20}
+                value={numQuestions}
+                onChange={(e) => setNumQuestions(parseInt(e.target.value) || 5)}
+              />
             </div>
             
             <div className="space-y-2">

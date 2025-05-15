@@ -2,6 +2,30 @@
 -- Run via `supabase db push`
 
 -- =============================================================
+-- 0) profiles (must be first)
+-- =============================================================
+CREATE TABLE IF NOT EXISTS public.profiles (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name text,
+  email text UNIQUE,
+  role text NOT NULL CHECK (role IN ('student','tutor','parent','staff')),
+  is_staff boolean DEFAULT false,
+  grade text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+-- =============================================================
+-- 0.5) student_parent_relationships (before functions/policies)
+-- =============================================================
+CREATE TABLE IF NOT EXISTS public.student_parent_relationships (
+  id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  student_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  parent_id  uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+-- =============================================================
 -- Helper functions / shortcuts
 -- =============================================================
 -- Return role for current user

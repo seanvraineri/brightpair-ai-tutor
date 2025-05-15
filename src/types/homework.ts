@@ -32,6 +32,7 @@ export interface Homework {
   questions: HomeworkQuestion[];
   score?: number;
   total_possible?: number;
+  content_md?: string;
 }
 
 export interface HomeworkListItem {
@@ -54,4 +55,7 @@ export interface HomeworkGenerationParams {
   pdf_path?: string;
   due_date: string;
   notes?: string;
+  num_questions?: number;
+  difficulty?: 'easy' | 'medium' | 'hard';
+  learning_style?: string;
 } 

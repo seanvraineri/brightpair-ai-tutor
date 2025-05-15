@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { FEATURES, ENDPOINTS } from "@/config/env";
 import { 
   Homework, 
   HomeworkListItem, 
@@ -200,10 +201,50 @@ export const getHomework = async (homeworkId: string): Promise<Homework | null> 
  */
 export const generateHomework = async (params: HomeworkGenerationParams): Promise<Homework | null> => {
   try {
-    // In a real implementation, this would call the Supabase Edge Function
-    // const { data, error } = await supabase.functions.invoke('generate-homework', {
-    //   body: params
-    // });
+    // Prefer live data when we are not in mock mode
+    if (!FEATURES.USE_MOCK_DATA) {
+      const { data, error } = await supabase.functions.invoke(
+        ENDPOINTS.SUPABASE_FUNCTIONS.GENERATE_HOMEWORK,
+        {
+          body: {
+            studentId: params.student_id,
+            tutorId: params.tutor_id,
+            objective: params.topic || "Homework Assignment",
+            dueAt: params.due_date,
+            numQuestions: params.num_questions ?? 5,
+            difficulty: params.difficulty ?? 'medium',
+            learningStyleOverride: params.learning_style,
+            // If a PDF was provided and we have real data, include extracted text (optional)
+            // pdfText: params.pdf_text,
+          },
+        }
+      );
+
+      if (error) {
+        console.error("Edge function error while generating homework:", error);
+        throw error;
+      }
+
+      if (data) {
+        // Map the response into our Homework shape
+        const hw: Homework = {
+          id: (data as any).id,
+          title: (data as any).title ?? "Homework Assignment",
+          description: (data as any).objective ?? "",
+          content_md: (data as any).content_md,
+          due: (data as any).due_at ?? params.due_date,
+          created_at: (data as any).created_at ?? new Date().toISOString(),
+          updated_at: (data as any).updated_at ?? new Date().toISOString(),
+          tutor_id: (data as any).tutor_id ?? params.tutor_id,
+          student_id: (data as any).student_id ?? params.student_id,
+          status: "draft",
+          topic: params.topic,
+          questions: [],
+        };
+
+        return hw;
+      }
+    }
     
     // For development, return a mock response
     const student = MOCK_STUDENTS.find(s => s.id === params.student_id);

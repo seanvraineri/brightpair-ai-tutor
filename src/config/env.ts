@@ -36,6 +36,7 @@ export const ENDPOINTS = {
     AI_TUTOR: 'ai-tutor',
     GENERATE_FLASHCARDS: 'generate-flashcards',
     EXTRACT_PDF: 'extract-pdf-text',
+    GENERATE_HOMEWORK: 'generate_homework',
   }
 };
 

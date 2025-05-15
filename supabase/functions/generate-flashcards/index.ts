@@ -22,7 +22,9 @@ serve(async (req) => {
   if (corsResponse) return corsResponse;
   
   try {
-    const { topic, count = 10, studentId, trackId, difficulty = "medium" } = await req.json();
+    const body = await req.json();
+    const topic = body.topic || body.subject || body.name;
+    const { count = 10, studentId, trackId, difficulty = "medium" } = body;
     
     if (!topic) {
       return new Response(

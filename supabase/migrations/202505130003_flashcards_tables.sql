@@ -1,4 +1,3 @@
-
 -- Create flashcards_sets table
 CREATE TABLE IF NOT EXISTS public.flashcards_sets (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
