@@ -2,7 +2,6 @@ name: Lint & Type-Check
 
 on:
   push:
-    branches: ["main", "develop"]
   pull_request:
 
 jobs:
@@ -10,12 +9,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 8
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm install --legacy-peer-deps
       - name: Run ESLint
-        run: pnpm run lint
+        run: npm run lint
       - name: Run TypeScript type-check
-        run: pnpm run typecheck
+        run: npm run typecheck
