@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
-import { FileText, MessageSquare, Mic, BookOpen } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import { BookOpen, FileText, MessageSquare, Mic } from "lucide-react";
 import { useAITutor } from "@/hooks/useAITutor";
 import { useUser } from "@/contexts/UserContext";
 import { formatMessage } from "@/utils/messageFormatters";
@@ -22,24 +22,26 @@ interface TutorFunction {
 
 const AITutorChat: React.FC = () => {
   const { user } = useUser();
-  const { 
-    messages, 
-    sendMessage, 
-    clearConversation, 
+  const {
+    messages,
+    sendMessage,
+    clearConversation,
     isLoading,
     learningHistory,
     isLoadingHistory,
-    refreshLearningHistory
+    refreshLearningHistory,
   } = useAITutor();
   const [notesDialogOpen, setNotesDialogOpen] = useState<boolean>(false);
   const [noteContent, setNoteContent] = useState<string>("");
   const [tutorFunctionOpen, setTutorFunctionOpen] = useState<boolean>(false);
-  const [showHomeworkDetails, setShowHomeworkDetails] = useState<boolean>(false);
+  const [showHomeworkDetails, setShowHomeworkDetails] = useState<boolean>(
+    false,
+  );
   const [activeHomeworkId, setActiveHomeworkId] = useState<string | null>(null);
-  
+
   // Use a ref to detect when we should inject homework context
   const lastUserMessageRef = useRef<string>("");
-  
+
   // Predefined tutor functions with improved icons and descriptions
   const tutorFunctions: TutorFunction[] = [
     {
@@ -61,41 +63,22 @@ const AITutorChat: React.FC = () => {
       icon: <Mic className="h-5 w-5" />,
     },
   ];
-  
-  // Optional: keep a local welcome bubble without hitting the API
-  useEffect(() => {
-    if (messages.length === 0) {
-      // Insert a static assistant greeting locally so the chat isn't empty
-      const localWelcome = {
-        id: "welcome",
-        role: "assistant" as const,
-        content: `Hi${user?.name ? ' ' + user.name : ''}! I'm your personal AI tutor. How can I help you today?`,
-        timestamp: new Date(),
-      };
-      // Avoid duplicating if messages state is managed outside; verify hook has setter
-      // Only push if hook exposes setMessages – otherwise skip.
-      // @ts-ignore
-      if (typeof setMessages === "function") {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        setMessages([localWelcome]);
-      }
-    }
-  }, []);
-  
+
+  // Optional: we could send a welcome message via sendMessage on first load
+
   // Effect to detect homework-related queries and show relevant homework details
   useEffect(() => {
     if (messages.length > 0) {
       const lastMessage = messages[messages.length - 1];
-      if (lastMessage.role === 'user') {
+      if (lastMessage.role === "user") {
         lastUserMessageRef.current = lastMessage.content.toLowerCase();
-        
+
         // Check if message is about homework
         if (
-          lastUserMessageRef.current.includes('homework') || 
-          lastUserMessageRef.current.includes('assignment') ||
-          lastUserMessageRef.current.includes('help me with') ||
-          lastUserMessageRef.current.includes('my work')
+          lastUserMessageRef.current.includes("homework") ||
+          lastUserMessageRef.current.includes("assignment") ||
+          lastUserMessageRef.current.includes("help me with") ||
+          lastUserMessageRef.current.includes("my work")
         ) {
           setShowHomeworkDetails(true);
           // If we've got homework data, try to set an active homework
@@ -107,7 +90,7 @@ const AITutorChat: React.FC = () => {
       }
     }
   }, [messages]);
-  
+
   // Fetch fresh learning history data when showing homework details
   useEffect(() => {
     if (showHomeworkDetails) {
@@ -117,12 +100,14 @@ const AITutorChat: React.FC = () => {
 
   const handleTutorFunctionClick = (functionId: string) => {
     setTutorFunctionOpen(false);
-    switch(functionId) {
+    switch (functionId) {
       case "upload-notes":
         setNotesDialogOpen(true);
         break;
       case "talk":
-        handlePresetMessage("Let's talk about the concepts I'm currently studying.");
+        handlePresetMessage(
+          "Let's talk about the concepts I'm currently studying.",
+        );
         break;
       case "voice-chat":
         // Future feature
@@ -138,23 +123,33 @@ const AITutorChat: React.FC = () => {
 
   const handleSubmitNotes = async () => {
     if (!noteContent.trim()) return;
-    
-    await sendMessage(`I've uploaded my notes on the following material:\n\n${noteContent}`);
+
+    await sendMessage(
+      `I've uploaded my notes on the following material:\n\n${noteContent}`,
+    );
     setNotesDialogOpen(false);
     setNoteContent("");
   };
-  
+
   const handleSelectHomework = async (homeworkId: string) => {
     // Set active homework
     setActiveHomeworkId(homeworkId);
-    
+
     // Find the selected homework
-    const homework = learningHistory?.homework.find(hw => hw.id === homeworkId);
-    
+    const homework = learningHistory?.homework.find((hw) =>
+      hw.id === homeworkId
+    );
+
     if (homework) {
       // Send a message that references this specific homework
-      await sendMessage(`I need help with my homework assignment "${homework.title}" for ${homework.subject}. ${homework.description ? `Here's what I need to do: ${homework.description}` : ''}`);
-      
+      await sendMessage(
+        `I need help with my homework assignment "${homework.title}" for ${homework.subject}. ${
+          homework.description
+            ? `Here's what I need to do: ${homework.description}`
+            : ""
+        }`,
+      );
+
       // Once we've sent the message, we can hide the homework details panel
       setShowHomeworkDetails(false);
     }
@@ -179,63 +174,80 @@ const AITutorChat: React.FC = () => {
         </div>
       );
     }
-    
-    if (!learningHistory || (
-      !learningHistory.homework.length && 
-      !learningHistory.quizzes.length &&
-      !learningHistory.lessons.length &&
-      !learningHistory.tracks.length
-    )) {
+
+    if (
+      !learningHistory || (
+        !learningHistory.homework.length &&
+        !learningHistory.quizzes.length &&
+        !learningHistory.lessons.length &&
+        !learningHistory.tracks.length
+      )
+    ) {
       return null;
     }
-    
+
     return (
       <div className="flex flex-wrap gap-2 mb-2">
         {learningHistory.homework.length > 0 && (
-          <Badge 
-            variant="outline" 
+          <Badge
+            variant="outline"
             className="bg-blue-50 text-blue-700 hover:bg-blue-100 cursor-pointer"
-            onClick={() => setShowHomeworkDetails(prev => !prev)}
+            onClick={() => setShowHomeworkDetails((prev) => !prev)}
           >
-            {learningHistory.homework.length} Homework{learningHistory.homework.length > 1 ? 's' : ''}
+            {learningHistory.homework.length}{" "}
+            Homework{learningHistory.homework.length > 1 ? "s" : ""}
           </Badge>
         )}
-        
+
         {learningHistory.quizzes.length > 0 && (
-          <Badge variant="outline" className="bg-green-50 text-green-700 hover:bg-green-100">
-            {learningHistory.quizzes.length} Quiz{learningHistory.quizzes.length > 1 ? 'zes' : ''}
+          <Badge
+            variant="outline"
+            className="bg-green-50 text-green-700 hover:bg-green-100"
+          >
+            {learningHistory.quizzes.length}{" "}
+            Quiz{learningHistory.quizzes.length > 1 ? "zes" : ""}
           </Badge>
         )}
-        
+
         {learningHistory.lessons.length > 0 && (
-          <Badge variant="outline" className="bg-purple-50 text-purple-700 hover:bg-purple-100">
-            {learningHistory.lessons.length} Lesson{learningHistory.lessons.length > 1 ? 's' : ''}
+          <Badge
+            variant="outline"
+            className="bg-purple-50 text-purple-700 hover:bg-purple-100"
+          >
+            {learningHistory.lessons.length}{" "}
+            Lesson{learningHistory.lessons.length > 1 ? "s" : ""}
           </Badge>
         )}
-        
+
         {learningHistory.tracks.length > 0 && (
-          <Badge variant="outline" className="bg-amber-50 text-amber-700 hover:bg-amber-100">
-            {learningHistory.tracks.length} Active Track{learningHistory.tracks.length > 1 ? 's' : ''}
+          <Badge
+            variant="outline"
+            className="bg-amber-50 text-amber-700 hover:bg-amber-100"
+          >
+            {learningHistory.tracks.length}{" "}
+            Active Track{learningHistory.tracks.length > 1 ? "s" : ""}
           </Badge>
         )}
       </div>
     );
   };
-  
+
   // Render the homework details panel when a user mentions homework
   const renderHomeworkDetailsPanel = () => {
     if (!showHomeworkDetails || !learningHistory?.homework?.length) {
       return null;
     }
-    
+
     return (
       <div className="mb-4 animate-fadeIn">
         <Card>
           <CardContent className="p-4">
             <div className="flex justify-between items-center mb-2">
-              <h3 className="font-medium text-brightpair-700">Your Homework Assignments</h3>
-              <Button 
-                variant="ghost" 
+              <h3 className="font-medium text-brightpair-700">
+                Your Homework Assignments
+              </h3>
+              <Button
+                variant="ghost"
                 size="sm"
                 onClick={() => setShowHomeworkDetails(false)}
               >
@@ -244,24 +256,30 @@ const AITutorChat: React.FC = () => {
             </div>
             <div className="space-y-2">
               {learningHistory.homework.map((hw) => (
-                <div 
+                <div
                   key={hw.id}
                   className={`p-2 border rounded-md cursor-pointer transition-colors ${
-                    activeHomeworkId === hw.id 
-                      ? 'bg-brightpair-50 border-brightpair-200' 
-                      : 'hover:bg-gray-50'
+                    activeHomeworkId === hw.id
+                      ? "bg-brightpair-50 border-brightpair-200"
+                      : "hover:bg-gray-50"
                   }`}
                   onClick={() => handleSelectHomework(hw.id)}
                 >
                   <div className="flex justify-between">
                     <span className="font-medium">{hw.title}</span>
-                    <Badge variant={hw.status === 'pending' ? 'outline' : 'secondary'}>
+                    <Badge
+                      variant={hw.status === "pending"
+                        ? "outline"
+                        : "secondary"}
+                    >
                       {hw.status}
                     </Badge>
                   </div>
                   <div className="text-sm text-gray-500">{hw.subject}</div>
                   {hw.description && (
-                    <div className="text-sm mt-1 text-gray-600 line-clamp-2">{hw.description}</div>
+                    <div className="text-sm mt-1 text-gray-600 line-clamp-2">
+                      {hw.description}
+                    </div>
                   )}
                   {hw.due_date && (
                     <div className="text-xs mt-1 text-gray-500">
@@ -295,36 +313,36 @@ const AITutorChat: React.FC = () => {
         font-family: 'Cambria Math', 'Times New Roman', serif;
         border-left: 3px solid #4263eb;
       }
-    `
+    `,
   };
 
   return (
     <div className="h-screen flex flex-col bg-gradient-to-br from-gray-50 to-brightpair-50 overflow-hidden">
       <div className="max-w-4xl mx-auto w-full flex flex-col flex-1 p-4 md:p-6 h-full">
-        <ChatHeader 
+        <ChatHeader
           title="Your AI Tutor"
           subtitle={getSubtitle()}
           onClear={clearConversation}
           onSave={() => {}} // Future feature
         />
-        
+
         {renderLearningContextBadges()}
-        
+
         {renderHomeworkDetailsPanel()}
-        
-        <QuickActions 
-          tutorFunctions={tutorFunctions} 
-          onFunctionClick={handleTutorFunctionClick} 
+
+        <QuickActions
+          tutorFunctions={tutorFunctions}
+          onFunctionClick={handleTutorFunctionClick}
         />
-        
+
         <div className="flex-1 overflow-hidden flex flex-col bg-white rounded-md shadow-card border border-gray-100 h-full">
-          <MessageList 
+          <MessageList
             messages={messages}
             isLoading={isLoading}
             formatMessage={formatMessage}
           />
-          
-          <MessageInput 
+
+          <MessageInput
             onSendMessage={sendMessage}
             isLoading={isLoading}
             tutorFunctions={tutorFunctions}
@@ -335,7 +353,7 @@ const AITutorChat: React.FC = () => {
         </div>
       </div>
 
-      <NotesDialog 
+      <NotesDialog
         open={notesDialogOpen}
         onOpenChange={setNotesDialogOpen}
         noteContent={noteContent}
