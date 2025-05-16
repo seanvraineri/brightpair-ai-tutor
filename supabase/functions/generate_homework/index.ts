@@ -3,22 +3,23 @@
 // This enables autocomplete, go to definition, etc.
 
 // Setup type definitions for built-in Supabase Runtime APIs
-import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import OpenAI from "https://deno.land/x/openai@v4.26.0/mod.ts"
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm"
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import OpenAI from "https://deno.land/x/openai@v4.26.0/mod.ts";
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
 const supabaseAdmin = createClient(
   Deno.env.get("SUPABASE_URL")!,
-  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-)
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+);
 
-const openai = new OpenAI({ apiKey: Deno.env.get("OPENAI_API_KEY") })
+const openai = new OpenAI({ apiKey: Deno.env.get("OPENAI_API_KEY") });
 
-console.log("Hello from Functions!")
+console.log("Hello from Functions!");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
@@ -32,37 +33,76 @@ Deno.serve(async (req) => {
   try {
     body = await req.json();
   } catch (e) {
-    return new Response(JSON.stringify({ success: false, error: "Invalid JSON in request body." }), {
-      status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: "Invalid JSON in request body.",
+      }),
+      {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
   }
 
   // Input validation
-  const { studentId, tutorId, objective, dueAt, numQuestions = 5, difficulty = "medium", learningStyleOverride, pdfText } = body;
+  const {
+    studentId,
+    tutorId,
+    objective,
+    dueAt,
+    numQuestions = 5,
+    difficulty = "medium",
+    learningStyleOverride,
+    pdfText,
+  } = body;
   if (!studentId || typeof studentId !== "string") {
-    return new Response(JSON.stringify({ success: false, error: "Missing or invalid 'studentId' (string)" }), {
-      status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: "Missing or invalid 'studentId' (string)",
+      }),
+      {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
   }
   if (!tutorId || typeof tutorId !== "string") {
-    return new Response(JSON.stringify({ success: false, error: "Missing or invalid 'tutorId' (string)" }), {
-      status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: "Missing or invalid 'tutorId' (string)",
+      }),
+      {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
   }
   if (!objective || typeof objective !== "string") {
-    return new Response(JSON.stringify({ success: false, error: "Missing or invalid 'objective' (string)" }), {
-      status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: "Missing or invalid 'objective' (string)",
+      }),
+      {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
   }
   if (!dueAt || typeof dueAt !== "string") {
-    return new Response(JSON.stringify({ success: false, error: "Missing or invalid 'dueAt' (string, ISO date)" }), {
-      status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: "Missing or invalid 'dueAt' (string, ISO date)",
+      }),
+      {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
   }
 
   // 1. Pull student profile (for personalization)
@@ -82,35 +122,39 @@ Deno.serve(async (req) => {
   try {
     const { data: snap } = await supabaseAdmin.rpc(
       "build_student_snapshot" as any,
-      { p_student: studentId }
+      { p_student: studentId },
     );
     snapshot = snap ?? {};
   } catch (e) {
     snapshot = {};
   }
 
-  const learningStyle = (profile?.learning_style ?? snapshot.learning_style ?? "mixed").toLowerCase();
+  const learningStyle =
+    (profile?.learning_style ?? snapshot.learning_style ?? "mixed")
+      .toLowerCase();
   const masteryPercent = Math.round((snapshot.mastery_level ?? 0.5) * 100);
   const strengths = snapshot.strengths ?? "";
   const weaknesses = snapshot.weaknesses ?? "";
-  const effectiveDifficulty = difficulty || (masteryPercent > 80 ? "hard" : masteryPercent < 40 ? "easy" : "medium");
-  const effectiveLearningStyle = learningStyleOverride?.toLowerCase() || learningStyle;
+  const effectiveDifficulty = difficulty ||
+    (masteryPercent > 80 ? "hard" : masteryPercent < 40 ? "easy" : "medium");
+  const effectiveLearningStyle = learningStyleOverride?.toLowerCase() ||
+    learningStyle;
 
   // 2. Build improved prompt
   const prompt = `
-You are BrightPair HomeworkGenerator, an expert tutor who tailors assignments to each student's preferred learning style.
+    You are BrightPair HomeworkGenerator, an expert tutor who tailors assignments to each student's preferred learning style.
 
-OBJECTIVE: ${objective}
-NUMBER_OF_QUESTIONS: ${numQuestions}
-DUE_AT: ${dueAt}
+    OBJECTIVE: ${objective}
+    NUMBER_OF_QUESTIONS: ${numQuestions}
+    DUE_AT: ${dueAt}
 
-STUDENT SNAPSHOT:
-• Learning style: ${effectiveLearningStyle}
-• Mastery: ${masteryPercent}%
-• Strengths: ${strengths}
-• Weaknesses: ${weaknesses}
+    STUDENT SNAPSHOT:
+    • Learning style: ${effectiveLearningStyle}
+    • Mastery: ${masteryPercent}%
+    • Strengths: ${strengths}
+    • Weaknesses: ${weaknesses}
 
-${pdfText ? `SOURCE_MATERIAL:\n${pdfText.substring(0, 3000)}` : ""}
+    ${pdfText ? `SOURCE_MATERIAL:\n${pdfText.substring(0, 3000)}` : ""}
 
 Please create a ${effectiveDifficulty} homework assignment with exactly ${numQuestions} questions formatted in Markdown. For each question, use this format:
 
@@ -139,10 +183,16 @@ Q2. ...
     });
     content = ai.choices[0].message.content.trim();
   } catch (e) {
-    return new Response(JSON.stringify({ success: false, error: "Failed to generate homework: " + (e?.message || e) }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: "Failed to generate homework: " + (e?.message || e),
+      }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
   }
 
   // 4. Insert homework row
@@ -158,7 +208,7 @@ Q2. ...
         due_at: dueAt,
         num_questions: numQuestions,
         source_pdf_provided: Boolean(pdfText),
-        subject: objective || 'General',
+        subject: objective || "General",
       })
       .select()
       .single();
@@ -169,10 +219,13 @@ Q2. ...
   }
 
   if (error) {
-    return new Response(JSON.stringify({ success: false, error: error.message || error }), {
-      status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ success: false, error: error.message || error }),
+      {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
   }
 
   return new Response(JSON.stringify({ success: true, homework: data }), {
