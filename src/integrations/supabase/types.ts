@@ -89,6 +89,7 @@ export type Database = {
           student_id: string
           title: string
           tutor_id: string | null
+          type: string
         }
         Insert: {
           content_md?: string | null
@@ -99,6 +100,7 @@ export type Database = {
           student_id: string
           title: string
           tutor_id?: string | null
+          type?: string
         }
         Update: {
           content_md?: string | null
@@ -109,6 +111,7 @@ export type Database = {
           student_id?: string
           title?: string
           tutor_id?: string | null
+          type?: string
         }
         Relationships: [
           {
@@ -279,6 +282,54 @@ export type Database = {
         }
         Relationships: []
       }
+      lessons: {
+        Row: {
+          completed_at: string | null
+          content_md: string | null
+          created_at: string
+          id: string
+          student_id: string
+          subject: string | null
+          title: string
+          tutor_id: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          content_md?: string | null
+          created_at?: string
+          id?: string
+          student_id: string
+          subject?: string | null
+          title: string
+          tutor_id?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          content_md?: string | null
+          created_at?: string
+          id?: string
+          student_id?: string
+          subject?: string | null
+          title?: string
+          tutor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lessons_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lessons_tutor_id_fkey"
+            columns: ["tutor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           content: string
@@ -365,6 +416,8 @@ export type Database = {
           is_staff: boolean | null
           mastery_level: number | null
           name: string | null
+          next_consultation_date: string | null
+          onboarding_status: string | null
           role: string
           strengths: string | null
           updated_at: string
@@ -378,6 +431,8 @@ export type Database = {
           is_staff?: boolean | null
           mastery_level?: number | null
           name?: string | null
+          next_consultation_date?: string | null
+          onboarding_status?: string | null
           role: string
           strengths?: string | null
           updated_at?: string
@@ -391,12 +446,59 @@ export type Database = {
           is_staff?: boolean | null
           mastery_level?: number | null
           name?: string | null
+          next_consultation_date?: string | null
+          onboarding_status?: string | null
           role?: string
           strengths?: string | null
           updated_at?: string
           weaknesses?: string | null
         }
         Relationships: []
+      }
+      quizzes: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          quiz_json: Json
+          skill_id: string | null
+          student_id: string
+          tutor_id: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          quiz_json: Json
+          skill_id?: string | null
+          student_id: string
+          tutor_id?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          quiz_json?: Json
+          skill_id?: string | null
+          student_id?: string
+          tutor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quizzes_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quizzes_tutor_id_fkey"
+            columns: ["tutor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       student_parent_relationships: {
         Row: {
