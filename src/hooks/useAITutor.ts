@@ -153,7 +153,33 @@ export const useAITutor = () => {
       // If we haven't loaded the history yet, fetch it now
       const history = learningHistory || await fetchLearningHistory();
       
-      // Call the AI service
+      // Detect simple greetings and answer locally to save tokens
+      const isSimpleGreeting = (text: string): boolean => {
+        const cleaned = text.trim().toLowerCase().replace(/[!?.]/g, '');
+        const greetingWords = [
+          'hi', 'hello', 'hey', 'yo', 'sup',
+          'good morning', 'good afternoon', 'good evening'
+        ];
+        // Exact match
+        if (greetingWords.includes(cleaned)) return true;
+        // Starts with greeting word and message is short (≤3 words)
+        const firstWord = cleaned.split(' ')[0];
+        return greetingWords.some(word => firstWord === word) && cleaned.split(' ').length <= 3;
+      };
+
+      if (isSimpleGreeting(content)) {
+        const response = "Hi there! 👋 I'm BrightPair, your AI tutor. I can explain concepts, create flashcards or quizzes, and help with homework. What would you like to work on today?";
+        const assistantMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: response,
+          timestamp: new Date(),
+        };
+        setMessages(prev => [...prev, assistantMessage]);
+        return assistantMessage;
+      }
+
+      // Call the AI service for real content
       const response = await sendAITutorMessage(
         content, 
         session.user.id,
@@ -193,7 +219,10 @@ export const useAITutor = () => {
   
   const logChatInteraction = async (message: string, response: string) => {
     if (!session?.user?.id) return;
-    
+
+    // Only students write to chat_logs; teachers/tutors may not have RLS permissions.
+    if (user?.role !== 'student') return;
+
     try {
       await supabase.from('chat_logs').insert({
         student_id: session.user.id,

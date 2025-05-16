@@ -10,8 +10,9 @@ import DocumentUpload from "@/components/documents/DocumentUpload";
 import StudentManagement from "@/components/tutor/StudentManagement";
 import { useUser } from "@/contexts/UserContext";
 import { useNavigate } from "react-router-dom";
-import { Users, BookOpen, BarChart, Calendar as CalendarIcon, Clock } from "lucide-react";
+import { Users, BookOpen, BarChart, Calendar as CalendarIcon, Clock, CalendarX2 } from "lucide-react";
 import { IS_DEVELOPMENT } from "@/config/env";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const TeacherDashboard: React.FC = () => {
   const { toast } = useToast();
@@ -24,6 +25,9 @@ const TeacherDashboard: React.FC = () => {
   const studentCount = IS_DEVELOPMENT ? 12 : 0;
   const upcomingSessions = IS_DEVELOPMENT ? 5 : 0;
   const pendingAssignments = IS_DEVELOPMENT ? 8 : 0;
+
+  // Loading flag (replace with real query.isLoading once wired)
+  const isLoadingStats = !IS_DEVELOPMENT;
 
   // Development-only mock upcoming sessions
   const upcomingSessionsData = IS_DEVELOPMENT
@@ -59,7 +63,7 @@ const TeacherDashboard: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-500">Students</p>
-                  <h2 className="text-3xl font-bold">{studentCount}</h2>
+                  {isLoadingStats ? <Skeleton className="h-7 w-14" /> : <h2 className="text-3xl font-bold">{studentCount}</h2>}
                   <p className="text-xs text-gray-500">Total active students</p>
                 </div>
               </div>
@@ -74,7 +78,7 @@ const TeacherDashboard: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-500">Sessions</p>
-                  <h2 className="text-3xl font-bold">{upcomingSessions}</h2>
+                  {isLoadingStats ? <Skeleton className="h-7 w-14" /> : <h2 className="text-3xl font-bold">{upcomingSessions}</h2>}
                   <p className="text-xs text-gray-500">Upcoming this week</p>
                 </div>
               </div>
@@ -89,7 +93,7 @@ const TeacherDashboard: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-500">Assignments</p>
-                  <h2 className="text-3xl font-bold">{pendingAssignments}</h2>
+                  {isLoadingStats ? <Skeleton className="h-7 w-14" /> : <h2 className="text-3xl font-bold">{pendingAssignments}</h2>}
                   <p className="text-xs text-gray-500">Pending review</p>
                 </div>
               </div>
@@ -192,37 +196,28 @@ const TeacherDashboard: React.FC = () => {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
-                        {upcomingSessionsData.map(session => (
-                          <div key={session.id} className="flex justify-between items-center p-3 rounded-md border border-gray-200">
-                            <div>
-                              <p className="font-medium">{session.student}</p>
-                              <div className="flex items-center mt-1 text-sm text-gray-500">
-                                <BookOpen className="h-3.5 w-3.5 mr-1" />
-                                <span>{session.subject}</span>
-                              </div>
-                            </div>
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <CalendarIcon className="h-3.5 w-3.5 text-gray-500" />
-                                <span className="text-sm">{session.date}</span>
-                              </div>
-                              <div className="flex items-center gap-2 mt-1">
-                                <Clock className="h-3.5 w-3.5 text-gray-500" />
-                                <span className="text-sm">{session.time} ({session.duration})</span>
-                              </div>
-                            </div>
+                        {upcomingSessionsData.length === 0 ? (
+                          <div className="flex flex-col items-center justify-center py-10 text-gray-500">
+                            <CalendarX2 className="h-10 w-10 mb-2" />
+                            <p>No sessions scheduled yet.</p>
                           </div>
-                        ))}
-                        
-                        {upcomingSessionsData.length === 0 && (
-                          <p className="text-center py-6 text-gray-500">No upcoming sessions scheduled</p>
+                        ) : (
+                          upcomingSessionsData.map(session => (
+                            <div key={session.id} className="flex justify-between items-center p-3 rounded-md border border-gray-200">
+                              <div>
+                                <p className="font-medium">{session.student}</p>
+                                <div className="flex items-center mt-1 text-sm text-gray-500">
+                                  <BookOpen className="h-3.5 w-3.5 mr-1" />
+                                  <span>{session.subject}</span>
+                                </div>
+                              </div>
+                              <div className="text-right text-sm text-gray-600">
+                                <p>{session.date}</p>
+                                <p>{session.time} • {session.duration}</p>
+                              </div>
+                            </div>
+                          ))
                         )}
-                        
-                        <div className="text-center mt-4">
-                          <Button variant="outline" onClick={handleNavToScheduling}>
-                            View Full Schedule
-                          </Button>
-                        </div>
                       </div>
                     </CardContent>
                   </Card>

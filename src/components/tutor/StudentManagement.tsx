@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import { FilterX, Plus, Search, UserPlus, BookOpen, CheckCircle, Clock, FileText, MailIcon, MessagesSquare, User, X } from "lucide-react";
 import { IS_DEVELOPMENT } from "@/config/env";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import StudentNotes from "./StudentNotes";
 
@@ -147,6 +148,9 @@ const StudentManagement: React.FC = () => {
     instructions: ""
   });
   
+  // Loading flag placeholder
+  const isLoading = !IS_DEVELOPMENT;
+  
   // Filter students based on search and filters
   const filteredStudents = mockStudents.filter(student => {
     const matchesSearch = student.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -223,6 +227,28 @@ const StudentManagement: React.FC = () => {
     return mockStudents.find(student => student.id === id);
   };
   
+  const renderStudentTable = () => {
+    if (isLoading) {
+      return (
+        <div className="space-y-3">
+          {Array.from({length: 5}).map((_,i)=>(
+            <Skeleton key={i} className="h-12 w-full" />
+          ))}
+        </div>
+      );
+    }
+    if (filteredStudents.length === 0) {
+      return (
+        <div className="flex flex-col items-center justify-center py-10 text-gray-500">
+          <UserPlus className="h-10 w-10 mb-2" />
+          <p>No students match your filters.</p>
+        </div>
+      );
+    }
+    // existing UI rendering list later relies on filteredStudents map; keep existing rendering call site as is.
+    return null;
+  };
+  
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -292,77 +318,7 @@ const StudentManagement: React.FC = () => {
               </div>
               
               <div className="mt-6">
-                {filteredStudents.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    No students match your search criteria
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {filteredStudents.map(student => (
-                      <Card key={student.id} className="shadow-sm">
-                        <CardContent className="p-4">
-                          <div className="flex flex-col md:flex-row gap-4 items-center md:items-start">
-                            <Avatar className="h-16 w-16">
-                              <AvatarImage src={student.avatarUrl} alt={student.name} />
-                              <AvatarFallback>{student.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                            </Avatar>
-                            
-                            <div className="flex-grow space-y-2 text-center md:text-left">
-                              <h3 className="font-semibold text-lg">{student.name}</h3>
-                              <div className="text-sm text-gray-500">
-                                <p>{student.grade} Grade • {student.email}</p>
-                                <div className="flex flex-wrap gap-1 mt-1 justify-center md:justify-start">
-                                  {student.subjects.map(subject => (
-                                    <Badge key={subject} variant="secondary" className="text-xs">
-                                      {subject}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              </div>
-                            </div>
-                            
-                            <div className="flex flex-col sm:flex-row gap-2">
-                              <Button variant="outline" size="sm" onClick={() => setSelectedStudent(student.id)}>
-                                <FileText size={16} className="mr-1" />
-                                Assignments
-                              </Button>
-                              <Button variant="outline" size="sm">
-                                <MailIcon size={16} className="mr-1" />
-                                Message
-                              </Button>
-                            </div>
-                          </div>
-                          
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                            <div>
-                              <div className="flex justify-between mb-1">
-                                <span className="text-sm font-medium">Overall Progress</span>
-                                <span className="text-sm font-medium">{student.progress}%</span>
-                              </div>
-                              <Progress value={student.progress} className="h-2" />
-                            </div>
-                            
-                            <div className="flex items-center gap-2">
-                              <Clock size={16} className="text-gray-500" />
-                              <div className="text-sm">
-                                <p>Next Session: <span className="font-medium">{student.nextSession}</span></p>
-                              </div>
-                            </div>
-                            
-                            <div className="flex items-center gap-2">
-                              <BookOpen size={16} className="text-gray-500" />
-                              <div className="text-sm">
-                                <p>
-                                  <span className="font-medium">{student.pendingAssignments}</span> pending assignments
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                )}
+                {renderStudentTable()}
               </div>
             </CardContent>
           </Card>

@@ -1,6 +1,6 @@
 import React from "react";
 import { useLocation } from "react-router-dom";
-import { Users, NotebookPen, BookOpen, BarChart, MessageSquare, BookOpenCheck } from "lucide-react";
+import { Users, NotebookPen, BookOpen, BarChart, MessageSquare, BookOpenCheck, Sparkles } from "lucide-react";
 import NavItem from "./NavItem";
 
 interface TeacherNavLinksProps {
@@ -85,6 +85,15 @@ const TeacherNavLinks: React.FC<TeacherNavLinksProps> = ({ onItemClick, collapse
         icon={<BookOpenCheck size={20} />} 
         label="Homework Builder"
         active={isActive("/tutor/homework/builder")}
+        onClick={onItemClick}
+        collapsed={collapsed}
+      />
+      
+      <NavItem 
+        to="/ai-tutor" 
+        icon={<Sparkles size={20} />} 
+        label="AI Tutor Chat"
+        active={location.pathname === "/ai-tutor"}
         onClick={onItemClick}
         collapsed={collapsed}
       />

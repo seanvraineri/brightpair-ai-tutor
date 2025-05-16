@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,12 +8,15 @@ import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { BookOpen, CheckCircle, Clock, Award, ArrowRight, Sparkles, Calendar, FileText } from "lucide-react";
-import { Quiz, QuizQuestion } from "@/services/quizService";
+import { Quiz, QuizQuestion, getAvailableQuizzes, getQuizHistory, QuizRow } from "@/services/quizService";
 import QuizGenerator from "@/components/quizzes/QuizGenerator";
 import QuizUploader from "@/components/quizzes/QuizUploader";
 import AdaptiveQuiz from "@/components/quizzes/AdaptiveQuiz";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { IS_DEVELOPMENT } from "@/config/env";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useUser } from "@/contexts/UserContext";
 
 // Rename the old quiz interfaces to avoid conflicts
 interface LegacyQuizQuestion {
@@ -31,69 +34,6 @@ interface LegacyQuiz {
   questions: LegacyQuizQuestion[];
 }
 
-// Mock quiz data
-const mockQuizzes: LegacyQuiz[] = [
-  {
-    id: "algebra-1",
-    title: "Algebra Fundamentals",
-    subject: "Mathematics",
-    questions: [
-      {
-        id: 1,
-        question: "Solve for x: 3x + 7 = 22",
-        options: ["x = 3", "x = 5", "x = 7", "x = 15"],
-        correctAnswer: 1,
-        explanation: "3x + 7 = 22\n3x = 22 - 7\n3x = 15\nx = 15/3\nx = 5"
-      },
-      {
-        id: 2,
-        question: "Factor the expression: x² + 7x + 12",
-        options: ["(x + 3)(x + 4)", "(x + 6)(x + 2)", "(x - 3)(x - 4)", "(x - 6)(x - 2)"],
-        correctAnswer: 0,
-        explanation: "We need to find two numbers that multiply to give 12 and add to give 7.\nThe numbers are 3 and 4, so the factorization is (x + 3)(x + 4)."
-      },
-      {
-        id: 3,
-        question: "What is the slope of the line passing through points (2, 5) and (4, 9)?",
-        options: ["1", "2", "3", "4"],
-        correctAnswer: 1,
-        explanation: "The slope formula is (y₂ - y₁)/(x₂ - x₁).\nSlope = (9 - 5)/(4 - 2) = 4/2 = 2"
-      },
-      {
-        id: 4,
-        question: "Simplify: 2(3x - 4) + 5x",
-        options: ["11x - 4", "11x - 8", "6x - 8", "6x - 4"],
-        correctAnswer: 1,
-        explanation: "2(3x - 4) + 5x\n= 6x - 8 + 5x\n= 11x - 8"
-      },
-      {
-        id: 5,
-        question: "What is the value of x in the equation 2^x = 32?",
-        options: ["4", "5", "8", "16"],
-        correctAnswer: 1,
-        explanation: "2^x = 32\n2^x = 2^5\nTherefore, x = 5"
-      }
-    ]
-  }
-];
-
-const mockQuizHistory = [
-  {
-    id: "past-quiz-1",
-    title: "Geometry Basics",
-    date: "2 days ago",
-    score: 80,
-    questionCount: 10
-  },
-  {
-    id: "past-quiz-2",
-    title: "Cell Biology",
-    date: "1 week ago",
-    score: 70,
-    questionCount: 10
-  }
-];
-
 const Quizzes: React.FC = () => {
   const { toast } = useToast();
   const [activeQuiz, setActiveQuiz] = useState<LegacyQuiz | null>(null);
@@ -110,6 +50,14 @@ const Quizzes: React.FC = () => {
   
   // New state for adaptive quiz
   const [adaptiveQuiz, setAdaptiveQuiz] = useState<Quiz | null>(null);
+  
+  const [availableQuizzes, setAvailableQuizzes] = useState<LegacyQuiz[]>([]);
+  const [quizHistory, setQuizHistory] = useState<QuizRow[]>([]);
+  const [isLoadingQuizzes, setIsLoadingQuizzes] = useState(true);
+  
+  const { user } = useUser();
+  
+  const isLoading = isLoadingQuizzes;
   
   const startQuiz = (quiz: LegacyQuiz) => {
     setActiveQuiz(quiz);
@@ -192,6 +140,47 @@ const Quizzes: React.FC = () => {
     exitQuiz();
   };
 
+  // Transform DB row to LegacyQuiz format
+  const transformRow = (row: QuizRow): LegacyQuiz => {
+    let questions: any[] = [];
+    if (row.questions && Array.isArray(row.questions)) {
+      questions = row.questions as any[];
+    } else if (row.questions) {
+      try {
+        questions = JSON.parse(row.questions as unknown as string);
+      } catch (e) {
+        questions = [];
+      }
+    }
+    return {
+      id: row.id,
+      title: row.title,
+      subject: row.subject,
+      questions: questions as LegacyQuizQuestion[],
+    };
+  };
+
+  // Fetch quizzes from Supabase
+  useEffect(() => {
+    const fetchQuizzes = async () => {
+      if (!user?.id) return;
+      setIsLoadingQuizzes(true);
+      try {
+        const [avail, history] = await Promise.all([
+          getAvailableQuizzes(user.id),
+          getQuizHistory(user.id)
+        ]);
+        setAvailableQuizzes(avail.map(transformRow));
+        setQuizHistory(history);
+      } catch (error) {
+        console.error("Error loading quizzes:", error);
+      } finally {
+        setIsLoadingQuizzes(false);
+      }
+    };
+    fetchQuizzes();
+  }, [user?.id]);
+
   const renderBrowseMode = () => {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -201,23 +190,36 @@ const Quizzes: React.FC = () => {
               <CardTitle>Available Quizzes</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {mockQuizzes.map((quiz) => (
-                <div 
-                  key={quiz.id}
-                  className="p-4 border rounded-md hover:border-brightpair hover:bg-brightpair-50 transition-colors cursor-pointer"
-                  onClick={() => startQuiz(quiz)}
-                >
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-                    <div>
-                      <h3 className="font-medium">{quiz.title}</h3>
-                      <p className="text-sm text-gray-500">{quiz.subject} • {quiz.questions.length} questions</p>
-                    </div>
-                    <Button size="sm" className="bg-brightpair hover:bg-brightpair-600 text-white border">
-                      Start
-                    </Button>
-                  </div>
+              {isLoading ? (
+                <div className="space-y-3">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <Skeleton key={i} className="h-24 w-full" />
+                  ))}
                 </div>
-              ))}
+              ) : availableQuizzes.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-10 text-gray-500">
+                  <BookOpen className="h-10 w-10 mb-2" />
+                  <p>No quizzes available yet.</p>
+                </div>
+              ) : (
+                availableQuizzes.map((quiz) => (
+                  <div 
+                    key={quiz.id}
+                    className="p-4 border rounded-md hover:border-brightpair hover:bg-brightpair-50 transition-colors cursor-pointer"
+                    onClick={() => startQuiz(quiz)}
+                  >
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                      <div>
+                        <h3 className="font-medium">{quiz.title}</h3>
+                        <p className="text-sm text-gray-500">{quiz.subject} • {quiz.questions.length} questions</p>
+                      </div>
+                      <Button size="sm" className="bg-brightpair hover:bg-brightpair-600 text-white border">
+                        Start
+                      </Button>
+                    </div>
+                  </div>
+                ))
+              )}
             </CardContent>
           </Card>
           
@@ -226,29 +228,55 @@ const Quizzes: React.FC = () => {
               <CardTitle>Quiz History</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {mockQuizHistory.map((quiz) => (
-                <div 
-                  key={quiz.id}
-                  className="p-4 border rounded"
-                >
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
-                    <div>
-                      <h3 className="font-medium">{quiz.title}</h3>
-                      <div className="flex items-center mt-1 text-sm text-gray-500">
-                        <Clock size={14} className="mr-1" />
-                        <span>{quiz.date}</span>
+              {isLoading ? (
+                <div className="space-y-3">
+                  {Array.from({ length: 2 }).map((_, i) => (
+                    <Skeleton key={i} className="h-20 w-full" />
+                  ))}
+                </div>
+              ) : quizHistory.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-10 text-gray-500">
+                  <Clock className="h-10 w-10 mb-2" />
+                  <p>No quiz history yet.</p>
+                </div>
+              ) : (
+                quizHistory.map((quiz) => {
+                  const questionsArr: any[] = Array.isArray(quiz.questions)
+                    ? (quiz.questions as any[])
+                    : quiz.questions
+                      ? (() => {
+                          try {
+                            return JSON.parse(quiz.questions as unknown as string);
+                          } catch {
+                            return [];
+                          }
+                        })()
+                      : [];
+                  const questionCount = questionsArr.length;
+                  const completedDate = quiz.completed_at ? new Date(quiz.completed_at).toLocaleDateString() : '';
+                  const scoreVal = quiz.score || 0;
+                  return (
+                    <div key={quiz.id} className="p-4 border rounded">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+                        <div>
+                          <h3 className="font-medium">{quiz.title}</h3>
+                          <div className="flex items-center mt-1 text-sm text-gray-500">
+                            <Clock size={14} className="mr-1" />
+                            <span>{completedDate}</span>
+                          </div>
+                        </div>
+                        <div className="text-left sm:text-right">
+                          <div className="text-lg font-semibold">{scoreVal}%</div>
+                          <p className="text-xs text-gray-500">{Math.round(scoreVal / 100 * questionCount)} of {questionCount} correct</p>
+                        </div>
+                      </div>
+                      <div className="mt-2">
+                        <Progress value={scoreVal} className="h-2" />
                       </div>
                     </div>
-                    <div className="text-left sm:text-right">
-                      <div className="text-lg font-semibold">{quiz.score}%</div>
-                      <p className="text-xs text-gray-500">{Math.round(quiz.score / 10 * quiz.questionCount) / 10} of {quiz.questionCount} correct</p>
-                    </div>
-                  </div>
-                  <div className="mt-2">
-                    <Progress value={quiz.score} className="h-2" />
-                  </div>
-                </div>
-              ))}
+                  );
+                })
+              )}
               
               <div className="flex justify-center mt-4">
                 <Button variant="outline" className="w-full border-gray-300 bg-white text-gray-800 hover:bg-gray-100">

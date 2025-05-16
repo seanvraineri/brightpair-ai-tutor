@@ -5,55 +5,15 @@ import { useToast } from "@/components/ui/use-toast";
 import { Plus, Sparkles, ChevronLeft, ChevronRight, RotateCcw, Clock, CheckCircle, XCircle } from "lucide-react";
 import FlashcardGenerator from "@/components/flashcards/FlashcardGenerator";
 import FileUploader from "@/components/flashcards/FileUploader";
-import { getFlashcardSets, Flashcard, FlashcardSet } from "@/services/flashcardService";
+import { getFlashcardSets, Flashcard, FlashcardSet, getFlashcardSetById } from "@/services/flashcardService";
 import { useUser } from "@/contexts/UserContext";
 import PrettyMath from "@/components/ui/PrettyMath";
 import { formatMessage } from "@/utils/messageFormatters";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-// Mock flashcard sets (we'll replace with actual data)
-const mockFlashcardSets = [
-  {
-    id: "algebra",
-    name: "Algebra Fundamentals",
-    count: 12,
-  },
-  {
-    id: "biology",
-    name: "Cell Biology",
-    count: 8,
-  },
-  {
-    id: "geometry",
-    name: "Geometric Formulas",
-    count: 10,
-  },
-];
-
-// Mock flashcards
-const mockFlashcards: Record<string, Flashcard[]> = {
-  "algebra": [
-    { id: "1", front: "What is 3/4 + 1/2?", back: "Common denominator: 6/8 + 4/8 = 10/8 = 1.25" },
-    { id: "2", front: "Solve for x: 2x + 5 = 13", back: "2x = 8\nx = 4" },
-    { id: "3", front: "Factor x² + 5x + 6", back: "(x + 2)(x + 3)" },
-    { id: "4", front: "What is the slope-intercept form?", back: "y = mx + b\nwhere m is the slope and b is the y-intercept" },
-  ],
-  "biology": [
-    { id: "5", front: "What is the powerhouse of the cell?", back: "Mitochondria" },
-    { id: "6", front: "What is the function of ribosomes?", back: "Protein synthesis" },
-    { id: "7", front: "What are the four types of tissue?", back: "Epithelial, connective, muscle, and nervous" },
-    { id: "8", front: "What is the process of cell division called?", back: "Mitosis" },
-  ],
-  "geometry": [
-    { id: "9", front: "What is the formula for the area of a circle?", back: "A = πr²" },
-    { id: "10", front: "What is the Pythagorean theorem?", back: "a² + b² = c²" },
-    { id: "11", front: "What is the sum of angles in a triangle?", back: "180 degrees" },
-    { id: "12", front: "What is the formula for the volume of a cube?", back: "V = s³" },
-  ],
-};
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Flashcards: React.FC = () => {
-  const [selectedSet, setSelectedSet] = useState<string>("algebra");
+  const [selectedSet, setSelectedSet] = useState<string>("");
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [flipped, setFlipped] = useState<boolean>(false);
   const [isStudyMode, setIsStudyMode] = useState<boolean>(false);
@@ -61,24 +21,54 @@ const Flashcards: React.FC = () => {
   const [generatedFlashcards, setGeneratedFlashcards] = useState<Flashcard[]>([]);
   const [userFlashcardSets, setUserFlashcardSets] = useState<FlashcardSet[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoadingCards, setIsLoadingCards] = useState<boolean>(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { user } = useUser();
 
+  const displayFlashcardSets = userFlashcardSets;
+
   useEffect(() => {
-    // Load flashcards for the selected set
-    if (selectedSet === "generated" && generatedFlashcards.length > 0) {
-      setFlashcards(generatedFlashcards);
-    } else {
-      setFlashcards(mockFlashcards[selectedSet] || []);
-    }
-    
+    const loadCards = async () => {
+      // Handle generated set locally
+      if (selectedSet === "generated") {
+        setFlashcards(generatedFlashcards);
+        return;
+      }
+
+      // If the selected set exists in userFlashcardSets, fetch from DB
+      const userSet = userFlashcardSets.find((s) => s.id === selectedSet);
+      if (userSet) {
+        try {
+          setIsLoadingCards(true);
+          const fullSet = await getFlashcardSetById(selectedSet);
+          if (fullSet && fullSet.cards) {
+            setFlashcards(fullSet.cards);
+          } else {
+            setFlashcards([]);
+          }
+        } catch (error) {
+          console.error("Error loading flashcards:", error);
+          setFlashcards([]);
+        } finally {
+          setIsLoadingCards(false);
+        }
+        return;
+      }
+
+      // No cards found
+      setFlashcards([]);
+    };
+
+    loadCards();
+
+    // Reset viewer state
     setCurrentIndex(0);
     setFlipped(false);
     if (cardRef.current) {
       cardRef.current.style.transform = "rotateY(0deg)";
     }
-  }, [selectedSet, generatedFlashcards]);
+  }, [selectedSet, generatedFlashcards, userFlashcardSets]);
   
   useEffect(() => {
     // Fetch user's flashcard sets from the database
@@ -205,34 +195,45 @@ const Flashcards: React.FC = () => {
                 <h2 className="text-xl font-semibold mb-4">Your Flashcard Sets</h2>
                 <div className="space-y-4">
                   {isLoading ? (
-                    <p className="text-gray-500">Loading your flashcard sets...</p>
+                    <div className="space-y-3">
+                      {Array.from({ length: 3 }).map((_, i) => (
+                        <Skeleton key={i} className="h-16 w-full" />
+                      ))}
+                    </div>
+                  ) : displayFlashcardSets.length === 0 && generatedFlashcards.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-10 text-gray-500">
+                      <Plus className="h-10 w-10 mb-2" />
+                      <p>No flashcard sets yet.</p>
+                    </div>
                   ) : (
                     <div className="space-y-2">
-                      {/* Mock flashcard sets for now */}
-                      {mockFlashcardSets.map((set) => (
-                        <div 
-                          key={set.id}
-                          className={`p-3 rounded-md cursor-pointer border transition-colors ${
-                            selectedSet === set.id 
-                              ? 'border-brightpair bg-brightpair-50' 
-                              : 'border-gray-200 hover:bg-gray-50'
-                          }`}
-                          onClick={() => handleSetChange(set.id)}
-                        >
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <p className="font-medium">{set.name}</p>
-                              <p className="text-xs text-gray-500">{set.count} cards</p>
+                      {displayFlashcardSets.map((set: any) => {
+                        const cardCount = (set as any).count ?? set.cards?.length ?? 0;
+                        return (
+                          <div
+                            key={set.id}
+                            className={`p-3 rounded-md cursor-pointer border transition-colors ${
+                              selectedSet === set.id
+                                ? 'border-brightpair bg-brightpair-50'
+                                : 'border-gray-200 hover:bg-gray-50'
+                            }`}
+                            onClick={() => handleSetChange(set.id)}
+                          >
+                            <div className="flex justify-between items-center">
+                              <div>
+                                <p className="font-medium">{set.name}</p>
+                                <p className="text-xs text-gray-500">{cardCount} cards</p>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
-                      
+                        );
+                      })}
+
                       {generatedFlashcards.length > 0 && (
-                        <div 
+                        <div
                           className={`p-3 rounded-md cursor-pointer border transition-colors ${
-                            selectedSet === 'generated' 
-                              ? 'border-brightpair bg-brightpair-50' 
+                            selectedSet === 'generated'
+                              ? 'border-brightpair bg-brightpair-50'
                               : 'border-gray-200 hover:bg-gray-50'
                           }`}
                           onClick={() => handleSetChange('generated')}
@@ -302,7 +303,16 @@ const Flashcards: React.FC = () => {
         )}
         
         {/* Flashcard Viewer */}
-        {flashcards.length > 0 ? (
+        {isLoadingCards ? (
+          <div className="flex flex-col items-center pt-8">
+            <Skeleton className="h-64 md:h-80 w-full max-w-lg mb-6" />
+            <div className="flex space-x-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-10 w-24" />
+              ))}
+            </div>
+          </div>
+        ) : flashcards.length > 0 ? (
           <div className={`flex flex-col items-center ${isStudyMode ? "pt-8" : ""}`}>
             <div className="w-full max-w-lg">
               {/* Card counter */}
