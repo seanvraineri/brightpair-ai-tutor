@@ -1,8 +1,13 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookOpen, Award, Clock, ExternalLink } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Award, BookOpen, Clock, ExternalLink } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -18,35 +23,39 @@ interface TaskItemProps {
   onClick: () => void;
 }
 
-const TaskItem: React.FC<TaskItemProps> = ({ 
-  icon, 
-  title, 
-  description, 
-  buttonLabel, 
+const TaskItem: React.FC<TaskItemProps> = ({
+  icon,
+  title,
+  description,
+  buttonLabel,
   difficulty,
   completionTime,
   dueDate,
   progressPercent,
-  onClick
+  onClick,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
-  
+
   // Get badge color based on difficulty
-  const difficultyColor = difficulty === "easy" 
-    ? "bg-green-100 text-green-800" 
+  const difficultyColor = difficulty === "easy"
+    ? "bg-green-100 text-green-800"
     : difficulty === "medium"
-      ? "bg-yellow-100 text-yellow-800"
-      : "bg-red-100 text-red-800";
-  
+    ? "bg-yellow-100 text-yellow-800"
+    : "bg-red-100 text-red-800";
+
   return (
-    <div 
+    <div
       className="p-4 border rounded-md transition-all duration-300 hover:shadow-card cursor-pointer"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={onClick}
     >
       <div className="flex items-start">
-        <div className={`bg-brightpair-50 p-2 rounded-md mr-4 transition-transform duration-300 ${isHovered ? 'scale-110' : ''}`}>
+        <div
+          className={`bg-brightpair-50 p-2 rounded-md mr-4 transition-transform duration-300 ${
+            isHovered ? "scale-110" : ""
+          }`}
+        >
           {icon}
         </div>
         <div className="flex-1">
@@ -59,7 +68,7 @@ const TaskItem: React.FC<TaskItemProps> = ({
             </div>
           </div>
           <p className="text-sm text-gray-500 mb-2">{description}</p>
-          
+
           <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
             <div className="flex items-center">
               <Clock size={14} className="mr-1" />
@@ -67,7 +76,7 @@ const TaskItem: React.FC<TaskItemProps> = ({
             </div>
             {dueDate && <span>Due: {dueDate}</span>}
           </div>
-          
+
           <div className="mb-3 mt-2">
             <div className="flex justify-between items-center mb-1">
               <span className="text-xs text-gray-500">Progress</span>
@@ -75,11 +84,15 @@ const TaskItem: React.FC<TaskItemProps> = ({
             </div>
             <Progress value={progressPercent} className="h-1.5" />
           </div>
-          
-          <Button 
-            size="sm" 
-            variant="outline" 
-            className={`w-full transition-all ${isHovered ? 'bg-brightpair text-white hover:bg-brightpair-600' : ''}`}
+
+          <Button
+            size="sm"
+            variant="outline"
+            className={`w-full transition-all ${
+              isHovered
+                ? "bg-brightpair text-white hover:bg-brightpair-600"
+                : ""
+            }`}
           >
             {buttonLabel}
             <ExternalLink size={14} className="ml-2" />
@@ -110,14 +123,14 @@ function MessageSquareIcon(props: React.SVGProps<SVGSVGElement>) {
 
 const RecommendedTasks: React.FC = () => {
   const { toast } = useToast();
-  
+
   const handleTaskClick = (taskName: string) => {
     toast({
       title: "Task Selected",
       description: `Opening ${taskName}...`,
     });
   };
-  
+
   const tasks = [
     {
       icon: <MessageSquareIcon className="h-5 w-5 text-green-600" />,
@@ -128,7 +141,7 @@ const RecommendedTasks: React.FC = () => {
       completionTime: "30 min",
       dueDate: "Today",
       progressPercent: 60,
-      onClick: () => handleTaskClick("Quadratic Equations Practice")
+      onClick: () => handleTaskClick("Quadratic Equations Practice"),
     },
     {
       icon: <BookOpen className="h-5 w-5 text-yellow-600" />,
@@ -139,7 +152,7 @@ const RecommendedTasks: React.FC = () => {
       completionTime: "15 min",
       dueDate: "Tomorrow",
       progressPercent: 25,
-      onClick: () => handleTaskClick("Biology Flashcards")
+      onClick: () => handleTaskClick("Biology Flashcards"),
     },
     {
       icon: <Award className="h-5 w-5 text-purple-600" />,
@@ -150,8 +163,8 @@ const RecommendedTasks: React.FC = () => {
       completionTime: "45 min",
       dueDate: "May 5, 2025",
       progressPercent: 15,
-      onClick: () => handleTaskClick("Geometry Practice Quiz")
-    }
+      onClick: () => handleTaskClick("Geometry Practice Quiz"),
+    },
   ];
 
   return (

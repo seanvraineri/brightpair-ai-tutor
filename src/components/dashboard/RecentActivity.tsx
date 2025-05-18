@@ -1,7 +1,6 @@
-
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookOpen, Award } from "lucide-react";
+import { Award, BookOpen } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 
@@ -12,7 +11,9 @@ interface ActivityItemProps {
   timestamp: string;
 }
 
-const ActivityItem: React.FC<ActivityItemProps> = ({ icon, title, description, timestamp }) => {
+const ActivityItem: React.FC<ActivityItemProps> = (
+  { icon, title, description, timestamp },
+) => {
   return (
     <div className="flex items-start">
       <div className="bg-brightpair-50 p-2 rounded-md mr-4">
@@ -46,27 +47,6 @@ function MessageSquareIcon(props: React.SVGProps<SVGSVGElement>) {
 }
 
 const RecentActivity: React.FC = () => {
-  const activities = [
-    {
-      icon: <MessageSquareIcon className="h-5 w-5 text-brightpair" />,
-      title: "AI Tutor Chat",
-      description: "You completed a lesson on algebraic expressions",
-      timestamp: "Today, 2:15 PM"
-    },
-    {
-      icon: <BookOpen className="h-5 w-5 text-brightpair" />,
-      title: "Flashcards",
-      description: "You reviewed 15 math flashcards",
-      timestamp: "Yesterday, 6:30 PM"
-    },
-    {
-      icon: <Award className="h-5 w-5 text-brightpair" />,
-      title: "Quiz Completed",
-      description: "You scored 85% on Geometry Quiz",
-      timestamp: "Yesterday, 5:15 PM"
-    }
-  ];
-
   return (
     <Card className="hover:shadow-card transition-shadow duration-200">
       <CardHeader>
@@ -74,19 +54,7 @@ const RecentActivity: React.FC = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {activities.map((activity, idx) => (
-            <ActivityItem
-              key={idx}
-              icon={activity.icon}
-              title={activity.title}
-              description={activity.description}
-              timestamp={activity.timestamp}
-            />
-          ))}
-          
-          <Link to="/activity-log" className="text-brightpair hover:underline text-sm flex items-center">
-            View all activity <ArrowRight size={14} className="ml-1" />
-          </Link>
+          {/* Remove all activities and related mock logic. Only keep live or UI code. */}
         </div>
       </CardContent>
     </Card>
