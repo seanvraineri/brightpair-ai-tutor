@@ -244,6 +244,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "homework_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "homework_track_id_fkey"
             columns: ["track_id"]
             isOneToOne: false

@@ -2,13 +2,27 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate, useLocation, Outlet } from "react-router-dom";
-import React, { Suspense, lazy } from 'react';
+import {
+  BrowserRouter,
+  Navigate,
+  Outlet,
+  Route,
+  Routes,
+  useLocation,
+  useParams,
+} from "react-router-dom";
+import React, { lazy, Suspense } from "react";
 import { UserProvider, useUser } from "./contexts/UserContext";
 import { MessageProvider } from "./contexts/MessageContext";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import Spinner from '@/components/ui/spinner';
-import ErrorBoundary from '@/components/ui/ErrorBoundary';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import Spinner from "@/components/ui/spinner";
+import ErrorBoundary from "@/components/ui/ErrorBoundary";
 
 import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
@@ -44,45 +58,51 @@ import Reports from "./pages/Reports";
 import CustomLessonPage from "./pages/CustomLessonPage";
 import { useEffect, useState } from "react";
 import { supabase } from "./integrations/supabase/client";
-import CurriculumBuilder from './pages/tutor/CurriculumBuilder';
+import CurriculumBuilder from "./pages/tutor/CurriculumBuilder";
+import StudentOnboardingWizard from "@/components/onboarding/StudentOnboardingWizard";
 
 // Protected Route component to check role and authentication
-const ProtectedRoute = ({ children, allowedRole }: { children: React.ReactNode, allowedRole: string | string[] }) => {
+const ProtectedRoute = (
+  { children, allowedRole }: {
+    children: React.ReactNode;
+    allowedRole: string | string[];
+  },
+) => {
   const { user, session } = useUser();
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(true);
-  
+
   useEffect(() => {
     // Check authentication status when component mounts
     const checkAuth = async () => {
       const { data } = await supabase.auth.getSession();
       setIsLoading(false);
     };
-    
+
     checkAuth();
   }, []);
-  
+
   // Show nothing while checking authentication
   if (isLoading) {
     return null;
   }
-  
+
   // If not authenticated, redirect to login
   if (!session) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
-  
+
   // If authenticated but no user data yet, wait for it
   if (!user) {
     return null;
   }
-  
+
   // Normalize allowed roles to array for flexible checks
   const allowedRoles = Array.isArray(allowedRole) ? allowedRole : [allowedRole];
   // If user doesn't have one of the required roles, redirect to appropriate dashboard
   if (!allowedRoles.includes(user.role)) {
     // Redirect to appropriate dashboard based on role
-    switch(user.role) {
+    switch (user.role) {
       case "teacher":
         return <Navigate to="/teacher-dashboard" />;
       case "parent":
@@ -91,7 +111,7 @@ const ProtectedRoute = ({ children, allowedRole }: { children: React.ReactNode, 
         return <Navigate to="/dashboard" />;
     }
   }
-  
+
   // User is authenticated and has the correct role
   return <>{children}</>;
 };
@@ -101,27 +121,27 @@ const AuthRoute = ({ children }: { children: React.ReactNode }) => {
   const { session } = useUser();
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(true);
-  
+
   useEffect(() => {
     // Check authentication status when component mounts
     const checkAuth = async () => {
       const { data } = await supabase.auth.getSession();
       setIsLoading(false);
     };
-    
+
     checkAuth();
   }, []);
-  
+
   // Show nothing while checking authentication
   if (isLoading) {
     return null;
   }
-  
+
   // If not authenticated, redirect to login
   if (!session) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
-  
+
   // User is authenticated
   return <>{children}</>;
 };
@@ -140,11 +160,23 @@ const PublicDashboardLayout = () => {
   );
 };
 
-const TutorRoutes = lazy(() => import('./routes/TutorRoutes'));
-const StudentRoutes = lazy(() => import('./routes/StudentRoutes'));
-const ParentRoutes = lazy(() => import('./routes/ParentRoutes'));
+const TutorRoutes = lazy(() => import("./routes/TutorRoutes"));
+const StudentRoutes = lazy(() => import("./routes/StudentRoutes"));
+const ParentRoutes = lazy(() => import("./routes/ParentRoutes"));
 
 const queryClient = new QueryClient();
+
+function StudentOnboardingWizardWrapper() {
+  const { studentId } = useParams();
+  return (
+    <StudentOnboardingWizard
+      studentId={studentId}
+      onComplete={() => {
+        window.location.href = "/dashboard";
+      }}
+    />
+  );
+}
 
 function App() {
   return (
@@ -159,8 +191,15 @@ function App() {
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<SignUp />} />
-                <Route path="/consultation" element={<ConsultationScheduling />} />
+                <Route
+                  path="/consultation"
+                  element={<ConsultationScheduling />}
+                />
                 <Route path="/onboarding" element={<OnboardingForm />} />
+                <Route
+                  path="/onboarding/student/:studentId"
+                  element={<StudentOnboardingWizardWrapper />}
+                />
                 <Route path="/tutor-signup" element={<TutorSignup />} />
                 <Route path="/tutor-search" element={<TutorSearch />} />
                 <Route path="/tutor-profile/:id" element={<TutorProfile />} />
@@ -168,183 +207,266 @@ function App() {
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/about" element={<AboutUs />} />
                 <Route path="/careers" element={<Careers />} />
-                
+
                 {/* Tutor bundle (teachers & tutors) */}
-                <Route path="/tutor/*" element={
-                  <ProtectedRoute allowedRole={["teacher", "tutor"]}>
-                    <ErrorBoundary>
-                      <Suspense fallback={<Spinner />}>
-                        <TutorRoutes />
-                      </Suspense>
-                    </ErrorBoundary>
-                  </ProtectedRoute>
-                } />
-                
+                <Route
+                  path="/tutor/*"
+                  element={
+                    <ProtectedRoute allowedRole={["teacher", "tutor"]}>
+                      <ErrorBoundary>
+                        <Suspense fallback={<Spinner />}>
+                          <TutorRoutes />
+                        </Suspense>
+                      </ErrorBoundary>
+                    </ProtectedRoute>
+                  }
+                />
+
                 {/* Student bundle */}
-                <Route path="/student/*" element={
-                  <AuthRoute>
-                    <ErrorBoundary>
-                      <Suspense fallback={<Spinner />}>
-                        <StudentRoutes />
-                      </Suspense>
-                    </ErrorBoundary>
-                  </AuthRoute>
-                } />
-                
+                <Route
+                  path="/student/*"
+                  element={
+                    <AuthRoute>
+                      <ErrorBoundary>
+                        <Suspense fallback={<Spinner />}>
+                          <StudentRoutes />
+                        </Suspense>
+                      </ErrorBoundary>
+                    </AuthRoute>
+                  }
+                />
+
                 {/* Parent bundle */}
-                <Route path="/parent/*" element={
-                  <ProtectedRoute allowedRole="parent">
-                    <ErrorBoundary>
-                      <Suspense fallback={<Spinner />}>
-                        <ParentRoutes />
-                      </Suspense>
-                    </ErrorBoundary>
-                  </ProtectedRoute>
-                } />
-                
+                <Route
+                  path="/parent/*"
+                  element={
+                    <ProtectedRoute allowedRole="parent">
+                      <ErrorBoundary>
+                        <Suspense fallback={<Spinner />}>
+                          <ParentRoutes />
+                        </Suspense>
+                      </ErrorBoundary>
+                    </ProtectedRoute>
+                  }
+                />
+
                 {/* Public Dashboard Routes - no auth required but with nav */}
                 <Route element={<PublicDashboardLayout />}>
                   <Route path="/quizzes" element={<Quizzes />} />
                 </Route>
-                
+
                 {/* Dashboard Routes - auth required */}
-                <Route element={<AuthRoute><Outlet /></AuthRoute>}>
+                <Route
+                  element={
+                    <AuthRoute>
+                      <Outlet />
+                    </AuthRoute>
+                  }
+                >
                   {/* Student routes */}
-                  <Route path="/dashboard" element={
-                    <ProtectedRoute allowedRole="student">
-                      <DashboardLayout>
-                        <Dashboard />
-                      </DashboardLayout>
-                    </ProtectedRoute>
-                  } />
-                  
+                  <Route
+                    path="/dashboard"
+                    element={
+                      <ProtectedRoute allowedRole="student">
+                        <DashboardLayout>
+                          <Dashboard />
+                        </DashboardLayout>
+                      </ProtectedRoute>
+                    }
+                  />
+
                   {/* Teacher routes */}
-                  <Route path="/teacher-dashboard" element={
-                    <ProtectedRoute allowedRole="teacher">
-                      <DashboardLayout>
-                        <TeacherDashboard />
-                      </DashboardLayout>
-                    </ProtectedRoute>
-                  } />
-                  
+                  <Route
+                    path="/teacher-dashboard"
+                    element={
+                      <ProtectedRoute allowedRole="teacher">
+                        <DashboardLayout>
+                          <TeacherDashboard />
+                        </DashboardLayout>
+                      </ProtectedRoute>
+                    }
+                  />
+
                   {/* Parent routes */}
-                  <Route path="/parent-dashboard" element={
-                    <ProtectedRoute allowedRole="parent">
-                      <DashboardLayout>
-                        <ParentDashboard />
-                      </DashboardLayout>
-                    </ProtectedRoute>
-                  } />
-                  
+                  <Route
+                    path="/parent-dashboard"
+                    element={
+                      <ProtectedRoute allowedRole="parent">
+                        <DashboardLayout>
+                          <ParentDashboard />
+                        </DashboardLayout>
+                      </ProtectedRoute>
+                    }
+                  />
+
                   {/* Shared routes */}
-                  <Route path="/homework" element={
-                    <DashboardLayout>
-                      <Homework />
-                    </DashboardLayout>
-                  } />
-                  
+                  <Route
+                    path="/homework"
+                    element={
+                      <DashboardLayout>
+                        <Homework />
+                      </DashboardLayout>
+                    }
+                  />
+
                   {/* Curriculum route */}
-                  <Route path="/curriculum" element={
-                    <ProtectedRoute allowedRole="teacher">
-                      <DashboardLayout>
-                        <CurriculumBuilder />
-                      </DashboardLayout>
-                    </ProtectedRoute>
-                  } />
-                  
+                  <Route
+                    path="/curriculum"
+                    element={
+                      <ProtectedRoute allowedRole="teacher">
+                        <DashboardLayout>
+                          <CurriculumBuilder />
+                        </DashboardLayout>
+                      </ProtectedRoute>
+                    }
+                  />
+
                   {/* Reports route */}
-                  <Route path="/reports" element={
-                    <ProtectedRoute allowedRole="teacher">
-                      <DashboardLayout>
-                        <Reports />
-                      </DashboardLayout>
-                    </ProtectedRoute>
-                  } />
-                  
+                  <Route
+                    path="/reports"
+                    element={
+                      <ProtectedRoute allowedRole="teacher">
+                        <DashboardLayout>
+                          <Reports />
+                        </DashboardLayout>
+                      </ProtectedRoute>
+                    }
+                  />
+
                   {/* Other routes... */}
-                  <Route path="/scheduling" element={
-                    <DashboardLayout>
-                      <Scheduling />
-                    </DashboardLayout>
-                  } />
-                  <Route path="/lessons" element={
-                    <DashboardLayout>
-                      <Lessons />
-                    </DashboardLayout>
-                  } />
-                  <Route path="/progress" element={
-                    <DashboardLayout>
-                      <Progress />
-                    </DashboardLayout>
-                  } />
-                  <Route path="/messages" element={
-                    <MessageProvider>
+                  <Route
+                    path="/scheduling"
+                    element={
                       <DashboardLayout>
-                        <Messages />
+                        <Scheduling />
                       </DashboardLayout>
-                    </MessageProvider>
-                  } />
-                  <Route path="/ai-tutor" element={
-                    <DashboardLayout>
-                      <AITutor />
-                    </DashboardLayout>
-                  } />
-                  <Route path="/tutor-chat" element={
-                    <DashboardLayout>
-                      <TutorChat />
-                    </DashboardLayout>
-                  } />
-                  <Route path="/flashcards" element={
-                    <DashboardLayout>
-                      <Flashcards />
-                    </DashboardLayout>
-                  } />
-                  <Route path="/settings" element={
-                    <DashboardLayout>
-                      <Settings />
-                    </DashboardLayout>
-                  } />
-                  <Route path="/student-notes" element={
-                    <ProtectedRoute allowedRole="teacher">
+                    }
+                  />
+                  <Route
+                    path="/lessons"
+                    element={
                       <DashboardLayout>
-                        <StudentNotes />
+                        <Lessons />
                       </DashboardLayout>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/billing" element={
-                    <ProtectedRoute allowedRole="parent">
+                    }
+                  />
+                  <Route
+                    path="/progress"
+                    element={
                       <DashboardLayout>
-                        <BillingManagement />
+                        <Progress />
                       </DashboardLayout>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/tutors" element={
-                    <ProtectedRoute allowedRole="parent">
+                    }
+                  />
+                  <Route
+                    path="/messages"
+                    element={
+                      <MessageProvider>
+                        <DashboardLayout>
+                          <Messages />
+                        </DashboardLayout>
+                      </MessageProvider>
+                    }
+                  />
+                  <Route
+                    path="/ai-tutor"
+                    element={
                       <DashboardLayout>
-                        <Card>
-                          <CardHeader>
-                            <CardTitle>Find Tutors</CardTitle>
-                            <CardDescription>Discover qualified tutors for your child</CardDescription>
-                          </CardHeader>
-                          <CardContent>
-                            <TutorSearch />
-                          </CardContent>
-                        </Card>
+                        <AITutor />
                       </DashboardLayout>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/custom-lessons" element={
-                    <DashboardLayout>
-                      <CustomLessonPage />
-                    </DashboardLayout>
-                  } />
+                    }
+                  />
+                  <Route
+                    path="/tutor-chat"
+                    element={
+                      <DashboardLayout>
+                        <TutorChat />
+                      </DashboardLayout>
+                    }
+                  />
+                  <Route
+                    path="/flashcards"
+                    element={
+                      <DashboardLayout>
+                        <Flashcards />
+                      </DashboardLayout>
+                    }
+                  />
+                  <Route
+                    path="/settings"
+                    element={
+                      <DashboardLayout>
+                        <Settings />
+                      </DashboardLayout>
+                    }
+                  />
+                  <Route
+                    path="/student-notes"
+                    element={
+                      <ProtectedRoute allowedRole="teacher">
+                        <DashboardLayout>
+                          <StudentNotes />
+                        </DashboardLayout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/billing"
+                    element={
+                      <ProtectedRoute allowedRole="parent">
+                        <DashboardLayout>
+                          <BillingManagement />
+                        </DashboardLayout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/tutors"
+                    element={
+                      <ProtectedRoute allowedRole="parent">
+                        <DashboardLayout>
+                          <Card>
+                            <CardHeader>
+                              <CardTitle>Find Tutors</CardTitle>
+                              <CardDescription>
+                                Discover qualified tutors for your child
+                              </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                              <TutorSearch />
+                            </CardContent>
+                          </Card>
+                        </DashboardLayout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/custom-lessons"
+                    element={
+                      <DashboardLayout>
+                        <CustomLessonPage />
+                      </DashboardLayout>
+                    }
+                  />
                 </Route>
-                
-                <Route path="/student/dashboard" element={<Navigate to="/dashboard" replace />} />
-                <Route path="/teacher/dashboard" element={<Navigate to="/teacher-dashboard" replace />} />
-                <Route path="/parent/dashboard" element={<Navigate to="/parent-dashboard" replace />} />
-                <Route path="/curricula" element={<Navigate to="/curriculum" replace />} />
-                
+
+                <Route
+                  path="/student/dashboard"
+                  element={<Navigate to="/dashboard" replace />}
+                />
+                <Route
+                  path="/teacher/dashboard"
+                  element={<Navigate to="/teacher-dashboard" replace />}
+                />
+                <Route
+                  path="/parent/dashboard"
+                  element={<Navigate to="/parent-dashboard" replace />}
+                />
+                <Route
+                  path="/curricula"
+                  element={<Navigate to="/curriculum" replace />}
+                />
+
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
