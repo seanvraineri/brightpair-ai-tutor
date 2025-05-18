@@ -83,94 +83,32 @@ const Lessons: React.FC = () => {
 
       setIsLoadingSkills(true);
       try {
-        // Query the student's skills with mastery information
+        // Query the student's skills with mastery and join to skills table for names
         const { data, error } = await supabase
           .from("student_skills")
-          .select("skill_id, mastery_level")
+          .select("skill_id, mastery_level, skills(name, description)")
           .eq("student_id", session.user.id);
 
         if (error) throw error;
 
         if (data && data.length > 0) {
-          // Map each row to the Skill interface that this page expects.
           const skillsWithMastery = data.map((row: any) => ({
             id: row.skill_id,
-            name: row.skill_id, // Fallback: use the ID as the display name until a lookup table is added.
+            name: row.skills?.name ?? row.skill_id,
             mastery: row.mastery_level !== null
               ? Math.round(row.mastery_level * 100)
               : 0,
-            description: undefined,
+            description: row.skills?.description ?? undefined,
           }));
 
           setAvailableSkills(skillsWithMastery);
-        } else if (IS_DEVELOPMENT && FEATURES.USE_MOCK_DATA) {
-          // Fallback to mock data in development for testing
-          setAvailableSkills([
-            {
-              id: "chain",
-              name: "Chain Rule",
-              mastery: 32,
-              description:
-                "Understanding how to differentiate composite functions",
-            },
-            {
-              id: "implicit",
-              name: "Implicit Differentiation",
-              mastery: 47,
-              description:
-                "Finding derivatives when variables are related implicitly",
-            },
-            {
-              id: "limits",
-              name: "Limits",
-              mastery: 65,
-              description:
-                "Exploring behavior of functions as they approach specific values",
-            },
-            {
-              id: "integration",
-              name: "Integration",
-              mastery: 58,
-              description:
-                "Basic techniques of integration, including substitution and parts",
-            },
-          ]);
+        } else {
+          setAvailableSkills([]);
         }
       } catch (error) {
         console.error("Error fetching available skills:", error);
-        // Only use mock data in development as fallback
-        if (IS_DEVELOPMENT && FEATURES.USE_MOCK_DATA) {
-          setAvailableSkills([
-            {
-              id: "chain",
-              name: "Chain Rule",
-              mastery: 32,
-              description:
-                "Understanding how to differentiate composite functions",
-            },
-            {
-              id: "implicit",
-              name: "Implicit Differentiation",
-              mastery: 47,
-              description:
-                "Finding derivatives when variables are related implicitly",
-            },
-            {
-              id: "limits",
-              name: "Limits",
-              mastery: 65,
-              description:
-                "Exploring behavior of functions as they approach specific values",
-            },
-            {
-              id: "integration",
-              name: "Integration",
-              mastery: 58,
-              description:
-                "Basic techniques of integration, including substitution and parts",
-            },
-          ]);
-        }
+
+        setAvailableSkills([]);
 
         toast({
           title: "Error",
