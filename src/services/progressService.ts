@@ -15,6 +15,13 @@ export interface ProgressSnapshot {
     subjectProgress: SubjectProgress[];
 }
 
+export interface StudentSkill {
+    id: string;
+    name: string;
+    mastery: number; // 0-5 scale
+    description?: string;
+}
+
 const COLORS = [
     "#8B5CF6",
     "#0EA5E9",
@@ -125,4 +132,27 @@ export const fetchProgress = async (
         quizAverage,
         subjectProgress,
     };
+};
+
+export const getStudentSkills = async (
+    studentId: string,
+): Promise<StudentSkill[]> => {
+    const { data, error } = await supabase
+        .from("student_skills")
+        .select("skill_id, mastery_level, skills(name, description)")
+        .eq("student_id", studentId);
+
+    if (error) {
+        console.error("getStudentSkills", error);
+        return [];
+    }
+
+    return (data ?? []).map((row: any) => ({
+        id: row.skill_id,
+        name: row.skills?.name ?? row.skill_id,
+        mastery: row.mastery_level !== null
+            ? Math.round(row.mastery_level * 5)
+            : 0,
+        description: row.skills?.description ?? undefined,
+    }));
 };
