@@ -1,15 +1,20 @@
-import { Curriculum, CurriculumTopic } from '@/types/curriculum';
-import { v4 as uuidv4 } from 'uuid';
+import { Curriculum, CurriculumTopic } from "@/types/curriculum";
+import { v4 as uuidv4 } from "uuid";
+import { supabase } from "@/integrations/supabase/client";
 
 // Mock in-memory store per student
 const MOCK_CURRICULA: Record<string, Curriculum> = {};
 
-export const getCurriculumTopicsForStudent = async (studentId: string): Promise<CurriculumTopic[]> => {
+export const getCurriculumTopicsForStudent = async (
+  studentId: string,
+): Promise<CurriculumTopic[]> => {
   const curriculum = MOCK_CURRICULA[studentId];
   return curriculum ? curriculum.topics : [];
 };
 
-export const saveCurriculum = async (curriculum: Curriculum): Promise<boolean> => {
+export const saveCurriculum = async (
+  curriculum: Curriculum,
+): Promise<boolean> => {
   MOCK_CURRICULA[curriculum.student_id] = curriculum;
   return true;
 };
@@ -26,13 +31,13 @@ export const generateCurriculum = async (params: {
   const topics: CurriculumTopic[] = params.goals.map((g, idx) => ({
     id: `topic-${idx}`,
     name: g,
-    description: `Deep dive into ${g}`
+    description: `Deep dive into ${g}`,
   }));
   const curriculum: Curriculum = {
     id: uuidv4(),
     tutor_id: params.tutor_id,
     student_id: params.student_id,
-    title: 'Personalized Curriculum',
+    title: "Personalized Curriculum",
     goals: params.goals,
     topics,
     materials: params.materials,
@@ -45,6 +50,26 @@ export const generateCurriculum = async (params: {
   return curriculum;
 };
 
-export const getCurriculaForTutor = async (tutorId: string): Promise<Curriculum[]> => {
-  return Object.values(MOCK_CURRICULA).filter(c => c.tutor_id === tutorId);
-}; 
+export const getCurriculaForTutor = async (
+  tutorId: string,
+): Promise<Curriculum[]> => {
+  return Object.values(MOCK_CURRICULA).filter((c) => c.tutor_id === tutorId);
+};
+
+export interface Track {
+  id: string;
+  name: string;
+  description?: string;
+}
+
+export const getTracks = async (): Promise<Track[]> => {
+  const { data, error } = await supabase
+    .from("learning_tracks")
+    .select("id, name, description")
+    .order("name");
+  if (error) {
+    console.error("getTracks error", error);
+    return [];
+  }
+  return data ?? [];
+};

@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,9 +5,17 @@ import { format } from "date-fns";
 import { Calendar as CalendarIcon, Clock, MapPin, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
+import { useQuery } from "@tanstack/react-query";
+import {
+  Appointment,
+  cancelAppointment,
+  getUpcomingAppointments,
+} from "@/services/schedulingService";
+import { useUser } from "@/contexts/UserContext";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface SessionItemProps {
-  id: number;
+  id: string;
   title: string;
   date: Date;
   time: string;
@@ -34,21 +41,19 @@ const SessionItem: React.FC<SessionItemProps> = ({
   onClick,
   onCancel,
 }) => (
-  <div
-    className="border rounded-md p-4 hover:bg-gray-50 transition-colors"
-  >
+  <div className="border rounded-md p-4 hover:bg-gray-50 transition-colors">
     <div className="flex justify-between items-start mb-2">
       <h3 className="font-medium">{title}</h3>
       <Badge variant={mode === "remote" ? "secondary" : "outline"}>
         {mode === "remote" ? "Online" : "In-Person"}
       </Badge>
     </div>
-    
+
     <div className="flex items-center text-sm text-gray-500 mb-1">
       <CalendarIcon size={14} className="mr-1" />
       <span>{format(date, "PPP")}</span>
     </div>
-    
+
     <div className="flex items-center text-sm text-gray-500 mb-1">
       <Clock size={14} className="mr-1" />
       <span>{time} ({duration})</span>
@@ -60,19 +65,23 @@ const SessionItem: React.FC<SessionItemProps> = ({
         <span>{location}</span>
       </div>
     )}
-    
+
     <div className="text-sm mb-3">
-      <div><span className="text-gray-600">Tutor:</span> {tutor}</div>
-      <div><span className="text-gray-600">Subject:</span> {subject}</div>
+      <div>
+        <span className="text-gray-600">Tutor:</span> {tutor}
+      </div>
+      <div>
+        <span className="text-gray-600">Subject:</span> {subject}
+      </div>
     </div>
 
     <div className="flex justify-between mt-3">
       <Button variant="outline" size="sm" onClick={onClick}>
         View Details
       </Button>
-      <Button 
-        variant="ghost" 
-        size="sm" 
+      <Button
+        variant="ghost"
+        size="sm"
         className="text-red-500 hover:text-red-700 hover:bg-red-50"
         onClick={(e) => {
           e.stopPropagation();
@@ -88,43 +97,25 @@ const SessionItem: React.FC<SessionItemProps> = ({
 
 const UpcomingSessions: React.FC = () => {
   const { toast } = useToast();
-  
-  // Mock upcoming sessions data
-  const upcomingSessions = [
-    {
-      id: 1,
-      title: "Math Tutoring",
-      date: new Date(2025, 5, 4),
-      time: "4:00 PM",
-      duration: "1 hour",
-      tutor: "Dr. Smith",
-      subject: "Mathematics",
-      mode: "remote" as const,
-    },
-    {
-      id: 2,
-      title: "Physics Review",
-      date: new Date(2025, 5, 6),
-      time: "3:30 PM",
-      duration: "45 minutes",
-      tutor: "Prof. Johnson",
-      subject: "Science",
-      mode: "in-person" as const,
-      location: "University Library, Room 204"
-    },
-    {
-      id: 3,
-      title: "English Essay Help",
-      date: new Date(2025, 5, 10),
-      time: "5:00 PM",
-      duration: "1.5 hours",
-      tutor: "Ms. Williams",
-      subject: "English",
-      mode: "remote" as const,
-    },
-  ];
+  const { user } = useUser();
 
-  const handleSessionClick = (id: number) => {
+  const {
+    data: upcomingSessions,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ["upcoming-sessions", user?.id],
+    enabled: !!user?.id,
+    queryFn: async () => {
+      if (!user) return [] as Appointment[];
+      const role = user.role === "teacher"
+        ? "tutor"
+        : (user.role as "student" | "tutor");
+      return await getUpcomingAppointments(user.id, role);
+    },
+  });
+
+  const handleSessionClick = (id: string) => {
     toast({
       title: "Session Details",
       description: `Viewing details for session #${id}`,
@@ -132,12 +123,21 @@ const UpcomingSessions: React.FC = () => {
     // In a real app, you would navigate to the session details page or show a modal
   };
 
-  const handleSessionCancel = (id: number) => {
-    toast({
-      title: "Session Cancelled",
-      description: `Session #${id} has been cancelled`,
-    });
-    // In a real app, you would update the database to cancel the session
+  const handleSessionCancel = async (id: string) => {
+    const { success, error } = await cancelAppointment(id);
+    if (success) {
+      toast({
+        title: "Session Cancelled",
+        description: `Session #${id} has been cancelled`,
+      });
+      refetch();
+    } else {
+      toast({
+        title: "Error",
+        description: error ?? "Unable to cancel session.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -150,24 +150,36 @@ const UpcomingSessions: React.FC = () => {
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 gap-4">
-          {upcomingSessions.map((session) => (
-            <SessionItem
-              key={session.id}
-              id={session.id}
-              title={session.title}
-              date={session.date}
-              time={session.time}
-              duration={session.duration}
-              tutor={session.tutor}
-              subject={session.subject}
-              mode={session.mode}
-              location={session.location}
-              onClick={() => handleSessionClick(session.id)}
-              onCancel={() => handleSessionCancel(session.id)}
-            />
-          ))}
-          
-          {upcomingSessions.length === 0 && (
+          {isLoading && <Skeleton className="h-32 w-full" />}
+          {!isLoading && upcomingSessions && upcomingSessions.map((session) => {
+            const start = new Date(session.starts_at);
+            const end = new Date(session.ends_at);
+            const dateStr = start;
+            const timeStr = start.toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            });
+            const durationMin = Math.round(
+              (end.getTime() - start.getTime()) / 60000,
+            );
+            return (
+              <SessionItem
+                key={session.id}
+                id={session.id}
+                title={"Tutoring Session"}
+                date={dateStr}
+                time={timeStr}
+                duration={`${durationMin} min`}
+                tutor={session.tutor_id}
+                subject={""}
+                mode={"remote"}
+                onClick={() => handleSessionClick(session.id)}
+                onCancel={() => handleSessionCancel(session.id)}
+              />
+            );
+          })}
+
+          {!isLoading && upcomingSessions && upcomingSessions.length === 0 && (
             <p className="text-center text-gray-500 py-6">
               No upcoming sessions scheduled
             </p>

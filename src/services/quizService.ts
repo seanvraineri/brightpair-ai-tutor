@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { FEATURES, IS_DEVELOPMENT } from "@/config/env";
+import { IS_DEVELOPMENT } from "@/config/env";
 import { Database } from "@/integrations/supabase/types";
 
 export interface QuizQuestion {
@@ -51,39 +51,20 @@ export const generateQuiz = async (
   topicPassages: string[],
 ): Promise<Quiz> => {
   try {
-    if (!FEATURES.USE_MOCK_DATA) {
-      const { data, error } = await supabase.functions.invoke(
-        "generate-quiz",
-        {
-          body: {
-            studentSnapshot,
-            topicPassages,
-          },
+    const { data, error } = await supabase.functions.invoke(
+      "generate-quiz",
+      {
+        body: {
+          studentSnapshot,
+          topicPassages,
         },
-      );
+      },
+    );
 
-      if (error) throw error;
+    if (error) throw error;
 
-      // Expect edge function to return { skill_id, quiz: QuizQuestion[] }
-      return data as Quiz;
-    }
-
-    // ---------- MOCK FALLBACK ----------
-    const mockQuiz: Quiz = {
-      skill_id: studentSnapshot.lowest_mastery[0]?.skill_id || "chain",
-      quiz: [
-        {
-          id: "q1",
-          type: "mcq",
-          difficulty: "easy",
-          stem: "Mock question 1",
-          choices: ["A", "B", "C", "D"],
-          answer: "1",
-          rationale: "Because mock data",
-        },
-      ],
-    };
-    return mockQuiz;
+    // Expect edge function to return { skill_id, quiz: QuizQuestion[] }
+    return data as Quiz;
   } catch (error) {
     console.error("Quiz generation error:", error);
     throw error;
@@ -96,29 +77,18 @@ export const submitQuizAnswer = async (
   originalQuestion: QuizQuestion,
 ): Promise<QuizAnswer> => {
   try {
-    if (!FEATURES.USE_MOCK_DATA) {
-      const { data, error } = await supabase.functions.invoke(
-        "grade-quiz-answer",
-        {
-          body: {
-            student_answer: studentAnswer,
-            question_id: questionId,
-            original_question: originalQuestion,
-          },
+    const { data, error } = await supabase.functions.invoke(
+      "grade-quiz-answer",
+      {
+        body: {
+          student_answer: studentAnswer,
+          question_id: questionId,
+          original_question: originalQuestion,
         },
-      );
-      if (error) throw error;
-      return data as QuizAnswer;
-    }
-
-    // ---------- MOCK FALLBACK ----------
-    const isCorrect = studentAnswer === originalQuestion.answer;
-    const responseData: QuizAnswer = {
-      is_correct: isCorrect,
-      explanation: isCorrect ? "Correct" : "Incorrect",
-      tool_calls: [],
-    };
-    return responseData;
+      },
+    );
+    if (error) throw error;
+    return data as QuizAnswer;
   } catch (error) {
     console.error("Quiz grading error:", error);
     throw error;
@@ -130,14 +100,6 @@ export const getStudentMastery = async (
   studentId: string,
 ): Promise<StudentSnapshot | null> => {
   try {
-    // Mock implementation for local testing
-    // In a real app, we would query the database:
-    // const { data, error } = await (supabase
-    //   .from('user_mastery' as any)
-    //   .select('*')
-    //   .eq('student_id', studentId)
-    //   .single() as any);
-
     // Mock student data
     const mockStudentSnapshot: StudentSnapshot = {
       student_id: studentId,
@@ -173,14 +135,6 @@ export const getTopicPassages = async (
   skillId: string,
 ): Promise<string[]> => {
   try {
-    // Mock implementation for local testing
-    // In a real app, we would query the database:
-    // const { data, error } = await (supabase
-    //   .from('topic_passages' as any)
-    //   .select('content')
-    //   .eq('track_id', trackId)
-    //   .eq('skill_id', skillId) as any);
-
     // Mock passages
     const mockPassages = [
       "The chain rule is a formula for computing the derivative of the composition of two or more functions. If $f(x) = g(h(x))$, then $f'(x) = g'(h(x)) \\cdot h'(x)$.",
@@ -202,14 +156,6 @@ export const updateSkillMastery = async (
   delta: number,
 ): Promise<boolean> => {
   try {
-    // Mock implementation for local testing
-    // In a real app, we would update the database:
-    // const { data: userData, error: fetchError } = await (supabase
-    //   .from('user_mastery' as any)
-    //   .select('mastery_areas')
-    //   .eq('student_id', studentId)
-    //   .single() as any);
-
     console.log(
       `Mock: Updated ${studentId}'s mastery of ${skillId} by ${delta}`,
     );
