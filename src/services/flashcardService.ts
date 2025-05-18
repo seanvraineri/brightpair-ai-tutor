@@ -1,7 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
 import { generateFlashcards as aiGenerateFlashcards } from "@/services/aiService";
-import { IS_DEVELOPMENT } from "@/config/env";
 import { v4 as uuidv4 } from "uuid";
 
 export interface Flashcard {
@@ -41,25 +40,6 @@ export interface ProcessDocumentParams {
   };
 }
 
-// Mock flashcards for development/fallback
-const mockFlashcards: Flashcard[] = [
-  {
-    id: "mock-1",
-    front: "What is the derivative of $f(x) = x^2$?",
-    back: "$f'(x) = 2x$",
-  },
-  {
-    id: "mock-2",
-    front: "What is the integral of $f(x) = 2x$?",
-    back: "$F(x) = x^2 + C$",
-  },
-  {
-    id: "mock-3",
-    front: "What is the chain rule?",
-    back: "If $f(x) = g(h(x))$, then $f'(x) = g'(h(x)) \\cdot h'(x)$",
-  },
-];
-
 export const generateFlashcards = async (
   params: GenerateFlashcardsParams,
 ): Promise<Flashcard[]> => {
@@ -98,12 +78,6 @@ export const generateFlashcards = async (
     }));
   } catch (error) {
     console.error("Flashcard generation error:", error);
-
-    // Return mock data in development if there's an error
-    if (IS_DEVELOPMENT) {
-      return mockFlashcards;
-    }
-
     throw error;
   }
 };
@@ -153,7 +127,7 @@ export const processUploadedDocument = async (
     });
 
     // Persist the new set when not in mock mode
-    if (flashcards && flashcards.length > 0 && !IS_DEVELOPMENT) {
+    if (flashcards && flashcards.length > 0) {
       await saveFlashcardSet({
         name: params.title,
         description: params.file
@@ -167,10 +141,6 @@ export const processUploadedDocument = async (
     return flashcards;
   } catch (error) {
     console.error("Content processing error:", error);
-    // Return mock data in development
-    if (IS_DEVELOPMENT) {
-      return mockFlashcards;
-    }
     throw error;
   }
 };
@@ -196,16 +166,10 @@ export const getFlashcardSets = async (
 
     if (error) {
       console.error("Error in getFlashcardSets:", error);
-      if (IS_DEVELOPMENT) {
-        return getMockFlashcardSets(studentId);
-      }
       return [];
     }
 
-    // In development, return mock data if no flashcard sets are found
-    if ((!data || data.length === 0) && IS_DEVELOPMENT) {
-      return getMockFlashcardSets(studentId);
-    }
+    if (!data || data.length === 0) return [];
 
     // Transform the data to match our FlashcardSet interface
     const flashcardSets: FlashcardSet[] = (data || []).map((set: any) => ({
@@ -221,23 +185,9 @@ export const getFlashcardSets = async (
     return flashcardSets;
   } catch (error) {
     console.error("Error fetching flashcard sets:", error);
-    return IS_DEVELOPMENT ? getMockFlashcardSets(studentId) : [];
+    return [];
   }
 };
-
-// Helper function to get mock flashcard sets
-function getMockFlashcardSets(studentId?: string): FlashcardSet[] {
-  return [
-    {
-      id: "mock-set-1",
-      name: "Calculus Fundamentals",
-      description: "Basic calculus concepts and formulas",
-      cards: mockFlashcards,
-      createdAt: new Date().toISOString(),
-      student_id: studentId || "anonymous",
-    },
-  ];
-}
 
 export const getFlashcardSetById = async (
   id: string,
