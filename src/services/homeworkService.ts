@@ -130,15 +130,7 @@ export const getHomeworkList = async (
     if (!FEATURES.USE_MOCK_DATA) {
       let query = supabase
         .from("homework")
-        .select(`
-          id,
-          title,
-          due_at,
-          status,
-          student_id,
-          content_md,
-          profiles:student_id(name)
-        `);
+        .select(`id, title, due_at, status, student_id, subject`);
 
       // Apply filters
       if (filters?.student_id) {
@@ -163,7 +155,7 @@ export const getHomeworkList = async (
           title: row.title,
           due: row.due_at ?? "",
           student_id: row.student_id ?? "",
-          student_name: row.profiles?.name ?? "Unknown",
+          student_name: "",
           status: (row.status ?? "draft") as HomeworkStatus,
           topic: undefined,
         }));
