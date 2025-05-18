@@ -12,6 +12,7 @@ import { useToast } from "@/components/ui/use-toast";
 import SubjectModal from "./SubjectModal";
 import { getTracks, Track } from "@/services/curriculumService";
 import { Skeleton } from "@/components/ui/skeleton";
+import TrackDetails from "./TrackDetails";
 
 export interface Subject {
   id: string;
@@ -24,6 +25,8 @@ const SubjectList = () => {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentSubject, setCurrentSubject] = useState<Subject | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [selectedTrack, setSelectedTrack] = useState<Track | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -45,6 +48,11 @@ const SubjectList = () => {
   };
 
   const handleDeleteSubject = () => {};
+
+  const handleViewDetails = (track: Track) => {
+    setSelectedTrack(track);
+    setDetailsOpen(true);
+  };
 
   const handleSaveSubject = (subject: Subject) => {
     if (currentSubject) {
@@ -93,7 +101,13 @@ const SubjectList = () => {
                 <CardDescription>{subject.description}</CardDescription>
               </CardHeader>
               <CardContent>
-                {/* editing removed for now */}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleViewDetails(subject)}
+                >
+                  View Details
+                </Button>
               </CardContent>
             </Card>
           ))}
@@ -105,6 +119,15 @@ const SubjectList = () => {
         onSave={handleSaveSubject}
         subject={currentSubject}
       />
+
+      {selectedTrack && (
+        <TrackDetails
+          open={detailsOpen}
+          onClose={() => setDetailsOpen(false)}
+          trackId={selectedTrack.id}
+          trackName={selectedTrack.name}
+        />
+      )}
     </div>
   );
 };

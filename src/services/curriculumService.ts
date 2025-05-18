@@ -73,3 +73,43 @@ export const getTracks = async (): Promise<Track[]> => {
   }
   return data ?? [];
 };
+
+// Fetch topics for a learning track
+export const getTopicsForTrack = async (
+  trackId: string,
+): Promise<CurriculumTopic[]> => {
+  const { data, error } = await supabase
+    .from("topics")
+    .select("id, title: name, content")
+    .eq("track_id", trackId)
+    .order("title");
+  if (error) {
+    console.error("getTopicsForTrack", error);
+    return [];
+  }
+  return (data ?? []).map((row: any) => ({
+    id: row.id,
+    name: row.title,
+    description: row.content,
+  }));
+};
+
+// Fetch skills for a learning track
+export interface Skill {
+  id: string;
+  name: string;
+  description?: string;
+}
+
+export const getSkillsForTrack = async (trackId: string): Promise<Skill[]> => {
+  const { data, error } = await supabase
+    .from("skills")
+    .select("id, name, description")
+    .eq("track_id", trackId)
+    .order("name");
+  if (error) {
+    console.error("getSkillsForTrack", error);
+    return [];
+  }
+  return data ?? [];
+};
