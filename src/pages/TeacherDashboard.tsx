@@ -47,7 +47,7 @@ const TeacherDashboard: React.FC = () => {
       nextWeek.setDate(now.getDate() + 7);
       const { data: sessions } = await supabase
         .from("appointments")
-        .select("id, starts_at, ends_at, student_id, learning_tracks(name)")
+        .select("id, starts_at, ends_at, student_id")
         .eq("tutor_id", tutorId)
         .gte("starts_at", now.toISOString())
         .lte("starts_at", nextWeek.toISOString())
@@ -282,9 +282,7 @@ const TeacherDashboard: React.FC = () => {
                                       </p>
                                       <div className="flex items-center mt-1 text-sm text-gray-500">
                                         <BookOpen className="h-3.5 w-3.5 mr-1" />
-                                        <span>
-                                          {session.learning_tracks?.name ?? ""}
-                                        </span>
+                                        <span>Tutoring Session</span>
                                       </div>
                                     </div>
                                     <div className="text-right text-sm text-gray-600">
