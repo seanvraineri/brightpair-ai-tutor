@@ -20,6 +20,9 @@ import {
   YAxis,
 } from "recharts";
 import { ChartContainer } from "@/components/ui/chart";
+import { supabase } from "@/integrations/supabase/client";
+import { useUser } from "@/contexts/UserContext";
+import { useEffect } from "react";
 
 interface ProgressItemProps {
   subject: string;
@@ -95,13 +98,66 @@ const ProgressItem: React.FC<ProgressItemProps> = (
 
 const WeeklyProgress: React.FC = () => {
   const { toast } = useToast();
+  const { user } = useUser();
+  const [progressItems, setProgressItems] = React.useState<ProgressItemProps[]>(
+    [],
+  );
 
-  const showNotification = (message: string) => {
-    toast({
-      title: "Notification",
-      description: message,
-    });
-  };
+  useEffect(() => {
+    if (!user) return;
+    const load = async () => {
+      const start = new Date();
+      start.setDate(start.getDate() - 6);
+      start.setHours(0, 0, 0, 0);
+
+      // Fetch quizzes completed in last 7 days with score
+      const { data: quizzes } = await supabase
+        .from("quizzes")
+        .select("completed_at, score, subject")
+        .eq("student_id", user.id)
+        .gte("completed_at", start.toISOString());
+
+      // Build daily aggregated progress (score average per day)
+      const dayMap = new Map<string, { total: number; count: number }>();
+      if (quizzes) {
+        quizzes.forEach((q: any) => {
+          const d = new Date(q.completed_at).toLocaleDateString(undefined, {
+            weekday: "short",
+          });
+          const entry = dayMap.get(d) || { total: 0, count: 0 };
+          entry.total += q.score ?? 0;
+          entry.count += 1;
+          dayMap.set(d, entry);
+        });
+      }
+
+      const days = Array.from({ length: 7 }).map((_, i) => {
+        const d = new Date(start);
+        d.setDate(start.getDate() + i);
+        return d.toLocaleDateString(undefined, { weekday: "short" });
+      });
+
+      const chartData = days.map((day) => {
+        const entry = dayMap.get(day);
+        return {
+          day,
+          progress: entry ? Math.round(entry.total / entry.count) : 0,
+        };
+      });
+
+      const overall = chartData.reduce((s, d) => s + d.progress, 0) / 7;
+
+      setProgressItems([
+        {
+          subject: "Quizzes",
+          progress: Math.round(overall),
+          goal: "Avg quiz score",
+          data: chartData,
+        },
+      ]);
+    };
+    load();
+  }, [user]);
 
   return (
     <Card className="h-full overflow-hidden transition-all duration-300 hover:shadow-card">
@@ -114,8 +170,10 @@ const WeeklyProgress: React.FC = () => {
         style={{ maxHeight: "500px" }}
       >
         <div className="space-y-6">
-          {
-            /* progressItems.map((item, idx) => (
+          {progressItems.length === 0 && (
+            <p className="text-sm text-gray-500">No data for this week.</p>
+          )}
+          {progressItems.map((item, idx) => (
             <ProgressItem
               key={idx}
               subject={item.subject}
@@ -123,8 +181,7 @@ const WeeklyProgress: React.FC = () => {
               goal={item.goal}
               data={item.data}
             />
-          )) */
-          }
+          ))}
         </div>
       </CardContent>
       <CardFooter className="border-t bg-gray-50 py-3">
@@ -132,7 +189,11 @@ const WeeklyProgress: React.FC = () => {
           variant="ghost"
           size="sm"
           className="text-brightpair hover:text-brightpair-600 hover:bg-brightpair-50 transition-colors"
-          onClick={() => showNotification("Weekly report downloaded!")}
+          onClick={() =>
+            toast({
+              title: "Notification",
+              description: "Weekly report downloaded!",
+            })}
         >
           Download Weekly Report
         </Button>

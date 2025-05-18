@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -7,9 +7,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Award, BookOpen, Clock, ExternalLink } from "lucide-react";
+import { Award, BookOpen, Clock, ExternalLink, FilePlus } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/components/ui/use-toast";
+import { useUser } from "@/contexts/UserContext";
+import { supabase } from "@/integrations/supabase/client";
 
 interface TaskItemProps {
   icon: React.ReactNode;
@@ -123,49 +125,50 @@ function MessageSquareIcon(props: React.SVGProps<SVGSVGElement>) {
 
 const RecommendedTasks: React.FC = () => {
   const { toast } = useToast();
+  const { user } = useUser();
+  const [tasks, setTasks] = useState<any[]>([]);
 
-  const handleTaskClick = (taskName: string) => {
-    toast({
-      title: "Task Selected",
-      description: `Opening ${taskName}...`,
+  useEffect(() => {
+    if (!user) return;
+    const load = async () => {
+      const { data, error } = await supabase
+        .from("student_skills")
+        .select("mastery_level, skills(name, description)")
+        .eq("student_id", user.id)
+        .order("mastery_level", { ascending: true })
+        .limit(3);
+      if (!error && data) {
+        const items = data.map((row: any) => ({
+          icon: <FilePlus className="h-5 w-5 text-brightpair" />,
+          title: `Practice ${row.skills?.name}`,
+          description: row.skills?.description || "AI-generated practice task",
+          buttonLabel: "Generate Task",
+          difficulty: row.mastery_level < 0.3
+            ? "hard"
+            : row.mastery_level < 0.6
+            ? "medium"
+            : "easy",
+          completionTime: "30 min",
+          progressPercent: Math.round((row.mastery_level ?? 0) * 100),
+          skillId: row.skill_id,
+        }));
+        setTasks(items);
+      }
+    };
+    load();
+  }, [user]);
+
+  const handleGenerate = async (skillId: string) => {
+    toast({ title: "Generating homework…" });
+    const { error } = await supabase.functions.invoke("generate_homework", {
+      body: { studentId: user?.id, skillId },
     });
+    if (!error) {
+      toast({ title: "Homework generated" });
+    } else {
+      toast({ title: "Error", description: error.message });
+    }
   };
-
-  const tasks = [
-    {
-      icon: <MessageSquareIcon className="h-5 w-5 text-green-600" />,
-      title: "Practice Quadratic Equations",
-      description: "Continue where you left off in your tutoring session",
-      buttonLabel: "Start Session",
-      difficulty: "medium",
-      completionTime: "30 min",
-      dueDate: "Today",
-      progressPercent: 60,
-      onClick: () => handleTaskClick("Quadratic Equations Practice"),
-    },
-    {
-      icon: <BookOpen className="h-5 w-5 text-yellow-600" />,
-      title: "Review Biology Flashcards",
-      description: "Prepare for your upcoming quiz on cell structures",
-      buttonLabel: "Open Flashcards",
-      difficulty: "easy",
-      completionTime: "15 min",
-      dueDate: "Tomorrow",
-      progressPercent: 25,
-      onClick: () => handleTaskClick("Biology Flashcards"),
-    },
-    {
-      icon: <Award className="h-5 w-5 text-purple-600" />,
-      title: "Complete Practice Quiz",
-      description: "Test your knowledge of geometric formulas and concepts",
-      buttonLabel: "Start Quiz",
-      difficulty: "hard",
-      completionTime: "45 min",
-      dueDate: "May 5, 2025",
-      progressPercent: 15,
-      onClick: () => handleTaskClick("Geometry Practice Quiz"),
-    },
-  ];
 
   return (
     <Card className="hover:shadow-card transition-shadow duration-200 h-full">
@@ -186,7 +189,7 @@ const RecommendedTasks: React.FC = () => {
               completionTime={task.completionTime}
               dueDate={task.dueDate}
               progressPercent={task.progressPercent}
-              onClick={task.onClick}
+              onClick={() => handleGenerate(task.skillId)}
             />
           ))}
         </div>

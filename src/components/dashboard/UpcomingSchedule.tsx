@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -17,6 +17,8 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
+import { useUser } from "@/contexts/UserContext";
 
 interface ScheduleItemProps {
   date: string;
@@ -125,14 +127,28 @@ const ScheduleItem: React.FC<ScheduleItemProps> = ({
 
 const UpcomingSchedule: React.FC = () => {
   const { toast } = useToast();
+  const { user } = useUser();
   const [view, setView] = useState<"upcoming" | "calendar">("upcoming");
+  const [appointments, setAppointments] = useState<any[]>([]);
 
-  const showNotification = (message: string) => {
-    toast({
-      title: "Notification",
-      description: message,
-    });
-  };
+  useEffect(() => {
+    if (!user) return;
+    const fetchUpcoming = async () => {
+      const { data, error } = await supabase
+        .from("appointments")
+        .select("*, tutor:profiles(name)")
+        .eq("student_id", user.id)
+        .gte("starts_at", new Date().toISOString())
+        .order("starts_at", { ascending: true })
+        .limit(3);
+      if (!error) {
+        setAppointments(data || []);
+      } else {
+        console.error(error);
+      }
+    };
+    fetchUpcoming();
+  }, [user]);
 
   return (
     <Card className="h-full hover:shadow-card transition-shadow duration-200">
@@ -172,7 +188,36 @@ const UpcomingSchedule: React.FC = () => {
         {view === "upcoming"
           ? (
             <div className="space-y-4">
-              {/* Placeholder for schedule items */}
+              {appointments.length === 0 && (
+                <p className="text-sm text-gray-500">No sessions scheduled.</p>
+              )}
+              {appointments.map((appt) => (
+                <ScheduleItem
+                  key={appt.id}
+                  date={new Date(appt.starts_at).toLocaleDateString(undefined, {
+                    month: "short",
+                    day: "numeric",
+                  })}
+                  title={appt.tutor?.name || "Tutor Session"}
+                  subtitle={appt.status}
+                  duration={`${
+                    Math.round(
+                      (new Date(appt.ends_at).getTime() -
+                        new Date(appt.starts_at).getTime()) / 60000,
+                    )
+                  } min`}
+                  type="tutoring"
+                  startTime={new Date(appt.starts_at).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                  onClick={() =>
+                    toast({
+                      title: appt.tutor?.name,
+                      description: "Session details coming soon",
+                    })}
+                />
+              ))}
             </div>
           )
           : (

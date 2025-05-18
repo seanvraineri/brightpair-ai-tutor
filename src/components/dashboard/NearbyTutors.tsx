@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import BookSessionButton from "../tutor/BookSessionButton";
 import TutorMapView from "../tutor/TutorMapView";
 import { Grid, Map } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useUser } from "@/contexts/UserContext";
 
 // Define the type to match the expected GeoTutorData type in TutorMapView
 interface TutorData {
@@ -21,6 +23,20 @@ interface TutorData {
 
 const NearbyTutors: React.FC = () => {
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
+  const [tutors, setTutors] = useState<any[]>([]);
+  const { user } = useUser();
+
+  useEffect(() => {
+    const fetchTutors = async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, name, email, full_name")
+        .eq("role", "tutor")
+        .limit(5);
+      if (!error && data) setTutors(data);
+    };
+    fetchTutors();
+  }, [user]);
 
   return (
     <Card>
@@ -60,7 +76,27 @@ const NearbyTutors: React.FC = () => {
         {viewMode === "list"
           ? (
             <div className="grid grid-cols-1 gap-4">
-              {/* Render live tutors here */}
+              {tutors.length === 0 && (
+                <p className="text-sm text-gray-500">No tutors available.</p>
+              )}
+              {tutors.map((tutor) => (
+                <div
+                  key={tutor.id}
+                  className="flex items-center justify-between border p-3 rounded-md"
+                >
+                  <div>
+                    <p className="font-medium">
+                      {tutor.full_name || tutor.name || tutor.email}
+                    </p>
+                    <p className="text-xs text-gray-500">Tutor</p>
+                  </div>
+                  <BookSessionButton
+                    tutorId={tutor.id}
+                    tutorName={tutor.full_name || tutor.name || tutor.email}
+                    size="sm"
+                  />
+                </div>
+              ))}
             </div>
           )
           : (
