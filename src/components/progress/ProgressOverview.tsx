@@ -41,10 +41,10 @@ const ProgressOverview: React.FC = () => {
     enabled: !!studentId,
   });
 
-  const overallProgress = data?.overallProgress ?? 0;
-  const attendanceRate = data?.attendanceRate ?? 0;
-  const completionRate = data?.completionRate ?? 0;
-  const quizAverage = data?.quizAverage ?? 0;
+  const overallProgress = data?.overallProgress;
+  const attendanceRate = data?.attendanceRate;
+  const completionRate = data?.completionRate;
+  const quizAverage = data?.quizAverage;
   const subjectProgress = data?.subjectProgress ?? [];
 
   const weeklyProgressData: any[] = [];
@@ -65,6 +65,26 @@ const ProgressOverview: React.FC = () => {
     target: { label: "Target", theme: { light: "#9CA3AF", dark: "#9CA3AF" } },
   };
 
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Card key={i}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg font-medium text-gray-500">
+                &nbsp;
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-8 w-24 bg-gray-200 rounded mb-2 animate-pulse" />
+              <Progress value={0} className="h-2" />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Overall Progress Section */}
@@ -76,8 +96,10 @@ const ProgressOverview: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold mb-2">{overallProgress}%</div>
-            <Progress value={overallProgress} className="h-2" />
+            <div className="text-3xl font-bold mb-2">
+              {overallProgress ?? "--"}%
+            </div>
+            <Progress value={overallProgress ?? 0} className="h-2" />
           </CardContent>
         </Card>
 
@@ -88,8 +110,10 @@ const ProgressOverview: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold mb-2">{attendanceRate}%</div>
-            <Progress value={attendanceRate} className="h-2" />
+            <div className="text-3xl font-bold mb-2">
+              {attendanceRate ?? "--"}%
+            </div>
+            <Progress value={attendanceRate ?? 0} className="h-2" />
           </CardContent>
         </Card>
 
@@ -100,8 +124,10 @@ const ProgressOverview: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold mb-2">{completionRate}%</div>
-            <Progress value={completionRate} className="h-2" />
+            <div className="text-3xl font-bold mb-2">
+              {completionRate ?? "--"}%
+            </div>
+            <Progress value={completionRate ?? 0} className="h-2" />
           </CardContent>
         </Card>
 
@@ -112,8 +138,10 @@ const ProgressOverview: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold mb-2">{quizAverage}%</div>
-            <Progress value={quizAverage} className="h-2" />
+            <div className="text-3xl font-bold mb-2">
+              {quizAverage ?? "--"}%
+            </div>
+            <Progress value={quizAverage ?? 0} className="h-2" />
           </CardContent>
         </Card>
       </div>

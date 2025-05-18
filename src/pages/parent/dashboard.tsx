@@ -7,6 +7,7 @@ import {
   getMessagesForParent,
   ParentMessage,
 } from "@/services/parentService";
+import { getReportsForParent, ParentReport } from "@/services/reportsService";
 import {
   Card,
   CardContent,
@@ -75,6 +76,7 @@ const ParentDashboard: React.FC = () => {
   const [messages, setMessages] = useState<ParentMessage[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [parentName, setParentName] = useState("Alex Johnson");
+  const [reports, setReports] = useState<ParentReport[]>([]);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -91,6 +93,9 @@ const ParentDashboard: React.FC = () => {
         const msgs = await getMessagesForParent(parentId);
         setMessages(msgs);
         setUnreadCount(msgs.filter((m) => !m.is_read).length);
+
+        const rep = await getReportsForParent(parentId);
+        setReports(rep);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
       } finally {
@@ -543,6 +548,14 @@ const ParentDashboard: React.FC = () => {
                         </div>
                       </div>
                     )
+                    : reports.length === 0
+                    ? (
+                      <div className="text-center py-8">
+                        <p className="text-gray-500">
+                          No reports available yet
+                        </p>
+                      </div>
+                    )
                     : (
                       <Table>
                         <TableHeader>
@@ -550,6 +563,7 @@ const ParentDashboard: React.FC = () => {
                             <TableHead>Student</TableHead>
                             <TableHead>Date</TableHead>
                             <TableHead>Tutor</TableHead>
+                            <TableHead>Score</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead className="text-right">
                               Actions
@@ -557,42 +571,45 @@ const ParentDashboard: React.FC = () => {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {
-                            /* reports.map((report) => (
-                          <TableRow key={report.id}>
-                            <TableCell className="font-medium">{report.student_name}</TableCell>
-                            <TableCell>{formatDate(report.report_date)}</TableCell>
-                            <TableCell>{report.tutor_name}</TableCell>
-                            <TableCell>
-                              <Badge
-                                variant="outline"
-                                className={report.is_viewed
-                                  ? "bg-gray-100 text-gray-800 border-gray-200"
-                                  : "bg-brightpair-100 text-brightpair border-brightpair-200"}
-                              >
-                                {report.is_viewed ? 'Viewed' : 'New'}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="text-right space-x-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => viewReport(report.id)}
-                              >
-                                <ExternalLink className="mr-2 h-4 w-4" />
-                                View
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                              >
-                                <Download className="mr-2 h-4 w-4" />
-                                Download
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        )) */
-                          }
+                          {reports.map((report) => (
+                            <TableRow key={report.id}>
+                              <TableCell className="font-medium">
+                                {report.student_name}
+                              </TableCell>
+                              <TableCell>
+                                {formatDate(report.report_date)}
+                              </TableCell>
+                              <TableCell>{report.tutor_name}</TableCell>
+                              <TableCell>{report.score ?? "--"}</TableCell>
+                              <TableCell>
+                                <Badge
+                                  variant="outline"
+                                  className={report.is_viewed
+                                    ? "bg-gray-100 text-gray-800 border-gray-200"
+                                    : "bg-brightpair-100 text-brightpair border-brightpair-200"}
+                                >
+                                  {report.is_viewed ? "Viewed" : "New"}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="text-right space-x-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => viewReport(report.id)}
+                                >
+                                  <ExternalLink className="mr-2 h-4 w-4" />
+                                  View
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                >
+                                  <Download className="mr-2 h-4 w-4" />
+                                  Download
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
                         </TableBody>
                       </Table>
                     )}
