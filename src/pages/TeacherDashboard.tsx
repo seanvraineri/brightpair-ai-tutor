@@ -18,8 +18,9 @@ import {
   Clock,
   Users,
 } from "lucide-react";
-import { IS_DEVELOPMENT } from "@/config/env";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const TeacherDashboard: React.FC = () => {
   const { toast } = useToast();
@@ -28,43 +29,49 @@ const TeacherDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [date, setDate] = useState<Date | undefined>(new Date());
 
-  // Development-only mock metrics (replace with live queries)
-  const studentCount = IS_DEVELOPMENT ? 12 : 0;
-  const upcomingSessions = IS_DEVELOPMENT ? 5 : 0;
-  const pendingAssignments = IS_DEVELOPMENT ? 8 : 0;
+  const tutorId = user?.id || "";
 
-  // Loading flag (replace with real query.isLoading once wired)
-  const isLoadingStats = !IS_DEVELOPMENT;
+  const { data: stats, isLoading: isLoadingStats } = useQuery({
+    queryKey: ["teacher-stats", tutorId],
+    enabled: !!tutorId,
+    queryFn: async () => {
+      // students
+      const { data: students } = await supabase
+        .from("tutor_students")
+        .select("student_id")
+        .eq("tutor_id", tutorId);
 
-  // Development-only mock upcoming sessions
-  const upcomingSessionsData = IS_DEVELOPMENT
-    ? [
-      {
-        id: "s1",
-        student: "Alex Smith",
-        subject: "Mathematics",
-        date: "2023-06-17",
-        time: "10:00 AM",
-        duration: "1 hour",
-      },
-      {
-        id: "s2",
-        student: "Jamie Johnson",
-        subject: "English",
-        date: "2023-06-17",
-        time: "2:00 PM",
-        duration: "1 hour",
-      },
-      {
-        id: "s3",
-        student: "Taylor Brown",
-        subject: "Computer Science",
-        date: "2023-06-18",
-        time: "4:00 PM",
-        duration: "1 hour",
-      },
-    ]
-    : [];
+      // upcoming sessions in next 7 days
+      const now = new Date();
+      const nextWeek = new Date();
+      nextWeek.setDate(now.getDate() + 7);
+      const { data: sessions } = await supabase
+        .from("appointments")
+        .select("id, starts_at, ends_at, student_id, learning_tracks(name)")
+        .eq("tutor_id", tutorId)
+        .gte("starts_at", now.toISOString())
+        .lte("starts_at", nextWeek.toISOString())
+        .order("starts_at");
+
+      // pending homework to grade
+      const { data: pending } = await supabase
+        .from("homework")
+        .select("id")
+        .eq("tutor_id", tutorId)
+        .eq("status", "submitted");
+
+      return {
+        studentCount: students?.length ?? 0,
+        upcomingSessions: sessions ?? [],
+        pendingAssignments: pending?.length ?? 0,
+      };
+    },
+  });
+
+  const studentCount = stats?.studentCount ?? 0;
+  const upcomingSessions = stats?.upcomingSessions.length ?? 0;
+  const pendingAssignments = stats?.pendingAssignments ?? 0;
+  const upcomingSessionsData = stats?.upcomingSessions ?? [];
 
   // Navigation handlers
   const handleNavToStudentNotes = () => navigate("/student-notes");
@@ -256,26 +263,38 @@ const TeacherDashboard: React.FC = () => {
                             </div>
                           )
                           : (
-                            upcomingSessionsData.map((session) => (
-                              <div
-                                key={session.id}
-                                className="flex justify-between items-center p-3 rounded-md border border-gray-200"
-                              >
-                                <div>
-                                  <p className="font-medium">
-                                    {session.student}
-                                  </p>
-                                  <div className="flex items-center mt-1 text-sm text-gray-500">
-                                    <BookOpen className="h-3.5 w-3.5 mr-1" />
-                                    <span>{session.subject}</span>
+                            (upcomingSessionsData as any).map(
+                              (session: any) => {
+                                const start = new Date(session.starts_at);
+                                const dateStr = start.toLocaleDateString();
+                                const timeStr = start.toLocaleTimeString([], {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                });
+                                return (
+                                  <div
+                                    key={session.id}
+                                    className="flex justify-between items-center p-3 rounded-md border border-gray-200"
+                                  >
+                                    <div>
+                                      <p className="font-medium">
+                                        {session.student_id}
+                                      </p>
+                                      <div className="flex items-center mt-1 text-sm text-gray-500">
+                                        <BookOpen className="h-3.5 w-3.5 mr-1" />
+                                        <span>
+                                          {session.learning_tracks?.name ?? ""}
+                                        </span>
+                                      </div>
+                                    </div>
+                                    <div className="text-right text-sm text-gray-600">
+                                      <p>{dateStr}</p>
+                                      <p>{timeStr}</p>
+                                    </div>
                                   </div>
-                                </div>
-                                <div className="text-right text-sm text-gray-600">
-                                  <p>{session.date}</p>
-                                  <p>{session.time} • {session.duration}</p>
-                                </div>
-                              </div>
-                            ))
+                                );
+                              },
+                            )
                           )}
                       </div>
                     </CardContent>
