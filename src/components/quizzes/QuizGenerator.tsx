@@ -383,7 +383,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ onQuizGenerated }) => {
       if (typeof window !== "undefined" && import.meta.env.DEV) {
         // For demo/development purposes
         const mockQuiz: Quiz = {
-          skill_id: focusSkill !== "auto" ? focusSkill : mockSkills[0].skill_id,
+          skill_id: focusSkill,
           quiz: [
             {
               id: "q1",
