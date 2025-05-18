@@ -1,16 +1,16 @@
-
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useMessages } from "@/contexts/MessageContext";
 import ConversationList from "./ConversationList";
 import MessageDetail from "./MessageDetail";
 import MessageComposer from "./MessageComposer";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, ArrowLeft } from "lucide-react";
+import { ArrowLeft, PlusCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Message } from "@/types/messages";
 
 const MessageBox: React.FC = () => {
-  const { currentConversation, messages, setCurrentConversation } = useMessages();
+  const { currentConversation, messages, setCurrentConversation } =
+    useMessages();
   const [isComposing, setIsComposing] = useState(false);
   const [replyTo, setReplyTo] = useState<Message | null>(null);
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
@@ -19,16 +19,18 @@ const MessageBox: React.FC = () => {
   const getRecipient = () => {
     if (!currentConversation) return null;
     // Mock assumption: current user is always student1
-    return currentConversation.participants.find(p => p.id !== "student1");
+    return currentConversation.participants.find((p) => p.id !== "student1");
   };
 
   // Get conversation messages
   const getConversationMessages = () => {
     if (!currentConversation) return [];
-    return messages.filter(message => 
-      currentConversation.participants.some(p => p.id === message.senderId) &&
-      currentConversation.participants.some(p => p.id === message.recipientId)
-    ).sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+    return messages.filter((message) =>
+      currentConversation.participants.some((p) => p.id === message.senderId) &&
+      currentConversation.participants.some((p) => p.id === message.recipientId)
+    ).sort((a, b) =>
+      new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    );
   };
 
   // Reset selected message when conversation changes
@@ -81,78 +83,97 @@ const MessageBox: React.FC = () => {
 
         {/* Right column - message detail or composer */}
         <div className="md:col-span-2">
-          {isComposing ? (
-            <>
-              <Button
-                variant="ghost"
-                className="mb-4 flex items-center"
-                onClick={handleBackToConversation}
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back
-              </Button>
-              <MessageComposer
-                recipientId={replyTo ? replyTo.senderId : (recipient?.id || "")}
-                recipientName={replyTo ? replyTo.senderName : (recipient?.name || "")}
-                recipientRole={replyTo ? replyTo.senderRole : (recipient?.role || "student")}
-                replyToSubject={replyTo?.subject}
-                onMessageSent={handleBackToConversation}
-              />
-            </>
-          ) : currentConversation ? (
-            <>
-              <Button
-                variant="ghost"
-                className="mb-4 flex items-center md:hidden"
-                onClick={handleBackToList}
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                All Conversations
-              </Button>
+          {isComposing
+            ? (
+              <>
+                <Button
+                  variant="ghost"
+                  className="mb-4 flex items-center"
+                  onClick={handleBackToConversation}
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back
+                </Button>
+                <MessageComposer
+                  recipientId={replyTo
+                    ? replyTo.senderId
+                    : (recipient?.id || "")}
+                  recipientName={replyTo
+                    ? replyTo.senderName
+                    : (recipient?.name || "")}
+                  recipientRole={replyTo
+                    ? replyTo.senderRole
+                    : (recipient?.role || "student")}
+                  replyToSubject={replyTo?.subject}
+                  onMessageSent={handleBackToConversation}
+                />
+              </>
+            )
+            : currentConversation
+            ? (
+              <>
+                <Button
+                  variant="ghost"
+                  className="mb-4 flex items-center md:hidden"
+                  onClick={handleBackToList}
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  All Conversations
+                </Button>
 
-              {selectedMessage ? (
-                <MessageDetail message={selectedMessage} onReply={handleReply} />
-              ) : conversationMessages.length > 0 ? (
-                <Card>
-                  <CardContent className="p-0 divide-y">
-                    {conversationMessages.map(message => (
-                      <div
-                        key={message.id}
-                        className="p-4 cursor-pointer hover:bg-gray-50"
-                        onClick={() => setSelectedMessage(message)}
-                      >
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="font-medium">
-                            {message.subject}
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            {new Date(message.timestamp).toLocaleString()}
-                          </span>
-                        </div>
-                        <p className="text-sm text-gray-600 line-clamp-2">
-                          {message.content}
-                        </p>
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="text-center p-8 bg-gray-50 rounded">
-                  <p className="text-gray-500 mb-4">
-                    No messages in this conversation yet.
-                  </p>
-                  <Button onClick={handleNewMessage}>Start Conversation</Button>
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="text-center p-8 bg-gray-50 rounded">
-              <p className="text-gray-500 mb-4">
-                Select a conversation or start a new one.
-              </p>
-              <Button onClick={handleNewMessage}>New Message</Button>
-            </div>
-          )}
+                {selectedMessage
+                  ? (
+                    <MessageDetail
+                      message={selectedMessage}
+                      onReply={handleReply}
+                    />
+                  )
+                  : conversationMessages.length > 0
+                  ? (
+                    <Card>
+                      <CardContent className="p-0 divide-y">
+                        {conversationMessages.map((message) => (
+                          <div
+                            key={message.id}
+                            className="p-4 cursor-pointer hover:bg-gray-50"
+                            onClick={() => setSelectedMessage(message)}
+                          >
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="font-medium">
+                                {message.subject}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                {new Date(message.timestamp).toLocaleString()}
+                              </span>
+                            </div>
+                            <p className="text-sm text-gray-600 line-clamp-2">
+                              {message.content}
+                            </p>
+                          </div>
+                        ))}
+                      </CardContent>
+                    </Card>
+                  )
+                  : (
+                    <div className="text-center p-8 bg-gray-50 rounded">
+                      <p className="text-gray-500 mb-4">
+                        No messages in this conversation yet.
+                      </p>
+                      <Button onClick={handleNewMessage}>
+                        Start Conversation
+                      </Button>
+                    </div>
+                  )}
+              </>
+            )
+            : (
+              <div className="text-center p-8 bg-gray-50 rounded">
+                <p className="text-gray-500 mb-4">
+                  Select a conversation or start a new one.
+                </p>
+                <Button onClick={handleNewMessage}>New Message</Button>
+              </div>
+            )}
         </div>
       </div>
     </div>

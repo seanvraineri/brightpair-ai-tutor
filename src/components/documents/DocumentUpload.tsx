@@ -1,22 +1,20 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { Upload, FileText, Trash2, Download } from "lucide-react";
+import { Download, FileText, Trash2, Upload } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { Subject } from "../subjects/SubjectList";
-
-// Mock data for subjects - would come from backend in production
-const mockSubjects = [
-  { id: "1", name: "Mathematics", description: "Algebra, Calculus, Geometry" },
-  { id: "2", name: "Science", description: "Physics, Chemistry, Biology" },
-  { id: "3", name: "English", description: "Literature, Grammar, Composition" }
-];
 
 export interface Document {
   id: string;
@@ -37,7 +35,9 @@ const DocumentUpload: React.FC = () => {
   const [selectedSubject, setSelectedSubject] = useState("");
   const [documentDescription, setDocumentDescription] = useState("");
   const [documentTags, setDocumentTags] = useState("");
-  const [uploadingFiles, setUploadingFiles] = useState<{[key: string]: number}>({});
+  const [uploadingFiles, setUploadingFiles] = useState<
+    { [key: string]: number }
+  >({});
   const { toast } = useToast();
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,7 +45,7 @@ const DocumentUpload: React.FC = () => {
       const file = event.target.files[0];
       setSelectedFile(file);
       if (!documentName) {
-        setDocumentName(file.name.split('.')[0]); // Set document name to file name by default
+        setDocumentName(file.name.split(".")[0]); // Set document name to file name by default
       }
     }
   };
@@ -55,38 +55,38 @@ const DocumentUpload: React.FC = () => {
       toast({
         title: "Missing information",
         description: "Please fill out all required fields.",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
-    
+
     // Generate a temporary ID for tracking upload progress
     const tempId = Date.now().toString();
-    
+
     // Start simulated upload progress
-    setUploadingFiles(prev => ({...prev, [tempId]: 0}));
-    
+    setUploadingFiles((prev) => ({ ...prev, [tempId]: 0 }));
+
     // Simulate upload progress
     const interval = setInterval(() => {
-      setUploadingFiles(prev => {
+      setUploadingFiles((prev) => {
         const currentProgress = prev[tempId] || 0;
         if (currentProgress >= 100) {
           clearInterval(interval);
           return prev;
         }
-        return {...prev, [tempId]: Math.min(currentProgress + 10, 100)};
+        return { ...prev, [tempId]: Math.min(currentProgress + 10, 100) };
       });
     }, 300);
 
     // After "upload" is complete (in about 3 seconds), add the document
     setTimeout(() => {
       clearInterval(interval);
-      
+
       const tags = documentTags
-        .split(',')
-        .map(tag => tag.trim())
-        .filter(tag => tag !== '');
-      
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter((tag) => tag !== "");
+
       const newDocument: Document = {
         id: tempId,
         name: documentName,
@@ -95,30 +95,30 @@ const DocumentUpload: React.FC = () => {
         uploadDate: new Date().toISOString(),
         size: formatFileSize(selectedFile.size),
         description: documentDescription,
-        tags: tags
+        tags: tags,
       };
 
       setDocuments([...documents, newDocument]);
       resetForm();
-      
-      setUploadingFiles(prev => {
-        const newState = {...prev};
+
+      setUploadingFiles((prev) => {
+        const newState = { ...prev };
         delete newState[tempId];
         return newState;
       });
-      
+
       toast({
         title: "Document uploaded",
-        description: "Your document has been successfully uploaded."
+        description: "Your document has been successfully uploaded.",
       });
     }, 3000); // Mock upload time of 3 seconds
   };
 
   const handleDelete = (id: string) => {
-    setDocuments(documents.filter(doc => doc.id !== id));
+    setDocuments(documents.filter((doc) => doc.id !== id));
     toast({
       title: "Document deleted",
-      description: "The document has been successfully removed."
+      description: "The document has been successfully removed.",
     });
   };
 
@@ -126,7 +126,7 @@ const DocumentUpload: React.FC = () => {
     // In a real app, this would download the actual file
     toast({
       title: "Downloading document",
-      description: `${doc.name} is being downloaded.`
+      description: `${doc.name} is being downloaded.`,
     });
   };
 
@@ -137,7 +137,9 @@ const DocumentUpload: React.FC = () => {
     setDocumentDescription("");
     setDocumentTags("");
     // Reset the file input
-    const fileInput = document.getElementById("file-upload") as HTMLInputElement;
+    const fileInput = document.getElementById(
+      "file-upload",
+    ) as HTMLInputElement;
     if (fileInput) {
       fileInput.value = "";
     }
@@ -150,7 +152,8 @@ const DocumentUpload: React.FC = () => {
   };
 
   const getSubjectNameById = (id: string): string => {
-    const subject = mockSubjects.find(s => s.id === id);
+    // TODO: Replace with live subject lookup if needed
+    const subject = null;
     return subject ? subject.name : "Unknown";
   };
 
@@ -175,25 +178,26 @@ const DocumentUpload: React.FC = () => {
                 placeholder="Enter document name"
               />
             </div>
-            
+
             <div>
               <Label htmlFor="subject">Subject*</Label>
-              <Select value={selectedSubject} onValueChange={setSelectedSubject}>
+              <Select
+                value={selectedSubject}
+                onValueChange={setSelectedSubject}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select a subject" />
                 </SelectTrigger>
                 <SelectContent>
-                  {mockSubjects.map(subject => (
-                    <SelectItem key={subject.id} value={subject.id}>
-                      {subject.name}
-                    </SelectItem>
-                  ))}
+                  {/* Render live subjects here */}
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div>
-              <Label htmlFor="document-description">Description (Optional)</Label>
+              <Label htmlFor="document-description">
+                Description (Optional)
+              </Label>
               <Textarea
                 id="document-description"
                 value={documentDescription}
@@ -202,7 +206,7 @@ const DocumentUpload: React.FC = () => {
                 className="resize-none"
               />
             </div>
-            
+
             <div>
               <Label htmlFor="document-tags">Tags (Optional)</Label>
               <Input
@@ -215,7 +219,7 @@ const DocumentUpload: React.FC = () => {
                 Example: homework, math, chapter 5
               </p>
             </div>
-            
+
             <div>
               <Label htmlFor="file-upload">Upload File*</Label>
               <div className="mt-1 flex items-center">
@@ -228,11 +232,12 @@ const DocumentUpload: React.FC = () => {
               </div>
               {selectedFile && (
                 <p className="mt-1 text-sm text-gray-500">
-                  Selected: {selectedFile.name} ({formatFileSize(selectedFile.size)})
+                  Selected: {selectedFile.name}{" "}
+                  ({formatFileSize(selectedFile.size)})
                 </p>
               )}
             </div>
-            
+
             <Button onClick={handleUpload} className="w-full">
               <Upload size={18} className="mr-2" />
               Upload Document
@@ -240,7 +245,7 @@ const DocumentUpload: React.FC = () => {
           </div>
         </CardContent>
       </Card>
-      
+
       {/* Display uploading files with progress */}
       {Object.keys(uploadingFiles).length > 0 && (
         <div className="space-y-3">
@@ -266,7 +271,7 @@ const DocumentUpload: React.FC = () => {
         <div>
           <h3 className="text-lg font-medium mb-3">Uploaded Documents</h3>
           <div className="space-y-3">
-            {documents.map(doc => (
+            {documents.map((doc) => (
               <Card key={doc.id} className="shadow-sm">
                 <CardContent className="p-4">
                   <div className="flex justify-between items-start">
@@ -275,7 +280,8 @@ const DocumentUpload: React.FC = () => {
                       <div>
                         <p className="font-medium">{doc.name}</p>
                         <p className="text-sm text-gray-500">
-                          {getSubjectNameById(doc.subjectId)} • {formatDate(doc.uploadDate)} • {doc.size}
+                          {getSubjectNameById(doc.subjectId)} •{" "}
+                          {formatDate(doc.uploadDate)} • {doc.size}
                         </p>
                         {doc.description && (
                           <p className="text-sm mt-1">{doc.description}</p>
@@ -283,7 +289,10 @@ const DocumentUpload: React.FC = () => {
                         {doc.tags.length > 0 && (
                           <div className="flex flex-wrap gap-1 mt-2">
                             {doc.tags.map((tag, index) => (
-                              <span key={index} className="px-2 py-1 bg-gray-100 text-xs rounded">
+                              <span
+                                key={index}
+                                className="px-2 py-1 bg-gray-100 text-xs rounded"
+                              >
                                 {tag}
                               </span>
                             ))}
@@ -292,10 +301,18 @@ const DocumentUpload: React.FC = () => {
                       </div>
                     </div>
                     <div className="flex space-x-1">
-                      <Button variant="ghost" size="sm" onClick={() => handleDownload(doc)}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDownload(doc)}
+                      >
                         <Download size={18} />
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleDelete(doc.id)}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDelete(doc.id)}
+                      >
                         <Trash2 size={18} />
                       </Button>
                     </div>
