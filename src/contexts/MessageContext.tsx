@@ -1,74 +1,55 @@
+import React, {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+import { Conversation, Message } from "@/types/messages";
+import { supabase } from "@/integrations/supabase/client";
+import { useUser } from "@/contexts/UserContext";
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { Message, Conversation } from '@/types/messages';
+// Helper to build conversations from message rows
+const buildConversations = (
+  msgs: Message[],
+  currentUserId: string,
+): Conversation[] => {
+  const map = new Map<string, Conversation>();
 
-// Mock data for initial state
-const mockMessages: Message[] = [
-  {
-    id: "1",
-    senderId: "teacher1",
-    senderName: "Ms. Johnson",
-    senderRole: "teacher",
-    recipientId: "student1",
-    recipientName: "Emma",
-    subject: "Homework Review",
-    content: "Hi Emma, I've reviewed your latest math assignment and was impressed by your work on quadratic equations. Let's discuss some advanced topics in our next session.",
-    timestamp: "2025-04-30T10:15:00Z",
-    read: true
-  },
-  {
-    id: "2",
-    senderId: "teacher1",
-    senderName: "Ms. Johnson",
-    senderRole: "teacher",
-    recipientId: "student1",
-    recipientName: "Emma",
-    subject: "Next Week's Schedule",
-    content: "Just confirming our session times for next week. We'll meet Monday at 4pm and Wednesday at 3:30pm to prepare for your upcoming test.",
-    timestamp: "2025-05-01T14:22:00Z",
-    read: false
-  },
-  {
-    id: "3",
-    senderId: "parent2",
-    senderName: "Mr. Williams",
-    senderRole: "parent",
-    recipientId: "student1",
-    recipientName: "Emma",
-    subject: "Permission Slip",
-    content: "I've signed your permission slip for the science museum field trip. It's in your folder.",
-    timestamp: "2025-05-01T18:05:00Z",
-    read: false
-  }
-];
+  msgs.forEach((m) => {
+    const convoKey = [m.senderId, m.recipientId].sort().join("-");
+    const existing = map.get(convoKey);
+    const other = m.senderId === currentUserId
+      ? { id: m.recipientId, name: m.recipientName, role: "student" as const }
+      : { id: m.senderId, name: m.senderName, role: "teacher" as const };
 
-const mockConversations: Conversation[] = [
-  {
-    id: "conv1",
-    participants: [
-      { id: "student1", name: "Emma", role: "student" },
-      { id: "teacher1", name: "Ms. Johnson", role: "teacher" }
-    ],
-    lastMessage: mockMessages[1],
-    unreadCount: 1
-  },
-  {
-    id: "conv2",
-    participants: [
-      { id: "student1", name: "Emma", role: "student" },
-      { id: "parent2", name: "Mr. Williams", role: "parent" }
-    ],
-    lastMessage: mockMessages[2],
-    unreadCount: 1
-  }
-];
+    if (!existing) {
+      map.set(convoKey, {
+        id: convoKey,
+        participants: [
+          { id: currentUserId, name: "You", role: "student" as const },
+          other,
+        ],
+        lastMessage: m,
+        unreadCount: m.read ? 0 : 1,
+      });
+    } else if (
+      new Date(m.timestamp) > new Date(existing.lastMessage.timestamp)
+    ) {
+      existing.lastMessage = m;
+      if (!m.read) existing.unreadCount += 1;
+    }
+  });
+
+  return Array.from(map.values());
+};
 
 // Define context type
 interface MessageContextType {
   messages: Message[];
   conversations: Conversation[];
   currentConversation: Conversation | null;
-  sendMessage: (message: Omit<Message, 'id' | 'timestamp' | 'read'>) => void;
+  sendMessage: (message: Omit<Message, "id" | "timestamp" | "read">) => void;
   markMessageAsRead: (messageId: string) => void;
   setCurrentConversation: (conversation: Conversation | null) => void;
   getUnreadCount: () => number;
@@ -78,67 +59,113 @@ interface MessageContextType {
 const MessageContext = createContext<MessageContextType | undefined>(undefined);
 
 // Provider component
-export const MessageProvider: React.FC<{children: ReactNode}> = ({ children }) => {
-  const [messages, setMessages] = useState<Message[]>(mockMessages);
-  const [conversations, setConversations] = useState<Conversation[]>(mockConversations);
-  const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
+export const MessageProvider: React.FC<{ children: ReactNode }> = (
+  { children },
+) => {
+  const { session } = useUser();
+  const currentUserId = session?.user?.id ?? "";
 
-  const sendMessage = (messageData: Omit<Message, 'id' | 'timestamp' | 'read'>) => {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [currentConversation, setCurrentConversation] = useState<
+    Conversation | null
+  >(null);
+
+  // Initial load from Supabase
+  useEffect(() => {
+    if (!currentUserId) return;
+    (async () => {
+      const { data, error } = await supabase
+        .from("messages")
+        .select("id, content:content, created_at, sender_id, receiver_id")
+        .or(`sender_id.eq.${currentUserId},receiver_id.eq.${currentUserId}`)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Fetch messages error", error);
+        return;
+      }
+
+      const rows = (data ?? []).map((r: any) => ({
+        id: r.id,
+        senderId: r.sender_id,
+        senderName: r.sender_id,
+        senderRole: r.sender_id === currentUserId
+          ? "student" as const
+          : "teacher" as const,
+        recipientId: r.receiver_id,
+        recipientName: r.receiver_id,
+        subject: "",
+        content: r.content,
+        timestamp: r.created_at,
+        read: true,
+      })) as Message[];
+
+      setMessages(rows);
+      setConversations(buildConversations(rows, currentUserId));
+    })();
+  }, [currentUserId]);
+
+  const sendMessage = async (
+    messageData: Omit<Message, "id" | "timestamp" | "read">,
+  ) => {
+    const { data, error } = await supabase
+      .from("messages")
+      .insert({
+        content: messageData.content,
+        sender_id: messageData.senderId,
+        receiver_id: messageData.recipientId,
+        role: messageData.senderRole,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error("sendMessage error", error);
+      return;
+    }
+
     const newMessage: Message = {
-      ...messageData,
-      id: `msg-${Date.now()}`,
-      timestamp: new Date().toISOString(),
-      read: false
+      id: data.id,
+      senderId: data.sender_id,
+      senderName: messageData.senderName,
+      senderRole: messageData.senderRole,
+      recipientId: data.receiver_id,
+      recipientName: messageData.recipientName,
+      subject: "",
+      content: data.content,
+      timestamp: data.created_at,
+      read: false,
     };
 
-    setMessages(prevMessages => [...prevMessages, newMessage]);
-
-    // Update or create conversation
-    const existingConversationIndex = conversations.findIndex(
-      conv => conv.participants.some(p => p.id === messageData.senderId) && 
-        conv.participants.some(p => p.id === messageData.recipientId)
+    setMessages((prev) => [newMessage, ...prev]);
+    setConversations(
+      buildConversations([newMessage, ...messages], currentUserId),
     );
-
-    if (existingConversationIndex >= 0) {
-      // Update existing conversation
-      const updatedConversations = [...conversations];
-      updatedConversations[existingConversationIndex] = {
-        ...updatedConversations[existingConversationIndex],
-        lastMessage: newMessage,
-        unreadCount: updatedConversations[existingConversationIndex].unreadCount + 1
-      };
-      setConversations(updatedConversations);
-    } else {
-      // Create new conversation
-      const newConversation: Conversation = {
-        id: `conv-${Date.now()}`,
-        participants: [
-          { id: messageData.senderId, name: messageData.senderName, role: messageData.senderRole },
-          { id: messageData.recipientId, name: messageData.recipientName, role: 'student' }
-        ],
-        lastMessage: newMessage,
-        unreadCount: 1
-      };
-      setConversations([...conversations, newConversation]);
-    }
   };
 
   const markMessageAsRead = (messageId: string) => {
-    const messageIndex = messages.findIndex(msg => msg.id === messageId);
+    const messageIndex = messages.findIndex((msg) => msg.id === messageId);
     if (messageIndex >= 0) {
       const updatedMessages = [...messages];
-      updatedMessages[messageIndex] = { ...updatedMessages[messageIndex], read: true };
+      updatedMessages[messageIndex] = {
+        ...updatedMessages[messageIndex],
+        read: true,
+      };
       setMessages(updatedMessages);
 
       // Update unread count in the associated conversation
       const conversationIndex = conversations.findIndex(
-        conv => conv.lastMessage.id === messageId
+        (conv) => conv.lastMessage.id === messageId,
       );
       if (conversationIndex >= 0) {
         const updatedConversations = [...conversations];
         updatedConversations[conversationIndex] = {
           ...updatedConversations[conversationIndex],
-          unreadCount: Math.max(0, updatedConversations[conversationIndex].unreadCount - 1)
+          unreadCount: Math.max(
+            0,
+            updatedConversations[conversationIndex].unreadCount - 1,
+          ),
         };
         setConversations(updatedConversations);
       }
@@ -146,11 +173,11 @@ export const MessageProvider: React.FC<{children: ReactNode}> = ({ children }) =
   };
 
   const getUnreadCount = () => {
-    return messages.filter(message => !message.read).length;
+    return messages.filter((message) => !message.read).length;
   };
 
   return (
-    <MessageContext.Provider 
+    <MessageContext.Provider
       value={{
         messages,
         conversations,
@@ -158,7 +185,7 @@ export const MessageProvider: React.FC<{children: ReactNode}> = ({ children }) =
         sendMessage,
         markMessageAsRead,
         setCurrentConversation,
-        getUnreadCount
+        getUnreadCount,
       }}
     >
       {children}
@@ -170,7 +197,7 @@ export const MessageProvider: React.FC<{children: ReactNode}> = ({ children }) =
 export const useMessages = () => {
   const context = useContext(MessageContext);
   if (context === undefined) {
-    throw new Error('useMessages must be used within a MessageProvider');
+    throw new Error("useMessages must be used within a MessageProvider");
   }
   return context;
 };
