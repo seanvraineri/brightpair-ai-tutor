@@ -29,6 +29,7 @@ export interface Homework {
   pdf_path?: string;
   status: HomeworkStatus;
   topic?: string;
+  subject?: string;
   questions: HomeworkQuestion[];
   score?: number;
   total_possible?: number;
