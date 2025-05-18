@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { generateLessonFromContent, extractPDFText } from "./aiService";
+import { extractPDFText, generateLessonFromContent } from "./aiService";
 import { IS_DEVELOPMENT } from "@/config/env";
 import { v4 as uuidv4 } from "uuid";
 import { ReactNode } from "react";
@@ -53,50 +53,22 @@ interface UserDocumentRecord {
   subject?: string;
 }
 
-// Mock data for fallback
-const mockDocuments: UserDocument[] = [
-  {
-    id: "doc-1",
-    title: "Calculus Notes",
-    topic: "Calculus",
-    contentType: "pdf",
-    createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-    url: "/user_documents/user-1/calculus_notes.pdf",
-    description: "My notes from Calculus I",
-    difficulty: "intermediate",
-    subject: "Mathematics",
-    fileName: "calculus_notes.pdf",
-    fileSize: 1024000,
-  },
-  {
-    id: "doc-2",
-    title: "Physics Lab Report",
-    topic: "Physics",
-    contentType: "pdf",
-    createdAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
-    url: "/user_documents/user-1/physics_lab.pdf",
-    description: "Lab report on Newton's Laws",
-    difficulty: "advanced",
-    subject: "Physics",
-    fileName: "physics_lab.pdf",
-    fileSize: 2048000,
-  },
-];
-
 /**
  * Extracts text from a PDF file
  */
-export const extractTextFromPDF = async (fileUrl: string): Promise<string | null> => {
+export const extractTextFromPDF = async (
+  fileUrl: string,
+): Promise<string | null> => {
   try {
     console.log("Extracting text from PDF", fileUrl);
     // Call the AI service to extract text from the PDF
     const { text, success } = await extractPDFText(fileUrl);
-    
+
     if (!success || !text) {
       console.error("Failed to extract text from PDF");
       return null;
     }
-    
+
     return text;
   } catch (error) {
     console.error("Error extracting text from PDF:", error);
@@ -108,50 +80,62 @@ export const extractTextFromPDF = async (fileUrl: string): Promise<string | null
  * Processes a document for lesson generation
  * Uploads to Supabase storage, extracts text from PDFs, and saves to the database
  */
-export const processDocumentForLesson = async (params: DocumentUploadParams): Promise<UserDocument | null> => {
-  const { file, text, title, userId, topic, focus, difficulty, learningGoal, learningPreferences } = params;
-  
+export const processDocumentForLesson = async (
+  params: DocumentUploadParams,
+): Promise<UserDocument | null> => {
+  const {
+    file,
+    text,
+    title,
+    userId,
+    topic,
+    focus,
+    difficulty,
+    learningGoal,
+    learningPreferences,
+  } = params;
+
   try {
     let content = text || "";
     let documentUrl: string | null = null;
     let contentType: UserDocument["contentType"] = "notes";
-    
+
     // Handle file upload if a file is provided
     if (file) {
       // Determine content type based on file extension
-      const fileExt = file.name.split('.').pop()?.toLowerCase();
-      contentType = fileExt === 'pdf' ? 'pdf' : 'document';
-      
+      const fileExt = file.name.split(".").pop()?.toLowerCase();
+      contentType = fileExt === "pdf" ? "pdf" : "document";
+
       // Generate a unique file name
       const fileName = `${uuidv4()}-${file.name}`;
       const filePath = `documents/${userId}/${fileName}`;
-      
+
       // Upload file to Supabase Storage
       const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('documents')
+        .from("documents")
         .upload(filePath, file);
-        
+
       if (uploadError) {
         console.error("Error uploading document:", uploadError);
         return null;
       }
-      
+
       // Get public URL for the file
       const { data: { publicUrl } } = supabase.storage
-        .from('documents')
+        .from("documents")
         .getPublicUrl(filePath);
-      
+
       documentUrl = publicUrl;
-      
+
       // Extract text from PDF if applicable
-      if (contentType === 'pdf') {
+      if (contentType === "pdf") {
         content = await extractTextFromPDF(publicUrl);
       }
-      
+
       // Save document reference to database
       const docData: Partial<UserDocumentRecord> = {
         title: title || file.name,
-        description: focus || '',
+        description: focus || "",
         content,
         file_url: publicUrl,
         file_type: contentType,
@@ -161,44 +145,44 @@ export const processDocumentForLesson = async (params: DocumentUploadParams): Pr
         difficulty: difficulty || "medium",
         subject: topic,
       };
-      
+
       const { data: document, error: dbError } = await (supabase as any)
-        .from('user_documents')
+        .from("user_documents")
         .insert(docData as any)
         .select()
         .single();
-      
+
       if (dbError) {
         console.error("Error saving document to database:", dbError);
         return null;
       }
-      
+
       return document as unknown as UserDocument;
     }
-    
+
     // Make sure we have some content to work with
     if (!content && !text) {
-      throw new Error('No content provided for lesson generation');
+      throw new Error("No content provided for lesson generation");
     }
-    
+
     // Generate a lesson from the content
     const result = await generateLessonFromContent(
-      content || text || "", 
+      content || text || "",
       userId,
       {
         topic: topic,
         contentType: contentType,
-        difficulty: (difficulty || "medium")
-      }
+        difficulty: (difficulty || "medium"),
+      },
     );
-    
+
     return {
       ...result.lesson,
       id: uuidv4(),
-      description: focus || '',
+      description: focus || "",
       topic,
       contentType,
-      fileName: title || 'Untitled',
+      fileName: title || "Untitled",
       fileSize: 0,
       createdAt: new Date().toISOString(),
       difficulty: ((): UserDocument["difficulty"] => {
@@ -210,7 +194,7 @@ export const processDocumentForLesson = async (params: DocumentUploadParams): Pr
       url: "", // no file URL for text-only lessons
     };
   } catch (error) {
-    console.error('Document processing error:', error);
+    console.error("Document processing error:", error);
     return null;
   }
 };
@@ -218,25 +202,30 @@ export const processDocumentForLesson = async (params: DocumentUploadParams): Pr
 /**
  * Fetches documents uploaded by a user
  */
-export const getUserDocuments = async (studentId: string): Promise<UserDocument[]> => {
+export const getUserDocuments = async (
+  studentId: string,
+): Promise<UserDocument[]> => {
   try {
     const { data, error } = await (supabase as any)
-      .from('user_documents')
-      .select('*')
-      .eq('student_id', studentId)
-      .order('created_at', { ascending: false }) as { data: UserDocumentRecord[] | null, error: any };
-    
+      .from("user_documents")
+      .select("*")
+      .eq("student_id", studentId)
+      .order("created_at", { ascending: false }) as {
+        data: UserDocumentRecord[] | null;
+        error: any;
+      };
+
     if (error) {
       console.error("Error fetching user documents:", error);
-      return IS_DEVELOPMENT ? mockDocuments : [];
+      return [];
     }
-    
+
     if (!data || data.length === 0) {
-      return IS_DEVELOPMENT ? mockDocuments : [];
+      return [];
     }
-    
+
     // Convert UserDocumentRecord to UserDocument with correct type handling
-    return data.map<UserDocument>(doc => ({
+    return data.map<UserDocument>((doc) => ({
       id: doc.id,
       title: doc.title,
       topic: doc.subject || doc.title,
@@ -245,9 +234,15 @@ export const getUserDocuments = async (studentId: string): Promise<UserDocument[
       url: doc.file_url || "",
       description: doc.description,
       difficulty: ((): UserDocument["difficulty"] => {
-        if (doc.difficulty === "easy" || doc.difficulty === "beginner") return "beginner";
-        if (doc.difficulty === "hard" || doc.difficulty === "advanced") return "advanced";
-        if (doc.difficulty === "intermediate" || doc.difficulty === "medium") return "intermediate";
+        if (doc.difficulty === "easy" || doc.difficulty === "beginner") {
+          return "beginner";
+        }
+        if (doc.difficulty === "hard" || doc.difficulty === "advanced") {
+          return "advanced";
+        }
+        if (doc.difficulty === "intermediate" || doc.difficulty === "medium") {
+          return "intermediate";
+        }
         return undefined;
       })(),
       subject: doc.subject,
@@ -256,6 +251,6 @@ export const getUserDocuments = async (studentId: string): Promise<UserDocument[
     }));
   } catch (error) {
     console.error("Error in getUserDocuments:", error);
-    return IS_DEVELOPMENT ? mockDocuments : [];
+    return [];
   }
-}; 
+};
