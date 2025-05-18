@@ -1,24 +1,44 @@
 import { Curriculum, CurriculumTopic } from "@/types/curriculum";
-import { v4 as uuidv4 } from "uuid";
 import { supabase } from "@/integrations/supabase/client";
 
-// Mock in-memory store per student
-const MOCK_CURRICULA: Record<string, Curriculum> = {};
-
+// Fetch curriculum topics associated with a student via their enrolled tracks
 export const getCurriculumTopicsForStudent = async (
   studentId: string,
 ): Promise<CurriculumTopic[]> => {
-  const curriculum = MOCK_CURRICULA[studentId];
-  return curriculum ? curriculum.topics : [];
+  // 1) Retrieve track_ids the student is enrolled in
+  const { data: trackRows, error: trackErr } = await supabase
+    .from("student_tracks")
+    .select("track_id")
+    .eq("student_id", studentId);
+
+  if (trackErr) {
+    console.error("getCurriculumTopicsForStudent", trackErr);
+    return [];
+  }
+
+  const trackIds = (trackRows ?? []).map((r: any) => r.track_id);
+  if (trackIds.length === 0) return [];
+
+  // 2) Fetch topics for those tracks
+  const { data: topics, error } = await supabase
+    .from("topics")
+    .select("id, title, content, track_id")
+    .in("track_id", trackIds)
+    .order("title");
+
+  if (error) {
+    console.error("getCurriculumTopicsForStudent topics", error);
+    return [];
+  }
+
+  return (topics ?? []).map((t: any) => ({
+    id: t.id,
+    name: t.title,
+    description: t.content,
+  }));
 };
 
-export const saveCurriculum = async (
-  curriculum: Curriculum,
-): Promise<boolean> => {
-  MOCK_CURRICULA[curriculum.student_id] = curriculum;
-  return true;
-};
-
+// Generate a curriculum: create learning_track, topics, and link student
 export const generateCurriculum = async (params: {
   tutor_id: string;
   student_id: string;
@@ -27,33 +47,92 @@ export const generateCurriculum = async (params: {
   textbook?: string;
   syllabus?: string;
 }): Promise<Curriculum> => {
-  // Simplified mock AI generation – create topics from goals
-  const topics: CurriculumTopic[] = params.goals.map((g, idx) => ({
-    id: `topic-${idx}`,
-    name: g,
-    description: `Deep dive into ${g}`,
+  // 1) Create learning track
+  const { data: trackData, error: trackError } = await supabase
+    .from("learning_tracks")
+    .insert({
+      name: "Personalized Curriculum",
+      description: params.goals.join(", "),
+      tutor_id: params.tutor_id,
+    })
+    .select()
+    .single();
+
+  if (trackError || !trackData) {
+    throw new Error(trackError?.message || "Unable to create learning track");
+  }
+
+  const trackId = trackData.id as string;
+
+  // 2) Insert topics derived from goals
+  const topicRows = params.goals.map((g) => ({
+    title: g,
+    content: `Deep dive into ${g}`,
+    track_id: trackId,
   }));
+
+  const { data: insertedTopics, error: topicError } = await supabase
+    .from("topics")
+    .insert(topicRows)
+    .select();
+
+  if (topicError) {
+    throw new Error(topicError.message);
+  }
+
+  // 3) Link student to this track
+  await supabase.from("student_tracks").insert({
+    student_id: params.student_id,
+    track_id: trackId,
+    started_at: new Date().toISOString(),
+  });
+
+  // Build return object (lightweight)
   const curriculum: Curriculum = {
-    id: uuidv4(),
+    id: trackId,
     tutor_id: params.tutor_id,
     student_id: params.student_id,
-    title: "Personalized Curriculum",
+    title: trackData.name,
     goals: params.goals,
-    topics,
+    topics: (insertedTopics ?? []).map((t: any) => ({
+      id: t.id,
+      name: t.title,
+      description: t.content,
+    })),
     materials: params.materials,
     textbook: params.textbook,
     syllabus: params.syllabus,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
+    created_at: trackData.created_at ?? new Date().toISOString(),
+    updated_at: trackData.created_at ?? new Date().toISOString(),
   };
-  await saveCurriculum(curriculum);
+
   return curriculum;
 };
 
 export const getCurriculaForTutor = async (
   tutorId: string,
 ): Promise<Curriculum[]> => {
-  return Object.values(MOCK_CURRICULA).filter((c) => c.tutor_id === tutorId);
+  // Fetch tracks created by tutor
+  const { data, error } = await supabase
+    .from("learning_tracks")
+    .select("id, name, description, created_at")
+    .eq("tutor_id", tutorId);
+
+  if (error) {
+    console.error("getCurriculaForTutor", error);
+    return [];
+  }
+
+  return (data ?? []).map((row: any) => ({
+    id: row.id,
+    tutor_id: tutorId,
+    student_id: "", // not directly associated
+    title: row.name,
+    goals: [],
+    topics: [],
+    created_at: row.created_at,
+    updated_at: row.created_at,
+  }));
 };
 
 export interface Track {
