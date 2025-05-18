@@ -50,114 +50,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 import StudentNotes from "./StudentNotes";
 
-// Development-only mock data (replace with live queries)
-const mockStudents = IS_DEVELOPMENT
-  ? [
-    {
-      id: "1",
-      name: "Alex Smith",
-      grade: "9th",
-      subjects: ["Mathematics", "Science"],
-      email: "alex.smith@email.com",
-      progress: 72,
-      pendingAssignments: 2,
-      lastSession: "2023-06-10",
-      nextSession: "2023-06-17",
-      avatarUrl: "",
-    },
-    {
-      id: "2",
-      name: "Jamie Johnson",
-      grade: "10th",
-      subjects: ["English", "History"],
-      email: "jamie.johnson@email.com",
-      progress: 85,
-      pendingAssignments: 0,
-      lastSession: "2023-06-12",
-      nextSession: "2023-06-19",
-      avatarUrl: "",
-    },
-    {
-      id: "3",
-      name: "Taylor Brown",
-      grade: "8th",
-      subjects: ["Mathematics", "Computer Science"],
-      email: "taylor.brown@email.com",
-      progress: 68,
-      pendingAssignments: 3,
-      lastSession: "2023-06-08",
-      nextSession: "2023-06-15",
-      avatarUrl: "",
-    },
-    {
-      id: "4",
-      name: "Jordan Lee",
-      grade: "11th",
-      subjects: ["Physics", "Chemistry"],
-      email: "jordan.lee@email.com",
-      progress: 90,
-      pendingAssignments: 1,
-      lastSession: "2023-06-11",
-      nextSession: "2023-06-18",
-      avatarUrl: "",
-    },
-  ]
-  : [];
-
-// Development-only mock assignments
-const mockAssignments = IS_DEVELOPMENT
-  ? [
-    {
-      id: "a1",
-      studentId: "1",
-      title: "Algebra Practice Set",
-      dueDate: "2023-06-18",
-      subject: "Mathematics",
-      status: "pending",
-    },
-    {
-      id: "a2",
-      studentId: "1",
-      title: "Cell Structure Quiz",
-      dueDate: "2023-06-20",
-      subject: "Science",
-      status: "pending",
-    },
-    {
-      id: "a3",
-      studentId: "3",
-      title: "Algorithm Efficiency Exercise",
-      dueDate: "2023-06-16",
-      subject: "Computer Science",
-      status: "pending",
-    },
-    {
-      id: "a4",
-      studentId: "3",
-      title: "Quadratic Equations Worksheet",
-      dueDate: "2023-06-19",
-      subject: "Mathematics",
-      status: "pending",
-    },
-    {
-      id: "a5",
-      studentId: "3",
-      title: "Pseudocode Practice",
-      dueDate: "2023-06-22",
-      subject: "Computer Science",
-      status: "pending",
-    },
-    {
-      id: "a6",
-      studentId: "4",
-      title: "Newton's Laws Lab Report",
-      dueDate: "2023-06-19",
-      subject: "Physics",
-      status: "pending",
-    },
-  ]
-  : [];
-
 const gradeOptions = ["6th", "7th", "8th", "9th", "10th", "11th", "12th"];
 const subjectOptions = [
   "Mathematics",
@@ -199,18 +91,7 @@ const StudentManagement: React.FC = () => {
   const isLoading = !IS_DEVELOPMENT;
 
   // Filter students based on search and filters
-  const filteredStudents = mockStudents.filter((student) => {
-    const matchesSearch =
-      student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      student.email.toLowerCase().includes(searchQuery.toLowerCase());
-
-    const matchesGrade = !filterGrade || filterGrade === "all" ||
-      student.grade === filterGrade;
-    const matchesSubject = !filterSubject || filterSubject === "all" ||
-      student.subjects.includes(filterSubject);
-
-    return matchesSearch && matchesGrade && matchesSubject;
-  });
+  const filteredStudents = [];
 
   const handleResetFilters = () => {
     setSearchQuery("");
@@ -270,13 +151,11 @@ const StudentManagement: React.FC = () => {
   };
 
   const getPendingAssignmentsForStudent = (studentId: string) => {
-    return mockAssignments.filter((assignment) =>
-      assignment.studentId === studentId
-    );
+    return [];
   };
 
   const getStudentById = (id: string) => {
-    return mockStudents.find((student) => student.id === id);
+    return null;
   };
 
   const renderStudentTable = () => {
