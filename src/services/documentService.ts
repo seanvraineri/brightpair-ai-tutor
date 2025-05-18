@@ -133,6 +133,13 @@ export const processDocumentForLesson = async (
       }
 
       // Save document reference to database
+      const mapDifficulty = (d?: string) => {
+        if (!d) return "intermediate";
+        if (d === "easy" || d === "beginner") return "beginner";
+        if (d === "hard" || d === "advanced") return "advanced";
+        return "intermediate"; // covers "medium" and any other
+      };
+
       const docData: Partial<UserDocumentRecord> = {
         title: title || file.name,
         description: focus || "",
@@ -142,7 +149,7 @@ export const processDocumentForLesson = async (
         file_name: file.name,
         file_size: file.size,
         student_id: userId,
-        difficulty: difficulty || "medium",
+        difficulty: mapDifficulty(difficulty),
         subject: topic,
       };
 

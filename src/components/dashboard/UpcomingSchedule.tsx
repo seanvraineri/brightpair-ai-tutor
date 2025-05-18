@@ -136,7 +136,7 @@ const UpcomingSchedule: React.FC = () => {
     const fetchUpcoming = async () => {
       const { data, error } = await supabase
         .from("appointments")
-        .select("*, tutor:profiles(name)")
+        .select("id, starts_at, ends_at, status")
         .eq("student_id", user.id)
         .gte("starts_at", new Date().toISOString())
         .order("starts_at", { ascending: true })
@@ -198,7 +198,7 @@ const UpcomingSchedule: React.FC = () => {
                     month: "short",
                     day: "numeric",
                   })}
-                  title={appt.tutor?.name || "Tutor Session"}
+                  title={"Tutoring Session"}
                   subtitle={appt.status}
                   duration={`${
                     Math.round(
@@ -213,7 +213,7 @@ const UpcomingSchedule: React.FC = () => {
                   })}
                   onClick={() =>
                     toast({
-                      title: appt.tutor?.name,
+                      title: "Tutoring Session",
                       description: "Session details coming soon",
                     })}
                 />

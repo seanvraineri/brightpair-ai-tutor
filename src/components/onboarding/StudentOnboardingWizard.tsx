@@ -985,7 +985,7 @@ export default function StudentOnboardingWizard({ studentId, onComplete }) {
             const path =
                 `tutoring_focus/${studentId}/${Date.now()}_${file.name}`;
             const { error: uploadErr } = await supabase.storage
-                .from("tutoring_files")
+                .from("tutoring-files")
                 .upload(path, file, {
                     cacheControl: "3600",
                     upsert: false,
@@ -993,7 +993,7 @@ export default function StudentOnboardingWizard({ studentId, onComplete }) {
             if (!uploadErr) {
                 const {
                     data: { publicUrl },
-                } = supabase.storage.from("tutoring_files").getPublicUrl(path);
+                } = supabase.storage.from("tutoring-files").getPublicUrl(path);
                 prefsToSave.tutoringFocusFileUrl = publicUrl;
             } else {
                 console.error(
