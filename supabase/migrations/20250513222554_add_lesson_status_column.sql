@@ -1,0 +1,1 @@
+-- Deprecated placeholder. Lesson status column added in later consolidated migration. 

@@ -1,4 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
+import { IS_DEVELOPMENT } from "@/config/env";
+import { Database } from "@/integrations/supabase/types";
 
 export interface QuizQuestion {
   id: string;
@@ -264,5 +266,45 @@ export const updateSkillMastery = async (
   } catch (error) {
     console.error('Error updating skill mastery:', error);
     return false;
+  }
+};
+
+// Additional helpers to retrieve quizzes from the database
+
+export type QuizRow = Database["public"]["Tables"]["quizzes"]["Row"];
+
+// Fetch quizzes that the student has not yet completed (completed_at is null)
+export const getAvailableQuizzes = async (studentId: string): Promise<QuizRow[]> => {
+  try {
+    const { data, error } = await supabase
+      .from("quizzes")
+      .select("*")
+      .eq("student_id", studentId)
+      .is("completed_at", null)
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error("Error fetching available quizzes:", error);
+    return IS_DEVELOPMENT ? [] : [];
+  }
+};
+
+// Fetch completed quizzes (history)
+export const getQuizHistory = async (studentId: string): Promise<QuizRow[]> => {
+  try {
+    const { data, error } = await supabase
+      .from("quizzes")
+      .select("*")
+      .eq("student_id", studentId)
+      .not("completed_at", "is", null)
+      .order("completed_at", { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error("Error fetching quiz history:", error);
+    return IS_DEVELOPMENT ? [] : [];
   }
 }; 

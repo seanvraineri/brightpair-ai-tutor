@@ -1,11 +1,11 @@
 import { supabase } from "@/integrations/supabase/client";
-import { FEATURES, ENDPOINTS } from "@/config/env";
-import { 
-  Homework, 
-  HomeworkListItem, 
-  HomeworkGenerationParams, 
+import { ENDPOINTS, FEATURES } from "@/config/env";
+import {
+  Homework,
+  HomeworkGenerationParams,
+  HomeworkListItem,
+  HomeworkQuestion,
   HomeworkStatus,
-  HomeworkQuestion
 } from "@/types/homework";
 
 // Mock data for initial development
@@ -13,7 +13,7 @@ const MOCK_STUDENTS = [
   { id: "student-1", name: "Alex Smith" },
   { id: "student-2", name: "Emma Johnson" },
   { id: "student-3", name: "Michael Chen" },
-  { id: "student-4", name: "Jordan Lee" }
+  { id: "student-4", name: "Jordan Lee" },
 ];
 
 const MOCK_HOMEWORKS: HomeworkListItem[] = [
@@ -25,7 +25,7 @@ const MOCK_HOMEWORKS: HomeworkListItem[] = [
     student_name: "Alex Smith",
     status: "assigned",
     subject: "Mathematics",
-    topic: "Quadratic Equations"
+    topic: "Quadratic Equations",
   },
   {
     id: "hw2",
@@ -35,7 +35,7 @@ const MOCK_HOMEWORKS: HomeworkListItem[] = [
     student_name: "Alex Smith",
     status: "draft",
     subject: "Science",
-    topic: "Cell Structure"
+    topic: "Cell Structure",
   },
   {
     id: "hw3",
@@ -47,7 +47,7 @@ const MOCK_HOMEWORKS: HomeworkListItem[] = [
     subject: "English",
     score: 85,
     total_possible: 100,
-    topic: "Literature Analysis"
+    topic: "Literature Analysis",
   },
   {
     id: "hw4",
@@ -59,7 +59,7 @@ const MOCK_HOMEWORKS: HomeworkListItem[] = [
     subject: "Computer Science",
     score: 92,
     total_possible: 100,
-    topic: "Algorithm Design"
+    topic: "Algorithm Design",
   },
   {
     id: "hw5",
@@ -69,8 +69,8 @@ const MOCK_HOMEWORKS: HomeworkListItem[] = [
     student_name: "Jordan Lee",
     status: "assigned",
     subject: "Physics",
-    topic: "Classical Mechanics"
-  }
+    topic: "Classical Mechanics",
+  },
 ];
 
 const MOCK_HOMEWORK_DETAIL: Record<string, Homework> = {
@@ -91,27 +91,27 @@ const MOCK_HOMEWORK_DETAIL: Record<string, Homework> = {
         type: "mcq",
         stem: "Which expression factors to (x-3)(x+2)?",
         choices: ["x²–5x+6", "x²–x–6", "x²–x+6", "x²+5x+6"],
-        answer: "B"
+        answer: "B",
       },
       {
         id: "q2",
         type: "short",
         stem: "For x²+6x+5=0, what is the discriminant?",
-        answer: "16"
+        answer: "16",
       },
       {
         id: "q3",
         type: "diagram",
-        stem: "Draw a quick parabola showing roots at –5 and 1."
+        stem: "Draw a quick parabola showing roots at –5 and 1.",
       },
       {
         id: "q4",
         type: "pdf_ref",
         source_page: 2,
-        stem: "Complete #7 on the attached worksheet."
-      }
-    ]
-  }
+        stem: "Complete #7 on the attached worksheet.",
+      },
+    ],
+  },
 };
 
 /**
@@ -119,52 +119,86 @@ const MOCK_HOMEWORK_DETAIL: Record<string, Homework> = {
  */
 export const getHomeworkList = async (
   filters?: {
-    status?: HomeworkStatus | 'pending' | 'all';
+    status?: HomeworkStatus | "pending" | "all";
     student_id?: string;
     subject?: string;
     search?: string;
-  }
+  },
 ): Promise<HomeworkListItem[]> => {
   try {
-    // In a real implementation, this would fetch from Supabase
-    // const { data, error } = await supabase
-    //   .from('homeworks')
-    //   .select(`
-    //     id, title, due, status, topic, subject, score, total_possible,
-    //     student_id, profiles:student_id (name)
-    //   `)
-    //   .eq('tutor_id', tutorId);
-    
-    // For now, return filtered mock data
-    let filtered = [...MOCK_HOMEWORKS];
-    
-    if (filters) {
-      if (filters.status && filters.status !== 'all') {
-        if (filters.status === 'pending') {
-          filtered = filtered.filter(hw => hw.status === 'assigned' || hw.status === 'submitted');
+    // Prefer live data when not in mock mode
+    if (!FEATURES.USE_MOCK_DATA) {
+      let query = supabase
+        .from("homework")
+        .select(`
+          id,
+          title,
+          due_at,
+          status,
+          student_id,
+          content_md,
+          profiles:student_id(name)
+        `);
+
+      // Apply filters
+      if (filters?.student_id) {
+        query = query.eq("student_id", filters.student_id);
+      }
+      if (filters?.status && filters.status !== "all") {
+        if (filters.status === "pending") {
+          // map "pending" to draft + submitted equivalents
+          query = query.in("status", ["draft", "submitted", "assigned"]);
         } else {
-          filtered = filtered.filter(hw => hw.status === filters.status);
+          query = query.eq("status", filters.status);
         }
       }
-      
+      // subject filter omitted – column not present yet
+
+      const { data, error } = await query;
+      if (error) throw error;
+
+      if (data) {
+        return data.map((row: any) => ({
+          id: row.id,
+          title: row.title,
+          due: row.due_at ?? "",
+          student_id: row.student_id ?? "",
+          student_name: row.profiles?.name ?? "Unknown",
+          status: (row.status ?? "draft") as HomeworkStatus,
+          topic: undefined,
+        }));
+      }
+    }
+
+    // ---------- FALLBACK TO MOCK ----------
+    let filtered = [...MOCK_HOMEWORKS];
+    if (filters) {
+      if (filters.status && filters.status !== "all") {
+        if (filters.status === "pending") {
+          filtered = filtered.filter((hw) =>
+            hw.status === "assigned" || hw.status === "submitted"
+          );
+        } else {
+          filtered = filtered.filter((hw) => hw.status === filters.status);
+        }
+      }
       if (filters.student_id) {
-        filtered = filtered.filter(hw => hw.student_id === filters.student_id);
+        filtered = filtered.filter((hw) =>
+          hw.student_id === filters.student_id
+        );
       }
-      
       if (filters.subject) {
-        filtered = filtered.filter(hw => hw.subject === filters.subject);
+        filtered = filtered.filter((hw) => hw.subject === filters.subject);
       }
-      
       if (filters.search) {
         const searchLower = filters.search.toLowerCase();
-        filtered = filtered.filter(hw => 
-          hw.title.toLowerCase().includes(searchLower) || 
+        filtered = filtered.filter((hw) =>
+          hw.title.toLowerCase().includes(searchLower) ||
           hw.student_name.toLowerCase().includes(searchLower) ||
           (hw.topic && hw.topic.toLowerCase().includes(searchLower))
         );
       }
     }
-    
     return filtered;
   } catch (error) {
     console.error("Error fetching homework list:", error);
@@ -175,20 +209,35 @@ export const getHomeworkList = async (
 /**
  * Get details of a specific homework
  */
-export const getHomework = async (homeworkId: string): Promise<Homework | null> => {
+export const getHomework = async (
+  homeworkId: string,
+): Promise<Homework | null> => {
   try {
-    // In a real implementation, this would fetch from Supabase
-    // const { data, error } = await supabase
-    //   .from('homeworks')
-    //   .select(`
-    //     id, title, description, due, created_at, updated_at,
-    //     tutor_id, student_id, pdf_path, status, topic,
-    //     score, total_possible, questions
-    //   `)
-    //   .eq('id', homeworkId)
-    //   .single();
-    
-    // For now, return mock data
+    if (!FEATURES.USE_MOCK_DATA) {
+      const { data, error } = await supabase
+        .from("homework")
+        .select(`*, profiles:student_id(name)`)
+        .eq("id", homeworkId)
+        .single();
+      if (error) throw error;
+      if (data) {
+        const hw: Homework = {
+          id: data.id,
+          title: data.title,
+          description: data.content_md ?? "",
+          due: data.due_at ?? "",
+          created_at: data.created_at ?? "",
+          updated_at: new Date().toISOString(),
+          tutor_id: data.tutor_id ?? "",
+          student_id: data.student_id ?? "",
+          status: (data.status ?? "draft") as HomeworkStatus,
+          topic: undefined,
+          questions: [],
+        };
+        return hw;
+      }
+    }
+    // fallback
     return MOCK_HOMEWORK_DETAIL[homeworkId] || null;
   } catch (error) {
     console.error("Error fetching homework details:", error);
@@ -199,7 +248,9 @@ export const getHomework = async (homeworkId: string): Promise<Homework | null> 
 /**
  * Generate a new homework assignment
  */
-export const generateHomework = async (params: HomeworkGenerationParams): Promise<Homework | null> => {
+export const generateHomework = async (
+  params: HomeworkGenerationParams,
+): Promise<Homework | null> => {
   try {
     // Prefer live data when we are not in mock mode
     if (!FEATURES.USE_MOCK_DATA) {
@@ -212,12 +263,12 @@ export const generateHomework = async (params: HomeworkGenerationParams): Promis
             objective: params.topic || "Homework Assignment",
             dueAt: params.due_date,
             numQuestions: params.num_questions ?? 5,
-            difficulty: params.difficulty ?? 'medium',
+            difficulty: params.difficulty ?? "medium",
             learningStyleOverride: params.learning_style,
             // If a PDF was provided and we have real data, include extracted text (optional)
             // pdfText: params.pdf_text,
           },
-        }
+        },
       );
 
       if (error) {
@@ -245,15 +296,15 @@ export const generateHomework = async (params: HomeworkGenerationParams): Promis
         return hw;
       }
     }
-    
+
     // For development, return a mock response
-    const student = MOCK_STUDENTS.find(s => s.id === params.student_id);
+    const student = MOCK_STUDENTS.find((s) => s.id === params.student_id);
     if (!student) return null;
-    
+
     const mockHomework: Homework = {
       id: `hw-${Date.now()}`,
-      title: params.topic 
-        ? `${params.topic} Practice` 
+      title: params.topic
+        ? `${params.topic} Practice`
         : "Quadratic Equation Drill – Visual Style",
       description: params.notes || "Focus on factoring and the discriminant.",
       due: params.due_date,
@@ -270,32 +321,32 @@ export const generateHomework = async (params: HomeworkGenerationParams): Promis
           type: "mcq",
           stem: "Which expression factors to (x-3)(x+2)?",
           choices: ["x²–5x+6", "x²–x–6", "x²–x+6", "x²+5x+6"],
-          answer: "B"
+          answer: "B",
         },
         {
           id: "q2",
           type: "short",
           stem: "For x²+6x+5=0, what is the discriminant?",
-          answer: "16"
+          answer: "16",
         },
         {
           id: "q3",
           type: "diagram",
-          stem: "Draw a quick parabola showing roots at –5 and 1."
-        }
-      ]
+          stem: "Draw a quick parabola showing roots at –5 and 1.",
+        },
+      ],
     };
-    
+
     // If there was a PDF uploaded, add a PDF reference question
     if (params.pdf_path) {
       mockHomework.questions.push({
         id: "q4",
         type: "pdf_ref",
         source_page: 1,
-        stem: "Complete problem #7 on the attached worksheet."
+        stem: "Complete problem #7 on the attached worksheet.",
       });
     }
-    
+
     return mockHomework;
   } catch (error) {
     console.error("Error generating homework:", error);
@@ -308,27 +359,20 @@ export const generateHomework = async (params: HomeworkGenerationParams): Promis
  */
 export const saveHomework = async (homework: Homework): Promise<boolean> => {
   try {
-    // In a real implementation, this would upsert to Supabase
-    // const { data, error } = await supabase
-    //   .from('homeworks')
-    //   .upsert({
-    //     id: homework.id,
-    //     title: homework.title,
-    //     description: homework.description,
-    //     due: homework.due,
-    //     updated_at: new Date().toISOString(),
-    //     tutor_id: homework.tutor_id,
-    //     student_id: homework.student_id,
-    //     pdf_path: homework.pdf_path,
-    //     status: homework.status,
-    //     topic: homework.topic,
-    //     questions: homework.questions,
-    //     score: homework.score,
-    //     total_possible: homework.total_possible
-    //   });
-    
-    // For development, just log and return success
-    console.log("Saved homework:", homework);
+    if (!FEATURES.USE_MOCK_DATA) {
+      const { error } = await supabase.from("homework").upsert({
+        id: homework.id,
+        title: homework.title,
+        content_md: homework.description,
+        due_at: homework.due,
+        tutor_id: homework.tutor_id,
+        student_id: homework.student_id,
+        status: homework.status,
+      });
+      if (error) throw error;
+      return true;
+    }
+    console.log("Saved homework (mock):", homework);
     return true;
   } catch (error) {
     console.error("Error saving homework:", error);
@@ -341,17 +385,18 @@ export const saveHomework = async (homework: Homework): Promise<boolean> => {
  */
 export const updateHomeworkStatus = async (
   homeworkId: string,
-  status: HomeworkStatus
+  status: HomeworkStatus,
 ): Promise<boolean> => {
   try {
-    // In a real implementation, this would update Supabase
-    // const { data, error } = await supabase
-    //   .from('homeworks')
-    //   .update({ status, updated_at: new Date().toISOString() })
-    //   .eq('id', homeworkId);
-    
-    // For development, just log and return success
-    console.log(`Updated homework ${homeworkId} status to ${status}`);
+    if (!FEATURES.USE_MOCK_DATA) {
+      const { error } = await supabase
+        .from("homework")
+        .update({ status })
+        .eq("id", homeworkId);
+      if (error) throw error;
+      return true;
+    }
+    console.log(`Updated homework ${homeworkId} status to ${status} (mock)`);
     return true;
   } catch (error) {
     console.error("Error updating homework status:", error);
@@ -364,8 +409,8 @@ export const updateHomeworkStatus = async (
  */
 export const gradeHomework = async (
   homeworkId: string,
-  answers: Record<string, string | string[]>
-): Promise<{ 
+  answers: Record<string, string | string[]>,
+): Promise<{
   score: number;
   total: number;
   feedback: Record<string, string>;
@@ -376,21 +421,21 @@ export const gradeHomework = async (
     //   p_homework_id: homeworkId,
     //   p_answers: answers
     // });
-    
+
     // For development, simulate auto-grading for MCQ and short answer questions
     const homework = await getHomework(homeworkId);
     if (!homework) throw new Error("Homework not found");
-    
+
     let score = 0;
     let total = 0;
     const feedback: Record<string, string> = {};
-    
-    homework.questions.forEach(q => {
-      if ((q.type === 'mcq' || q.type === 'short') && q.answer) {
+
+    homework.questions.forEach((q) => {
+      if ((q.type === "mcq" || q.type === "short") && q.answer) {
         total++;
-        const studentAnswer = answers[q.id]?.toString() || '';
-        
-        if (q.type === 'mcq') {
+        const studentAnswer = answers[q.id]?.toString() || "";
+
+        if (q.type === "mcq") {
           // For MCQ, check if the answer matches exactly
           if (studentAnswer.toUpperCase() === q.answer.toUpperCase()) {
             score++;
@@ -398,7 +443,7 @@ export const gradeHomework = async (
           } else {
             feedback[q.id] = `Incorrect. The correct answer is ${q.answer}.`;
           }
-        } else if (q.type === 'short') {
+        } else if (q.type === "short") {
           // For short answer, check if answer matches exactly (case-insensitive)
           if (studentAnswer.toLowerCase() === q.answer.toLowerCase()) {
             score++;
@@ -407,15 +452,15 @@ export const gradeHomework = async (
             feedback[q.id] = `Incorrect. The expected answer is ${q.answer}.`;
           }
         }
-      } else if (q.type === 'diagram' || q.type === 'pdf_ref') {
+      } else if (q.type === "diagram" || q.type === "pdf_ref") {
         // These types need manual grading
         total++;
         feedback[q.id] = "Awaiting tutor review.";
       }
     });
-    
+
     // In a real implementation, update the homework with scores
-    
+
     return { score, total, feedback };
   } catch (error) {
     console.error("Error grading homework:", error);
@@ -434,11 +479,11 @@ export const uploadPdf = async (file: File): Promise<string | null> => {
     // const { data, error } = await supabase.storage
     //   .from('homework-files')
     //   .upload(filePath, file);
-    
+
     // if (error) throw error;
     // const { data: urlData } = supabase.storage.from('homework-files').getPublicUrl(filePath);
     // return urlData.publicUrl;
-    
+
     // Return a local URL that points to our sample PDF
     return `/homework-files/sample.pdf`;
   } catch (error) {
@@ -456,16 +501,16 @@ export const extractPdfText = async (file: File): Promise<string | null> => {
     // const pdfjs = await import('pdfjs-dist/build/pdf');
     // const pdfjsWorker = await import('pdfjs-dist/build/pdf.worker.entry');
     // pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker;
-    
+
     // const arrayBuffer = await file.arrayBuffer();
     // const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
     // const firstPage = await pdf.getPage(1);
     // const textContent = await firstPage.getTextContent();
     // const text = textContent.items.map((item: any) => item.str).join(' ');
-    
+
     // // Limit to first 3000 characters as specified
     // return text.substring(0, 3000);
-    
+
     // For development, return mock text
     return "This is a sample PDF text extracted for homework generation. It contains math problems related to quadratic equations and factoring.";
   } catch (error) {
@@ -477,7 +522,9 @@ export const extractPdfText = async (file: File): Promise<string | null> => {
 /**
  * Get a list of students for a tutor
  */
-export const getStudents = async (): Promise<Array<{ id: string; name: string }>> => {
+export const getStudents = async (): Promise<
+  Array<{ id: string; name: string }>
+> => {
   try {
     // In a real implementation, this would fetch from Supabase
     // const { data, error } = await supabase
@@ -485,11 +532,11 @@ export const getStudents = async (): Promise<Array<{ id: string; name: string }>
     //   .select('id, name')
     //   .eq('role', 'student')
     //   .eq('tutor_id', tutorId);
-    
+
     // For development, return mock students
     return MOCK_STUDENTS;
   } catch (error) {
     console.error("Error fetching students:", error);
     return [];
   }
-}; 
+};

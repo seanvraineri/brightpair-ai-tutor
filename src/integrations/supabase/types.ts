@@ -7,37 +7,165 @@ export type Json =
   | Json[]
 
 export type Database = {
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          operationName?: string
+          query?: string
+          variables?: Json
+          extensions?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
+      appointments: {
+        Row: {
+          created_at: string
+          ends_at: string
+          id: string
+          starts_at: string
+          status: string
+          student_id: string
+          tutor_id: string
+        }
+        Insert: {
+          created_at?: string
+          ends_at: string
+          id?: string
+          starts_at: string
+          status: string
+          student_id: string
+          tutor_id: string
+        }
+        Update: {
+          created_at?: string
+          ends_at?: string
+          id?: string
+          starts_at?: string
+          status?: string
+          student_id?: string
+          tutor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_tutor_id_fkey"
+            columns: ["tutor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assignments: {
+        Row: {
+          content_md: string | null
+          created_at: string
+          due_at: string | null
+          id: string
+          status: string
+          student_id: string
+          title: string
+          tutor_id: string | null
+          type: string
+        }
+        Insert: {
+          content_md?: string | null
+          created_at?: string
+          due_at?: string | null
+          id?: string
+          status?: string
+          student_id: string
+          title: string
+          tutor_id?: string | null
+          type?: string
+        }
+        Update: {
+          content_md?: string | null
+          created_at?: string
+          due_at?: string | null
+          id?: string
+          status?: string
+          student_id?: string
+          title?: string
+          tutor_id?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assignments_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assignments_tutor_id_fkey"
+            columns: ["tutor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_logs: {
         Row: {
-          created_at: string | null
+          created_at: string
           id: string
           message: string
           response: string
           skills_addressed: Json | null
-          student_id: string | null
+          student_id: string
           track_id: string | null
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
           id?: string
           message: string
           response: string
           skills_addressed?: Json | null
-          student_id?: string | null
+          student_id: string
           track_id?: string | null
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
           id?: string
           message?: string
           response?: string
           skills_addressed?: Json | null
-          student_id?: string | null
+          student_id?: string
           track_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "chat_logs_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "chat_logs_track_id_fkey"
             columns: ["track_id"]
@@ -47,312 +175,429 @@ export type Database = {
           },
         ]
       }
-      homework: {
+      flashcards_sets: {
         Row: {
-          created_at: string
+          cards: Json
+          created_at: string | null
           description: string | null
-          documents: Json | null
-          due_date: string | null
           id: string
-          questions: Json | null
-          status: string
-          student_id: string
-          subject: string
-          title: string
+          name: string
+          student_id: string | null
           track_id: string | null
-          updated_at: string
+          updated_at: string | null
         }
         Insert: {
-          created_at?: string
+          cards: Json
+          created_at?: string | null
           description?: string | null
-          documents?: Json | null
-          due_date?: string | null
           id?: string
-          questions?: Json | null
-          status?: string
-          student_id: string
-          subject: string
-          title: string
+          name: string
+          student_id?: string | null
           track_id?: string | null
-          updated_at?: string
+          updated_at?: string | null
         }
         Update: {
-          created_at?: string
+          cards?: Json
+          created_at?: string | null
           description?: string | null
-          documents?: Json | null
-          due_date?: string | null
           id?: string
-          questions?: Json | null
-          status?: string
-          student_id?: string
-          subject?: string
-          title?: string
+          name?: string
+          student_id?: string | null
           track_id?: string | null
-          updated_at?: string
+          updated_at?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "homework_track_id_fkey"
+            foreignKeyName: "flashcards_sets_track_id_fkey"
             columns: ["track_id"]
             isOneToOne: false
             referencedRelation: "learning_tracks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      homework: {
+        Row: {
+          content_md: string | null
+          created_at: string | null
+          due_at: string | null
+          id: string
+          status: string | null
+          student_id: string | null
+          title: string
+          tutor_id: string | null
+        }
+        Insert: {
+          content_md?: string | null
+          created_at?: string | null
+          due_at?: string | null
+          id?: string
+          status?: string | null
+          student_id?: string | null
+          title: string
+          tutor_id?: string | null
+        }
+        Update: {
+          content_md?: string | null
+          created_at?: string | null
+          due_at?: string | null
+          id?: string
+          status?: string | null
+          student_id?: string | null
+          title?: string
+          tutor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "homework_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "homework_tutor_id_fkey"
+            columns: ["tutor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
       }
       learning_tracks: {
         Row: {
-          created_at: string | null
-          description: string | null
+          created_at: string
           id: string
           name: string
-          tutor_id: string | null
         }
         Insert: {
-          created_at?: string | null
-          description?: string | null
+          created_at?: string
           id?: string
           name: string
-          tutor_id?: string | null
         }
         Update: {
-          created_at?: string | null
-          description?: string | null
+          created_at?: string
           id?: string
           name?: string
-          tutor_id?: string | null
         }
         Relationships: []
       }
       lessons: {
         Row: {
           completed_at: string | null
-          content: string | null
+          content_md: string | null
           created_at: string
           id: string
-          notes: string | null
-          resources: Json | null
           student_id: string
-          subject: string
+          subject: string | null
           title: string
-          track_id: string | null
+          tutor_id: string | null
         }
         Insert: {
           completed_at?: string | null
-          content?: string | null
+          content_md?: string | null
           created_at?: string
           id?: string
-          notes?: string | null
-          resources?: Json | null
           student_id: string
-          subject: string
+          subject?: string | null
           title: string
-          track_id?: string | null
+          tutor_id?: string | null
         }
         Update: {
           completed_at?: string | null
-          content?: string | null
+          content_md?: string | null
           created_at?: string
           id?: string
-          notes?: string | null
-          resources?: Json | null
           student_id?: string
-          subject?: string
+          subject?: string | null
           title?: string
-          track_id?: string | null
+          tutor_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "lessons_track_id_fkey"
-            columns: ["track_id"]
+            foreignKeyName: "lessons_student_id_fkey"
+            columns: ["student_id"]
             isOneToOne: false
-            referencedRelation: "learning_tracks"
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lessons_tutor_id_fkey"
+            columns: ["tutor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
       }
-      parent_students: {
+      messages: {
         Row: {
-          assigned_at: string | null
-          parent_id: string
-          student_id: string
+          content: string
+          created_at: string
+          id: string
+          receiver_id: string
+          role: string
+          sender_id: string
         }
         Insert: {
-          assigned_at?: string | null
-          parent_id: string
-          student_id: string
+          content: string
+          created_at?: string
+          id?: string
+          receiver_id: string
+          role: string
+          sender_id: string
         }
         Update: {
-          assigned_at?: string | null
-          parent_id?: string
-          student_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          receiver_id?: string
+          role?: string
+          sender_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "messages_receiver_id_fkey"
+            columns: ["receiver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          currency: string
+          id: string
+          profile_id: string
+          stripe_session: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          currency?: string
+          id?: string
+          profile_id: string
+          stripe_session: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          profile_id?: string
+          stripe_session?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
           created_at: string
-          email: string
-          full_name: string | null
+          email: string | null
+          grade: string | null
           id: string
+          is_staff: boolean | null
+          mastery_level: number | null
           name: string | null
           next_consultation_date: string | null
-          onboarding_status: string
+          onboarding_status: string | null
           role: string
+          strengths: string | null
           updated_at: string
+          weaknesses: string | null
         }
         Insert: {
           created_at?: string
-          email: string
-          full_name?: string | null
-          id: string
+          email?: string | null
+          grade?: string | null
+          id?: string
+          is_staff?: boolean | null
+          mastery_level?: number | null
           name?: string | null
           next_consultation_date?: string | null
-          onboarding_status?: string
-          role?: string
+          onboarding_status?: string | null
+          role: string
+          strengths?: string | null
           updated_at?: string
+          weaknesses?: string | null
         }
         Update: {
           created_at?: string
-          email?: string
-          full_name?: string | null
+          email?: string | null
+          grade?: string | null
           id?: string
+          is_staff?: boolean | null
+          mastery_level?: number | null
           name?: string | null
           next_consultation_date?: string | null
-          onboarding_status?: string
+          onboarding_status?: string | null
           role?: string
+          strengths?: string | null
           updated_at?: string
+          weaknesses?: string | null
         }
         Relationships: []
       }
       quizzes: {
         Row: {
-          answers: Json | null
           completed_at: string | null
           created_at: string
           id: string
-          questions: Json | null
-          score: number | null
+          quiz_json: Json
+          skill_id: string | null
           student_id: string
-          subject: string
-          title: string
-          track_id: string | null
+          tutor_id: string | null
         }
         Insert: {
-          answers?: Json | null
           completed_at?: string | null
           created_at?: string
           id?: string
-          questions?: Json | null
-          score?: number | null
+          quiz_json: Json
+          skill_id?: string | null
           student_id: string
-          subject: string
-          title: string
-          track_id?: string | null
+          tutor_id?: string | null
         }
         Update: {
-          answers?: Json | null
           completed_at?: string | null
           created_at?: string
           id?: string
-          questions?: Json | null
-          score?: number | null
+          quiz_json?: Json
+          skill_id?: string | null
           student_id?: string
-          subject?: string
-          title?: string
-          track_id?: string | null
+          tutor_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "quizzes_track_id_fkey"
-            columns: ["track_id"]
+            foreignKeyName: "quizzes_student_id_fkey"
+            columns: ["student_id"]
             isOneToOne: false
-            referencedRelation: "learning_tracks"
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quizzes_tutor_id_fkey"
+            columns: ["tutor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
       }
-      skills: {
+      student_parent_relationships: {
         Row: {
-          description: string | null
+          created_at: string
           id: string
-          name: string
-          track_id: string | null
+          parent_id: string
+          student_id: string
         }
         Insert: {
-          description?: string | null
+          created_at?: string
           id?: string
-          name: string
-          track_id?: string | null
+          parent_id: string
+          student_id: string
         }
         Update: {
-          description?: string | null
+          created_at?: string
           id?: string
-          name?: string
-          track_id?: string | null
+          parent_id?: string
+          student_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "skills_track_id_fkey"
-            columns: ["track_id"]
+            foreignKeyName: "student_parent_relationships_parent_id_fkey"
+            columns: ["parent_id"]
             isOneToOne: false
-            referencedRelation: "learning_tracks"
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_parent_relationships_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
       }
       student_skills: {
         Row: {
-          last_assessed: string | null
-          mastery_level: number | null
+          id: string
+          mastery_level: number
           skill_id: string
           student_id: string
+          updated_at: string
         }
         Insert: {
-          last_assessed?: string | null
-          mastery_level?: number | null
+          id?: string
+          mastery_level?: number
           skill_id: string
           student_id: string
+          updated_at?: string
         }
         Update: {
-          last_assessed?: string | null
-          mastery_level?: number | null
+          id?: string
+          mastery_level?: number
           skill_id?: string
           student_id?: string
+          updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "student_skills_skill_id_fkey"
-            columns: ["skill_id"]
+            foreignKeyName: "student_skills_student_id_fkey"
+            columns: ["student_id"]
             isOneToOne: false
-            referencedRelation: "skills"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
       }
       student_tracks: {
         Row: {
-          completed_at: string | null
-          progress: number | null
-          started_at: string | null
+          created_at: string
+          deadline: string
+          id: string
           student_id: string
           track_id: string
         }
         Insert: {
-          completed_at?: string | null
-          progress?: number | null
-          started_at?: string | null
+          created_at?: string
+          deadline?: string
+          id?: string
           student_id: string
           track_id: string
         }
         Update: {
-          completed_at?: string | null
-          progress?: number | null
-          started_at?: string | null
+          created_at?: string
+          deadline?: string
+          id?: string
           student_id?: string
           track_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "student_tracks_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "student_tracks_track_id_fkey"
             columns: ["track_id"]
@@ -362,177 +607,380 @@ export type Database = {
           },
         ]
       }
-      topics: {
+      tutor_notes: {
         Row: {
-          content: string | null
-          embedding: string | null
+          content: string
+          created_at: string
           id: string
-          title: string
-          track_id: string | null
+          student_id: string
+          tutor_id: string
+          updated_at: string
         }
         Insert: {
-          content?: string | null
-          embedding?: string | null
+          content: string
+          created_at?: string
           id?: string
-          title: string
-          track_id?: string | null
+          student_id: string
+          tutor_id: string
+          updated_at?: string
         }
         Update: {
-          content?: string | null
-          embedding?: string | null
+          content?: string
+          created_at?: string
           id?: string
-          title?: string
-          track_id?: string | null
+          student_id?: string
+          tutor_id?: string
+          updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "topics_track_id_fkey"
-            columns: ["track_id"]
+            foreignKeyName: "tutor_notes_student_id_fkey"
+            columns: ["student_id"]
             isOneToOne: false
-            referencedRelation: "learning_tracks"
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tutor_notes_tutor_id_fkey"
+            columns: ["tutor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
-      }
-      tutor_students: {
-        Row: {
-          assigned_at: string | null
-          student_id: string
-          tutor_id: string
-        }
-        Insert: {
-          assigned_at?: string | null
-          student_id: string
-          tutor_id: string
-        }
-        Update: {
-          assigned_at?: string | null
-          student_id?: string
-          tutor_id?: string
-        }
-        Relationships: []
-      }
-      user_roles: {
-        Row: {
-          role: Database["public"]["Enums"]["role_type"]
-          user_id: string
-        }
-        Insert: {
-          role: Database["public"]["Enums"]["role_type"]
-          user_id: string
-        }
-        Update: {
-          role?: Database["public"]["Enums"]["role_type"]
-          user_id?: string
-        }
-        Relationships: []
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      binary_quantize: {
-        Args: { "": string } | { "": unknown }
-        Returns: unknown
+      build_student_snapshot: {
+        Args: { p_student: string }
+        Returns: Json
       }
-      get_user_roles: {
-        Args: { user_id: string }
-        Returns: {
-          role: Database["public"]["Enums"]["role_type"]
-        }[]
-      }
-      halfvec_avg: {
-        Args: { "": number[] }
-        Returns: unknown
-      }
-      halfvec_out: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      halfvec_send: {
-        Args: { "": unknown }
+      current_role: {
+        Args: Record<PropertyKey, never>
         Returns: string
       }
-      halfvec_typmod_in: {
-        Args: { "": unknown[] }
-        Returns: number
+      decay_mastery: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
-      hnsw_bit_support: {
-        Args: { "": unknown }
-        Returns: unknown
+      is_parent_of: {
+        Args: { p_student: string }
+        Returns: boolean
       }
-      hnsw_halfvec_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      hnsw_sparsevec_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      hnswhandler: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      ivfflat_bit_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      ivfflat_halfvec_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      ivfflathandler: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      l2_norm: {
-        Args: { "": unknown } | { "": unknown }
-        Returns: number
-      }
-      l2_normalize: {
-        Args: { "": string } | { "": unknown } | { "": unknown }
-        Returns: string
-      }
-      sparsevec_out: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      sparsevec_send: {
-        Args: { "": unknown }
-        Returns: string
-      }
-      sparsevec_typmod_in: {
-        Args: { "": unknown[] }
-        Returns: number
-      }
-      vector_avg: {
-        Args: { "": number[] }
-        Returns: string
-      }
-      vector_dims: {
-        Args: { "": string } | { "": unknown }
-        Returns: number
-      }
-      vector_norm: {
-        Args: { "": string }
-        Returns: number
-      }
-      vector_out: {
-        Args: { "": string }
-        Returns: unknown
-      }
-      vector_send: {
-        Args: { "": string }
-        Returns: string
-      }
-      vector_typmod_in: {
-        Args: { "": unknown[] }
-        Returns: number
+      is_staff: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
       }
     }
     Enums: {
-      role_type: "student" | "tutor" | "parent"
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+  storage: {
+    Tables: {
+      buckets: {
+        Row: {
+          allowed_mime_types: string[] | null
+          avif_autodetection: boolean | null
+          created_at: string | null
+          file_size_limit: number | null
+          id: string
+          name: string
+          owner: string | null
+          owner_id: string | null
+          public: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          allowed_mime_types?: string[] | null
+          avif_autodetection?: boolean | null
+          created_at?: string | null
+          file_size_limit?: number | null
+          id: string
+          name: string
+          owner?: string | null
+          owner_id?: string | null
+          public?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          allowed_mime_types?: string[] | null
+          avif_autodetection?: boolean | null
+          created_at?: string | null
+          file_size_limit?: number | null
+          id?: string
+          name?: string
+          owner?: string | null
+          owner_id?: string | null
+          public?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      migrations: {
+        Row: {
+          executed_at: string | null
+          hash: string
+          id: number
+          name: string
+        }
+        Insert: {
+          executed_at?: string | null
+          hash: string
+          id: number
+          name: string
+        }
+        Update: {
+          executed_at?: string | null
+          hash?: string
+          id?: number
+          name?: string
+        }
+        Relationships: []
+      }
+      objects: {
+        Row: {
+          bucket_id: string | null
+          created_at: string | null
+          id: string
+          last_accessed_at: string | null
+          metadata: Json | null
+          name: string | null
+          owner: string | null
+          owner_id: string | null
+          path_tokens: string[] | null
+          updated_at: string | null
+          user_metadata: Json | null
+          version: string | null
+        }
+        Insert: {
+          bucket_id?: string | null
+          created_at?: string | null
+          id?: string
+          last_accessed_at?: string | null
+          metadata?: Json | null
+          name?: string | null
+          owner?: string | null
+          owner_id?: string | null
+          path_tokens?: string[] | null
+          updated_at?: string | null
+          user_metadata?: Json | null
+          version?: string | null
+        }
+        Update: {
+          bucket_id?: string | null
+          created_at?: string | null
+          id?: string
+          last_accessed_at?: string | null
+          metadata?: Json | null
+          name?: string | null
+          owner?: string | null
+          owner_id?: string | null
+          path_tokens?: string[] | null
+          updated_at?: string | null
+          user_metadata?: Json | null
+          version?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "objects_bucketId_fkey"
+            columns: ["bucket_id"]
+            isOneToOne: false
+            referencedRelation: "buckets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      s3_multipart_uploads: {
+        Row: {
+          bucket_id: string
+          created_at: string
+          id: string
+          in_progress_size: number
+          key: string
+          owner_id: string | null
+          upload_signature: string
+          user_metadata: Json | null
+          version: string
+        }
+        Insert: {
+          bucket_id: string
+          created_at?: string
+          id: string
+          in_progress_size?: number
+          key: string
+          owner_id?: string | null
+          upload_signature: string
+          user_metadata?: Json | null
+          version: string
+        }
+        Update: {
+          bucket_id?: string
+          created_at?: string
+          id?: string
+          in_progress_size?: number
+          key?: string
+          owner_id?: string | null
+          upload_signature?: string
+          user_metadata?: Json | null
+          version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "s3_multipart_uploads_bucket_id_fkey"
+            columns: ["bucket_id"]
+            isOneToOne: false
+            referencedRelation: "buckets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      s3_multipart_uploads_parts: {
+        Row: {
+          bucket_id: string
+          created_at: string
+          etag: string
+          id: string
+          key: string
+          owner_id: string | null
+          part_number: number
+          size: number
+          upload_id: string
+          version: string
+        }
+        Insert: {
+          bucket_id: string
+          created_at?: string
+          etag: string
+          id?: string
+          key: string
+          owner_id?: string | null
+          part_number: number
+          size?: number
+          upload_id: string
+          version: string
+        }
+        Update: {
+          bucket_id?: string
+          created_at?: string
+          etag?: string
+          id?: string
+          key?: string
+          owner_id?: string | null
+          part_number?: number
+          size?: number
+          upload_id?: string
+          version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "s3_multipart_uploads_parts_bucket_id_fkey"
+            columns: ["bucket_id"]
+            isOneToOne: false
+            referencedRelation: "buckets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "s3_multipart_uploads_parts_upload_id_fkey"
+            columns: ["upload_id"]
+            isOneToOne: false
+            referencedRelation: "s3_multipart_uploads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      can_insert_object: {
+        Args: { bucketid: string; name: string; owner: string; metadata: Json }
+        Returns: undefined
+      }
+      extension: {
+        Args: { name: string }
+        Returns: string
+      }
+      filename: {
+        Args: { name: string }
+        Returns: string
+      }
+      foldername: {
+        Args: { name: string }
+        Returns: string[]
+      }
+      get_size_by_bucket: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          size: number
+          bucket_id: string
+        }[]
+      }
+      list_multipart_uploads_with_delimiter: {
+        Args: {
+          bucket_id: string
+          prefix_param: string
+          delimiter_param: string
+          max_keys?: number
+          next_key_token?: string
+          next_upload_token?: string
+        }
+        Returns: {
+          key: string
+          id: string
+          created_at: string
+        }[]
+      }
+      list_objects_with_delimiter: {
+        Args: {
+          bucket_id: string
+          prefix_param: string
+          delimiter_param: string
+          max_keys?: number
+          start_after?: string
+          next_token?: string
+        }
+        Returns: {
+          name: string
+          id: string
+          metadata: Json
+          updated_at: string
+        }[]
+      }
+      operation: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      search: {
+        Args: {
+          prefix: string
+          bucketname: string
+          limits?: number
+          levels?: number
+          offsets?: number
+          search?: string
+          sortcolumn?: string
+          sortorder?: string
+        }
+        Returns: {
+          name: string
+          id: string
+          updated_at: string
+          created_at: string
+          last_accessed_at: string
+          metadata: Json
+        }[]
+      }
+    }
+    Enums: {
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
@@ -646,9 +1094,14 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
-    Enums: {
-      role_type: ["student", "tutor", "parent"],
-    },
+    Enums: {},
+  },
+  storage: {
+    Enums: {},
   },
 } as const
+

@@ -1,7 +1,7 @@
 // Types for the homework system
 
-export type QuestionType = 'mcq' | 'short' | 'diagram' | 'pdf_ref';
-export type HomeworkStatus = 'draft' | 'assigned' | 'submitted' | 'graded';
+export type QuestionType = "mcq" | "short" | "diagram" | "pdf_ref";
+export type HomeworkStatus = "draft" | "assigned" | "submitted" | "graded";
 
 export interface HomeworkQuestion {
   id: string;
@@ -56,6 +56,7 @@ export interface HomeworkGenerationParams {
   due_date: string;
   notes?: string;
   num_questions?: number;
-  difficulty?: 'easy' | 'medium' | 'hard';
+  difficulty?: "easy" | "medium" | "hard";
   learning_style?: string;
-} 
+  pdf_text?: string;
+}
