@@ -361,13 +361,16 @@ export const saveHomework = async (homework: Homework): Promise<boolean> => {
   try {
     if (!FEATURES.USE_MOCK_DATA) {
       const { error } = await supabase.from("homework").upsert({
-        id: homework.id,
+        // Allow Postgres to generate ID if not provided
+        ...(homework.id ? { id: homework.id } : {}),
         title: homework.title,
         content_md: homework.description,
+        subject: homework.topic ?? "General", // new NOT NULL column
         due_at: homework.due,
         tutor_id: homework.tutor_id,
         student_id: homework.student_id,
         status: homework.status,
+        type: "homework", // satisfies new type column
       });
       if (error) throw error;
       return true;
