@@ -59,6 +59,9 @@ interface LegacyQuiz {
   title: string;
   subject: string;
   questions: LegacyQuizQuestion[];
+  created_at?: string;
+  completed_at?: string;
+  score?: number;
 }
 
 const Quizzes: React.FC = () => {
@@ -83,7 +86,7 @@ const Quizzes: React.FC = () => {
   const [adaptiveQuiz, setAdaptiveQuiz] = useState<Quiz | null>(null);
 
   const [availableQuizzes, setAvailableQuizzes] = useState<LegacyQuiz[]>([]);
-  const [quizHistory, setQuizHistory] = useState<QuizRow[]>([]);
+  const [quizHistory, setQuizHistory] = useState<LegacyQuiz[]>([]);
   const [isLoadingQuizzes, setIsLoadingQuizzes] = useState(true);
 
   const { user } = useUser();
@@ -176,21 +179,27 @@ const Quizzes: React.FC = () => {
 
   // Transform DB row to LegacyQuiz format
   const transformRow = (row: QuizRow): LegacyQuiz => {
-    let questions: any[] = [];
-    if (row.questions && Array.isArray(row.questions)) {
-      questions = row.questions as any[];
-    } else if (row.questions) {
-      try {
-        questions = JSON.parse(row.questions as unknown as string);
-      } catch (e) {
-        questions = [];
-      }
-    }
+    // quiz_json may be stored as an object or a stringified JSON.
+    const raw = typeof row.quiz_json === "string"
+      ? (() => {
+        try {
+          return JSON.parse(row.quiz_json);
+        } catch {
+          return {};
+        }
+      })()
+      : (row.quiz_json as any) ?? {};
+
+    const questions = Array.isArray(raw.questions) ? raw.questions : [];
+
     return {
       id: row.id,
-      title: row.title,
-      subject: row.subject,
+      title: raw.title || "Untitled Quiz",
+      subject: raw.subject || "General",
       questions: questions as LegacyQuizQuestion[],
+      created_at: row.created_at,
+      completed_at: row.completed_at ?? undefined,
+      score: raw.score ?? undefined,
     };
   };
 
@@ -205,7 +214,7 @@ const Quizzes: React.FC = () => {
           getQuizHistory(user.id),
         ]);
         setAvailableQuizzes(avail.map(transformRow));
-        setQuizHistory(history);
+        setQuizHistory(history.map(transformRow));
       } catch (error) {
         console.error("Error loading quizzes:", error);
       } finally {
@@ -288,24 +297,11 @@ const Quizzes: React.FC = () => {
                 )
                 : (
                   quizHistory.map((quiz) => {
-                    const questionsArr: any[] = Array.isArray(quiz.questions)
-                      ? (quiz.questions as any[])
-                      : quiz.questions
-                      ? (() => {
-                        try {
-                          return JSON.parse(
-                            quiz.questions as unknown as string,
-                          );
-                        } catch {
-                          return [];
-                        }
-                      })()
-                      : [];
-                    const questionCount = questionsArr.length;
+                    const questionCount = quiz.questions.length;
                     const completedDate = quiz.completed_at
                       ? new Date(quiz.completed_at).toLocaleDateString()
                       : "";
-                    const scoreVal = quiz.score || 0;
+                    const scoreVal = quiz.score ?? 0;
                     return (
                       <div key={quiz.id} className="p-4 border rounded">
                         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
