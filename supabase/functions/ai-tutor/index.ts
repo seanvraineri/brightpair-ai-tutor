@@ -17,6 +17,78 @@ const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
 const RATE_LIMIT_MAX_REQUESTS = 10;
 const rateLimitMap = new Map(); // key: user, value: { count, windowStart }
 
+// ----------------------
+// Type Definitions
+// ----------------------
+
+interface HomeworkQuestion {
+  question: string;
+}
+
+interface Homework {
+  title: string;
+  subject: string;
+  due_date?: string | null;
+  status?: string;
+  description?: string | null;
+  questions?: HomeworkQuestion[];
+}
+
+interface Quiz {
+  title: string;
+  subject: string;
+  completed_at?: string | null;
+  score?: number | null;
+}
+
+interface LessonHistoryItem {
+  title: string;
+  subject: string;
+  completed_at?: string | null;
+  content?: string | null;
+}
+
+interface TrackHistoryItem {
+  learning_tracks?: {
+    name: string;
+    description?: string | null;
+  };
+}
+
+interface ConversationSnippet {
+  message: string;
+}
+
+interface LearningHistory {
+  homework?: Homework[];
+  quizzes?: Quiz[];
+  lessons?: LessonHistoryItem[];
+  tracks?: TrackHistoryItem[];
+  recentConversations?: ConversationSnippet[];
+}
+
+interface LearningContextResult {
+  contextText: string;
+  isHomeworkQuery: boolean;
+  activeHomework: Homework | null;
+}
+
+// Simplified student context interface used locally
+interface SimpleStudentContext {
+  profile: { id: string; name?: string; grade?: string } | null;
+  track: {
+    id: string;
+    name: string;
+    materials?: { title: string; content: string }[];
+  } | null;
+  skills: unknown;
+  mastery: {
+    skill_id: string;
+    mastery_level: number;
+    skills?: { name: string };
+  }[];
+}
+
 // Handle CORS preflight requests
 const handleCors = (req: Request) => {
   if (req.method === "OPTIONS") {
@@ -28,7 +100,9 @@ const handleCors = (req: Request) => {
 };
 
 // Extract and format context from student's learning history
-const formatLearningContext = (history: any) => {
+const formatLearningContext = (
+  history: LearningHistory,
+): LearningContextResult => {
   if (!history) {
     return {
       contextText: "",
@@ -42,7 +116,7 @@ const formatLearningContext = (history: any) => {
   // Format homework assignments
   if (history.homework && history.homework.length > 0) {
     contextText += "\nRECENT HOMEWORK ASSIGNMENTS:\n";
-    history.homework.forEach((hw: any, index: number) => {
+    history.homework.forEach((hw, index) => {
       const dueDate = hw.due_date
         ? new Date(hw.due_date).toLocaleDateString()
         : "No due date";
@@ -52,9 +126,9 @@ const formatLearningContext = (history: any) => {
       if (hw.description) {
         contextText += `   Description: ${hw.description}\n`;
       }
-      if (hw.questions && Array.isArray(hw.questions)) {
+      if (Array.isArray(hw.questions) && hw.questions.length > 0) {
         contextText += `   Questions: ${hw.questions.length} question(s)\n`;
-        hw.questions.forEach((q: any, qIdx: number) => {
+        hw.questions.forEach((q, qIdx) => {
           contextText += `   - Q${qIdx + 1}: ${q.question}\n`;
         });
       }
@@ -64,7 +138,7 @@ const formatLearningContext = (history: any) => {
   // Format quiz results
   if (history.quizzes && history.quizzes.length > 0) {
     contextText += "\nRECENT QUIZ RESULTS:\n";
-    history.quizzes.forEach((quiz: any, index: number) => {
+    history.quizzes.forEach((quiz, index) => {
       const completedDate = quiz.completed_at
         ? new Date(quiz.completed_at).toLocaleDateString()
         : "Not completed";
@@ -81,7 +155,7 @@ const formatLearningContext = (history: any) => {
   // Format lesson history
   if (history.lessons && history.lessons.length > 0) {
     contextText += "\nRECENT LESSONS:\n";
-    history.lessons.forEach((lesson: any, index: number) => {
+    history.lessons.forEach((lesson, index) => {
       const status = lesson.completed_at
         ? `Completed on ${new Date(lesson.completed_at).toLocaleDateString()}`
         : "In progress";
@@ -94,7 +168,7 @@ const formatLearningContext = (history: any) => {
   // Format tracks
   if (history.tracks && history.tracks.length > 0) {
     contextText += "\nACTIVE LEARNING TRACKS:\n";
-    history.tracks.forEach((track: any, index: number) => {
+    history.tracks.forEach((track, index) => {
       if (track.learning_tracks) {
         contextText += `${index + 1}. "${track.learning_tracks.name}" - ${
           track.learning_tracks.description || "No description"
@@ -107,7 +181,7 @@ const formatLearningContext = (history: any) => {
   if (history.recentConversations && history.recentConversations.length > 0) {
     const recentConvos = history.recentConversations.slice(0, 3);
     contextText += "\nRECENT CONVERSATION SNIPPETS:\n";
-    recentConvos.forEach((convo: any, index: number) => {
+    recentConvos.forEach((convo, index) => {
       contextText += `Student asked: "${convo.message.substring(0, 100)}${
         convo.message.length > 100 ? "..." : ""
       }"\n`;
@@ -122,7 +196,10 @@ const formatLearningContext = (history: any) => {
 };
 
 // Detect homework queries and extract relevant homework context
-const analyzeStudentQuery = (message: string, history: any) => {
+const analyzeStudentQuery = (
+  message: string,
+  history: LearningHistory,
+): LearningContextResult => {
   const result = formatLearningContext(history);
 
   // Check for homework-related keywords
@@ -157,21 +234,21 @@ const analyzeStudentQuery = (message: string, history: any) => {
     if (result.activeHomework) {
       result.contextText += "\n\nFOCUSED HOMEWORK CONTEXT:\n";
       result.contextText += `You are helping with the "${
-        (result.activeHomework as any).title
-      }" assignment for ${(result.activeHomework as any).subject}.\n`;
+        (result.activeHomework as Homework).title
+      }" assignment for ${(result.activeHomework as Homework).subject}.\n`;
 
-      if ((result.activeHomework as any).description) {
+      if ((result.activeHomework as Homework).description) {
         result.contextText += `Description: ${
-          (result.activeHomework as any).description
+          (result.activeHomework as Homework).description
         }\n`;
       }
 
       if (
-        (result.activeHomework as any).questions &&
-        Array.isArray((result.activeHomework as any).questions)
+        (result.activeHomework as Homework).questions &&
+        Array.isArray((result.activeHomework as Homework).questions)
       ) {
         result.contextText += `Questions to answer:\n`;
-        result.activeHomework.questions.forEach((q: any, idx: number) => {
+        (result.activeHomework as Homework).questions?.forEach((q, idx) => {
           result.contextText += `${idx + 1}. ${q.question}\n`;
         });
       }
@@ -183,10 +260,10 @@ const analyzeStudentQuery = (message: string, history: any) => {
 
 // Fetch student profile and learning context data
 const fetchStudentContext = async (
-  supabase: any,
+  supabase: ReturnType<typeof createClient>,
   studentId: string,
   trackId: string | null,
-) => {
+): Promise<SimpleStudentContext> => {
   try {
     // Fetch student profile
     const { data: profile, error: profileError } = await supabase
@@ -250,7 +327,10 @@ const fetchStudentContext = async (
 };
 
 // Create student snapshot from available data
-const createStudentSnapshot = (userProfile: any, studentContext: any) => {
+const createStudentSnapshot = (
+  userProfile: any,
+  studentContext: SimpleStudentContext | null,
+) => {
   try {
     if (!studentContext || !studentContext.profile) {
       return userProfile
@@ -263,7 +343,8 @@ const createStudentSnapshot = (userProfile: any, studentContext: any) => {
     }
 
     // Create lowest mastery skills array
-    const lowestMasterySkills = [];
+    const lowestMasterySkills: { id: string; name: string; mastery: number }[] =
+      [];
     if (studentContext.mastery && studentContext.mastery.length > 0) {
       // Sort by mastery level ascending
       const sortedSkills = [...studentContext.mastery].sort((a, b) =>
@@ -310,12 +391,15 @@ const createStudentSnapshot = (userProfile: any, studentContext: any) => {
 };
 
 // Extract topic passages from learning context
-const extractTopicPassages = (learningContext: any, studentContext: any) => {
-  const passages = [];
+const extractTopicPassages = (
+  learningContext: LearningHistory,
+  studentContext: SimpleStudentContext | null,
+) => {
+  const passages: { title: string; content: string; type?: string }[] = [];
 
   // Extract from lessons
   if (learningContext && learningContext.lessons) {
-    learningContext.lessons.slice(0, 3).forEach((lesson: any) => {
+    learningContext.lessons.slice(0, 3).forEach((lesson) => {
       if (lesson.title && lesson.content) {
         passages.push(
           {
@@ -335,7 +419,7 @@ const extractTopicPassages = (learningContext: any, studentContext: any) => {
       ? studentContext.track.materials
       : [studentContext.track.materials];
 
-    materials.slice(0, 5).forEach((material: any) => {
+    materials.slice(0, 5).forEach((material) => {
       if (material.title && material.content) {
         passages.push({
           title: material.title,
@@ -357,6 +441,7 @@ const buildBrightPairSystemPrompt = (
     isHomeworkQuery: boolean;
     activeHomework: any;
   },
+  persona: string | null,
 ) => {
   // Format studentSnapshot as JSON string
   const studentSnapshotStr = JSON.stringify(studentSnapshot, null, 2);
@@ -367,9 +452,12 @@ const buildBrightPairSystemPrompt = (
     : "No specific topic passages available for this session.";
 
   // New BrightPair system prompt format - simplified and without markdown formatting
-  const systemPrompt = `You are BrightPair, a world-class AI tutor.  
-Your mission is to help the student master their active learning track
-as efficiently and enjoyably as possible.
+  const personaLine = persona
+    ? `You are BrightPair, a world-class AI tutor specializing as a ${persona}.`
+    : `You are BrightPair, a world-class AI tutor.`;
+  const systemPrompt = `${personaLine}  
+ Your mission is to help the student master their active learning track
+ as efficiently and enjoyably as possible.
 
 ──────────────────────────────────────────
 SECTION 1 · CONTEXT  (injected every call)
@@ -506,7 +594,7 @@ Responses:
 - 500: { success: false, error: string } (internal error)
 
 */
-serve(async (req) => {
+serve(async (req: Request) => {
   const corsResponse = handleCors(req);
   if (corsResponse) return corsResponse;
 
@@ -560,14 +648,17 @@ serve(async (req) => {
       );
     }
     // Input validation
-    const isString = (v) => typeof v === "string" && v.length > 0;
-    const isObject = (v) => v && typeof v === "object" && !Array.isArray(v);
+    const isString = (v: unknown): v is string =>
+      typeof v === "string" && v.length > 0;
+    const isObject = (v: unknown): v is Record<string, unknown> =>
+      v !== null && typeof v === "object" && !Array.isArray(v);
     const {
       message,
       userProfile,
       trackId,
       studentId,
       learningHistory,
+      persona,
     } = body;
     if (!isString(message)) {
       console.error(
@@ -651,6 +742,16 @@ serve(async (req) => {
       }`,
     );
 
+    // Create Supabase client
+    const supabaseUrl = (globalThis as any).Deno?.env.get("SUPABASE_URL");
+    const supabaseKey = (globalThis as any).Deno?.env.get(
+      "SUPABASE_SERVICE_ROLE_KEY",
+    );
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error("Missing Supabase credentials in environment");
+    }
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
     // Fetch student context if studentId is provided
     const studentContext = studentId
       ? await fetchStudentContext(supabase, studentId, trackId)
@@ -676,6 +777,7 @@ serve(async (req) => {
       studentSnapshot,
       topicPassages,
       learningContext,
+      persona,
     );
 
     console.log(
