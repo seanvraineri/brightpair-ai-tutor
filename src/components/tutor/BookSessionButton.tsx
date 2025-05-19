@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "lucide-react";
@@ -14,6 +13,11 @@ interface BookSessionButtonProps {
   className?: string;
 }
 
+interface SessionData {
+  date: Date;
+  time: string;
+}
+
 const BookSessionButton: React.FC<BookSessionButtonProps> = ({
   tutorId,
   tutorName,
@@ -22,8 +26,12 @@ const BookSessionButton: React.FC<BookSessionButtonProps> = ({
   className,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | null>("4:00 PM");
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+    new Date(),
+  );
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | null>(
+    "4:00 PM",
+  );
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -31,13 +39,14 @@ const BookSessionButton: React.FC<BookSessionButtonProps> = ({
     setIsModalOpen(true);
   };
 
-  const handleSchedule = (sessionData: any) => {
+  const handleSchedule = (sessionData: SessionData) => {
     toast({
       title: "Session Scheduled",
-      description: `Your session with ${tutorName} has been scheduled for ${sessionData.date.toDateString()} at ${sessionData.time}`,
+      description:
+        `Your session with ${tutorName} has been scheduled for ${sessionData.date.toDateString()} at ${sessionData.time}`,
     });
     setIsModalOpen(false);
-    
+
     // In a real app, you would save the session to the database here
     // and then navigate to the scheduling page
     navigate("/scheduling");

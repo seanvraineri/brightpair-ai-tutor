@@ -1,11 +1,23 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import NavBar from "@/components/NavBar";
@@ -15,7 +27,7 @@ import { MapPin } from "lucide-react";
 const TutorSignup: React.FC = () => {
   const navigate = useNavigate();
   const {
-    toast
+    toast,
   } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -28,23 +40,25 @@ const TutorSignup: React.FC = () => {
     availability: "",
     referralSource: "",
     location: "",
-    tutorMode: "both"
+    tutorMode: "both",
   });
-  
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
-  
+
   const handleSelectChange = (value: string, name: string) => {
     setFormData({
       ...formData,
-      [name]: value
+      [name]: value,
     });
   };
-  
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
@@ -56,7 +70,8 @@ const TutorSignup: React.FC = () => {
       setTimeout(() => {
         toast({
           title: "Application submitted!",
-          description: "Thank you for applying to join the BrightPair tutor network. We'll be in touch soon."
+          description:
+            "Thank you for applying to join the BrightPair tutor network. We'll be in touch soon.",
         });
         navigate("/");
       }, 1500);
@@ -64,97 +79,147 @@ const TutorSignup: React.FC = () => {
       console.error("Error submitting application:", error);
       toast({
         title: "Submission failed",
-        description: "There was an error submitting your application. Please try again.",
-        variant: "destructive"
+        description:
+          "There was an error submitting your application. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
     }
   };
-  
-  return <div className="min-h-screen flex flex-col bg-gray-50">
+
+  return (
+    <div className="min-h-screen flex flex-col bg-gray-50">
       <NavBar />
-      
+
       <main className="flex-grow py-12 px-4">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-8">
             <h1 className="text-3xl md:text-4xl font-bold font-display mb-4">
-              Join the <span className="text-brightpair">BrightPair Network</span>
+              Join the{" "}
+              <span className="text-brightpair">BrightPair Network</span>
             </h1>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              Apply to become a BrightPair tutor and transform how you deliver results for your students while growing your tutoring business.
+              Apply to become a BrightPair tutor and transform how you deliver
+              results for your students while growing your tutoring business.
             </p>
           </div>
-          
+
           <Card>
             <CardHeader>
               <CardTitle>Tutor Application</CardTitle>
-              <CardDescription>Please provide your information below. </CardDescription>
+              <CardDescription>
+                Please provide your information below.
+              </CardDescription>
             </CardHeader>
-            
+
             <form onSubmit={handleSubmit}>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="fullName">Full Name</Label>
-                      <Input id="fullName" name="fullName" placeholder="Your full name" value={formData.fullName} onChange={handleChange} required />
+                      <Input
+                        id="fullName"
+                        name="fullName"
+                        placeholder="Your full name"
+                        value={formData.fullName}
+                        onChange={handleChange}
+                        required
+                      />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="email">Email Address</Label>
-                      <Input id="email" name="email" type="email" placeholder="your.email@example.com" value={formData.email} onChange={handleChange} required />
+                      <Input
+                        id="email"
+                        name="email"
+                        type="email"
+                        placeholder="your.email@example.com"
+                        value={formData.email}
+                        onChange={handleChange}
+                        required
+                      />
                     </div>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number</Label>
-                    <Input id="phone" name="phone" placeholder="(123) 456-7890" value={formData.phone} onChange={handleChange} required />
+                    <Input
+                      id="phone"
+                      name="phone"
+                      placeholder="(123) 456-7890"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      required
+                    />
                   </div>
-                  
+
                   {/* Location field */}
                   <div className="space-y-2">
                     <Label htmlFor="location">Location</Label>
                     <div className="relative">
-                      <Input 
-                        id="location" 
-                        name="location" 
-                        placeholder="City, State or ZIP Code" 
-                        value={formData.location} 
-                        onChange={handleChange} 
-                        required 
+                      <Input
+                        id="location"
+                        name="location"
+                        placeholder="City, State or ZIP Code"
+                        value={formData.location}
+                        onChange={handleChange}
+                        required
                         className="pl-10"
                       />
                       <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-brightpair text-opacity-70" />
                     </div>
                     <p className="text-sm text-gray-500">
-                      Enter your primary tutoring location to help students find you
+                      Enter your primary tutoring location to help students find
+                      you
                     </p>
                   </div>
-                  
+
                   {/* Tutoring mode */}
                   <div className="space-y-2">
                     <Label htmlFor="tutorMode">Tutoring Mode</Label>
-                    <Select onValueChange={value => handleSelectChange(value, "tutorMode")} defaultValue={formData.tutorMode}>
+                    <Select
+                      onValueChange={(value) =>
+                        handleSelectChange(value, "tutorMode")}
+                      defaultValue={formData.tutorMode}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Select tutoring mode" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="remote">Remote Only</SelectItem>
-                        <SelectItem value="in-person">In-Person Only</SelectItem>
-                        <SelectItem value="both">Both Remote and In-Person</SelectItem>
+                        <SelectItem value="in-person">
+                          In-Person Only
+                        </SelectItem>
+                        <SelectItem value="both">
+                          Both Remote and In-Person
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="subjects">Subjects You Teach</Label>
-                    <Input id="subjects" name="subjects" placeholder="Math, Science, English, etc." value={formData.subjects} onChange={handleChange} required />
+                    <Input
+                      id="subjects"
+                      name="subjects"
+                      placeholder="Math, Science, English, etc."
+                      value={formData.subjects}
+                      onChange={handleChange}
+                      required
+                    />
                   </div>
-                  
+
                   <div className="space-y-2">
-                    <Label htmlFor="experience">Years of Teaching Experience</Label>
-                    <Select onValueChange={value => handleSelectChange(value, "experience")} defaultValue={formData.experience}>
+                    <Label htmlFor="experience">
+                      Years of Teaching Experience
+                    </Label>
+                    <Select
+                      onValueChange={(value) =>
+                        handleSelectChange(value, "experience")}
+                      defaultValue={formData.experience}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Select experience" />
                       </SelectTrigger>
@@ -167,31 +232,57 @@ const TutorSignup: React.FC = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   <div className="space-y-2">
-                    <Label htmlFor="education">Education / Certifications</Label>
-                    <Textarea id="education" name="education" placeholder="Bachelor's in Education, Teaching Certifications, etc." value={formData.education} onChange={handleChange} required rows={3} />
+                    <Label htmlFor="education">
+                      Education / Certifications
+                    </Label>
+                    <Textarea
+                      id="education"
+                      name="education"
+                      placeholder="Bachelor's in Education, Teaching Certifications, etc."
+                      value={formData.education}
+                      onChange={handleChange}
+                      required
+                      rows={3}
+                    />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="availability">Availability</Label>
-                    <Select onValueChange={value => handleSelectChange(value, "availability")} defaultValue={formData.availability}>
+                    <Select
+                      onValueChange={(value) =>
+                        handleSelectChange(value, "availability")}
+                      defaultValue={formData.availability}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Select availability" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="part-time">Part-time (1-15 hrs/week)</SelectItem>
-                        <SelectItem value="full-time">Full-time (15+ hrs/week)</SelectItem>
+                        <SelectItem value="part-time">
+                          Part-time (1-15 hrs/week)
+                        </SelectItem>
+                        <SelectItem value="full-time">
+                          Full-time (15+ hrs/week)
+                        </SelectItem>
                         <SelectItem value="weekends">Weekends only</SelectItem>
                         <SelectItem value="evenings">Evenings only</SelectItem>
-                        <SelectItem value="flexible">Flexible schedule</SelectItem>
+                        <SelectItem value="flexible">
+                          Flexible schedule
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   <div className="space-y-2">
-                    <Label htmlFor="referralSource">How did you hear about BrightPair?</Label>
-                    <Select onValueChange={value => handleSelectChange(value, "referralSource")} defaultValue={formData.referralSource}>
+                    <Label htmlFor="referralSource">
+                      How did you hear about BrightPair?
+                    </Label>
+                    <Select
+                      onValueChange={(value) =>
+                        handleSelectChange(value, "referralSource")}
+                      defaultValue={formData.referralSource}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Select source" />
                       </SelectTrigger>
@@ -199,19 +290,25 @@ const TutorSignup: React.FC = () => {
                         <SelectItem value="social">Social Media</SelectItem>
                         <SelectItem value="search">Search Engine</SelectItem>
                         <SelectItem value="friend">Friend/Colleague</SelectItem>
-                        <SelectItem value="school">School/University</SelectItem>
+                        <SelectItem value="school">
+                          School/University
+                        </SelectItem>
                         <SelectItem value="other">Other</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
               </CardContent>
-              
+
               <CardFooter className="flex justify-between border-t pt-6">
                 <Link to="/">
                   <Button variant="outline" type="button">Cancel</Button>
                 </Link>
-                <Button type="submit" className="bg-brightpair hover:bg-brightpair-600" disabled={isLoading}>
+                <Button
+                  type="submit"
+                  className="bg-brightpair hover:bg-brightpair-600"
+                  disabled={isLoading}
+                >
                   {isLoading ? "Submitting..." : "Submit Application"}
                 </Button>
               </CardFooter>
@@ -219,9 +316,10 @@ const TutorSignup: React.FC = () => {
           </Card>
         </div>
       </main>
-      
+
       <Footer />
-    </div>;
+    </div>
+  );
 };
 
 export default TutorSignup;

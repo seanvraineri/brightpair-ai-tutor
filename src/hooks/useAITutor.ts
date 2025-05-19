@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/components/ui/use-toast";
 import { sendAITutorMessage } from "@/services/aiService";
+import { Tables } from "@/integrations/supabase/types";
 
 interface Message {
   id: string;
@@ -11,12 +12,22 @@ interface Message {
   timestamp: Date;
 }
 
+// Track type for learning tracks with joined learning_tracks
+export interface Track {
+  track_id: string;
+  learning_tracks: {
+    id: string;
+    name: string;
+    description: string;
+  };
+}
+
 interface LearningHistory {
-  homework: any[];
-  quizzes: any[];
-  lessons: any[];
-  tracks: any[];
-  recentConversations: any[];
+  homework: Tables<"homework">[];
+  quizzes: Tables<"assignments">[];
+  lessons: Tables<"lessons">[];
+  tracks: Track[];
+  recentConversations: Tables<"chat_logs">[];
 }
 
 export const useAITutor = () => {
@@ -31,7 +42,7 @@ export const useAITutor = () => {
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
 
   // Function to fetch user's learning tracks
-  const fetchLearningTracks = async () => {
+  const fetchLearningTracks = async (): Promise<Track[]> => {
     if (!session?.user?.id) return [];
 
     try {
@@ -41,7 +52,7 @@ export const useAITutor = () => {
         .eq("student_id", session.user.id);
 
       if (error) throw error;
-      return data || [];
+      return (data as Track[]) || [];
     } catch (error) {
       console.error("Error fetching learning tracks:", error);
       return [];
@@ -79,9 +90,9 @@ export const useAITutor = () => {
       }
 
       // Attempt to fetch lesson history – guard if table missing in local dev
-      let lessons: any[] = [];
+      let lessons: Tables<"lessons">[] = [];
       try {
-        const { data: lessonRows } = await (supabase as any)
+        const { data: lessonRows } = await supabase
           .from("lessons")
           .select("*")
           .eq("student_id", session.user.id)
@@ -89,12 +100,11 @@ export const useAITutor = () => {
           .limit(10);
         lessons = lessonRows || [];
       } catch (_err) {
-        // Table doesn't exist yet; ignore
         lessons = [];
       }
 
       // Fetch recent conversation snippets if table exists
-      let recentConversations: any[] = [];
+      let recentConversations: Tables<"chat_logs">[] = [];
       const { data: convoRows, error: convoErr } = await supabase
         .from("chat_logs")
         .select("*")
@@ -114,7 +124,7 @@ export const useAITutor = () => {
         homework: homework || [],
         quizzes: quizzes || [],
         lessons,
-        tracks: tracks || [],
+        tracks,
         recentConversations,
       };
 
@@ -214,14 +224,19 @@ export const useAITutor = () => {
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: response,
+        content: typeof response === "string"
+          ? response
+          : JSON.stringify(response),
         timestamp: new Date(),
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
 
       // Log the chat interaction to the database
-      await logChatInteraction(content, response);
+      await logChatInteraction(
+        content,
+        typeof response === "string" ? response : JSON.stringify(response),
+      );
 
       return assistantMessage;
     } catch (error) {

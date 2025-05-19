@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { Database } from "@/integrations/supabase/types";
+import { Database, Json } from "@/integrations/supabase/types";
 import { generateFlashcards as aiGenerateFlashcards } from "@/services/aiService";
 import { v4 as uuidv4 } from "uuid";
 
@@ -63,7 +63,14 @@ export const generateFlashcards = async (
         flashcards = result.flashcards;
       } else if (result.success && result.data && Array.isArray(result.data)) {
         // Handle success/data format
-        flashcards = result.data.map((item: any) => ({
+        flashcards = result.data.map((
+          item: {
+            question?: string;
+            answer?: string;
+            front?: string;
+            back?: string;
+          },
+        ) => ({
           question: item.question || item.front || "",
           answer: item.answer || item.back || "",
         }));
@@ -172,14 +179,22 @@ export const getFlashcardSets = async (
     if (!data || data.length === 0) return [];
 
     // Transform the data to match our FlashcardSet interface
-    const flashcardSets: FlashcardSet[] = (data || []).map((set: any) => ({
-      id: set.id,
-      name: set.name,
-      description: set.description,
-      cards: (set.cards as any) || [],
-      createdAt: set.created_at,
-      student_id: set.student_id,
-      track_id: set.track_id,
+    const flashcardSets: FlashcardSet[] = (data || []).map((
+      set: Record<string, unknown>,
+    ) => ({
+      id: typeof set.id === "string" ? set.id : undefined,
+      name: typeof set.name === "string" ? set.name : "",
+      description: typeof set.description === "string"
+        ? set.description
+        : undefined,
+      cards: Array.isArray(set.cards)
+        ? set.cards as unknown as Flashcard[]
+        : [],
+      createdAt: typeof set.created_at === "string" ? set.created_at : "",
+      student_id: typeof set.student_id === "string"
+        ? set.student_id
+        : undefined,
+      track_id: typeof set.track_id === "string" ? set.track_id : undefined,
     }));
 
     return flashcardSets;
@@ -209,13 +224,19 @@ export const getFlashcardSetById = async (
 
     // Transform to match our FlashcardSet interface
     const flashcardSet: FlashcardSet = {
-      id: data.id,
-      name: data.name,
-      description: data.description,
-      cards: (data.cards as any) || [],
-      createdAt: data.created_at,
-      student_id: data.student_id,
-      track_id: data.track_id,
+      id: typeof data.id === "string" ? data.id : undefined,
+      name: typeof data.name === "string" ? data.name : "",
+      description: typeof data.description === "string"
+        ? data.description
+        : undefined,
+      cards: Array.isArray(data.cards)
+        ? data.cards as unknown as Flashcard[]
+        : [],
+      createdAt: typeof data.created_at === "string" ? data.created_at : "",
+      student_id: typeof data.student_id === "string"
+        ? data.student_id
+        : undefined,
+      track_id: typeof data.track_id === "string" ? data.track_id : undefined,
     };
 
     return flashcardSet;
@@ -235,7 +256,7 @@ export const saveFlashcardSet = async (
       .insert({
         name: flashcardSet.name,
         description: flashcardSet.description,
-        cards: flashcardSet.cards as any,
+        cards: flashcardSet.cards as unknown as Json,
         student_id: flashcardSet.student_id,
         track_id: flashcardSet.track_id,
       })
@@ -250,13 +271,23 @@ export const saveFlashcardSet = async (
 
     // Return the first created flashcard set
     return {
-      id: data[0].id,
-      name: data[0].name,
-      description: data[0].description,
-      cards: (data[0].cards as any) || [],
-      createdAt: data[0].created_at,
-      student_id: data[0].student_id,
-      track_id: data[0].track_id,
+      id: typeof data[0].id === "string" ? data[0].id : undefined,
+      name: typeof data[0].name === "string" ? data[0].name : "",
+      description: typeof data[0].description === "string"
+        ? data[0].description
+        : undefined,
+      cards: Array.isArray(data[0].cards)
+        ? data[0].cards as unknown as Flashcard[]
+        : [],
+      createdAt: typeof data[0].created_at === "string"
+        ? data[0].created_at
+        : "",
+      student_id: typeof data[0].student_id === "string"
+        ? data[0].student_id
+        : undefined,
+      track_id: typeof data[0].track_id === "string"
+        ? data[0].track_id
+        : undefined,
     };
   } catch (error) {
     console.error("Error in saveFlashcardSet:", error);

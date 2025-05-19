@@ -21,9 +21,16 @@ interface TutorData {
   coordinates: [number, number]; // This needs to be a tuple with exactly 2 numbers
 }
 
+interface TutorRow {
+  id: string;
+  name?: string;
+  email?: string;
+  full_name?: string;
+}
+
 const NearbyTutors: React.FC = () => {
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
-  const [tutors, setTutors] = useState<any[]>([]);
+  const [tutors, setTutors] = useState<TutorRow[]>([]);
   const { user } = useUser();
 
   useEffect(() => {
@@ -33,7 +40,7 @@ const NearbyTutors: React.FC = () => {
         .select("id, name, email, full_name")
         .eq("role", "tutor")
         .limit(5);
-      if (!error && data) setTutors(data);
+      if (!error && data) setTutors(data as TutorRow[]);
     };
     fetchTutors();
   }, [user]);

@@ -13,7 +13,7 @@ export const getChildrenForParent = async (
 ): Promise<ChildInfo[]> => {
     const { data, error } = await supabase
         .from("student_parent_relationships")
-        .select("student_id, profiles(id, full_name, grade_level)")
+        .select("student_id, profiles:student_id(id, full_name, grade_level)")
         .eq("parent_id", parentId);
 
     if (error) {
@@ -25,8 +25,17 @@ export const getChildrenForParent = async (
     const now = new Date();
 
     for (const row of data ?? []) {
-        const profile = row.profiles as any;
-        if (!profile) continue;
+        const profileRaw = row.profiles;
+        if (
+            !profileRaw || typeof profileRaw !== "object" ||
+            Array.isArray(profileRaw)
+        ) continue;
+        const profile = profileRaw as {
+            id: string;
+            full_name: string | null;
+            grade_level: string | null;
+        };
+        if (!profile.id) continue;
 
         // Last & next sessions
         const { data: sessions } = await supabase
@@ -35,10 +44,10 @@ export const getChildrenForParent = async (
             .eq("student_id", profile.id)
             .order("starts_at");
 
-        const past = (sessions ?? []).filter((s: any) =>
+        const past = (sessions ?? []).filter((s: { starts_at: string }) =>
             new Date(s.starts_at) < now
         );
-        const future = (sessions ?? []).filter((s: any) =>
+        const future = (sessions ?? []).filter((s: { starts_at: string }) =>
             new Date(s.starts_at) >= now
         );
 
@@ -80,9 +89,16 @@ export const getMessagesForParent = async (
         return [];
     }
 
-    return (data ?? []).map((row: any) => ({
+    return (data ?? []).map((
+        row: {
+            id: string;
+            content: string;
+            created_at: string;
+            profiles?: { full_name?: string | null };
+        },
+    ) => ({
         id: row.id,
-        sender_name: row.profiles?.full_name,
+        sender_name: row.profiles?.full_name ?? null,
         content: row.content,
         created_at: row.created_at,
         is_read: false,

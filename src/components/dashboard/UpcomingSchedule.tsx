@@ -125,11 +125,19 @@ const ScheduleItem: React.FC<ScheduleItemProps> = ({
   );
 };
 
+// Appointment row returned from Supabase
+interface AppointmentRow {
+  id: string;
+  starts_at: string;
+  ends_at: string;
+  status: string;
+}
+
 const UpcomingSchedule: React.FC = () => {
   const { toast } = useToast();
   const { user } = useUser();
   const [view, setView] = useState<"upcoming" | "calendar">("upcoming");
-  const [appointments, setAppointments] = useState<any[]>([]);
+  const [appointments, setAppointments] = useState<AppointmentRow[]>([]);
 
   useEffect(() => {
     if (!user) return;
@@ -142,7 +150,7 @@ const UpcomingSchedule: React.FC = () => {
         .order("starts_at", { ascending: true })
         .limit(3);
       if (!error) {
-        setAppointments(data || []);
+        setAppointments((data as AppointmentRow[]) || []);
       } else {
         console.error(error);
       }

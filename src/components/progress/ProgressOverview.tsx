@@ -31,6 +31,18 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Award, TrendingUp, Trophy } from "lucide-react";
 
+interface WeeklyProgressPoint {
+  week: string;
+  progress: number;
+  target: number;
+}
+interface AchievementItem {
+  icon: React.ReactNode;
+  title: string;
+  date: string;
+  description: string;
+}
+
 const ProgressOverview: React.FC = () => {
   const { user } = useUser();
   const studentId = user?.id || "";
@@ -47,8 +59,8 @@ const ProgressOverview: React.FC = () => {
   const quizAverage = data?.quizAverage;
   const subjectProgress = data?.subjectProgress ?? [];
 
-  const weeklyProgressData: any[] = [];
-  const recentAchievements: any[] = [];
+  const weeklyProgressData: WeeklyProgressPoint[] = [];
+  const recentAchievements: AchievementItem[] = [];
 
   const chartConfig = {
     mathematics: {

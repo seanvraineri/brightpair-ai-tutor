@@ -455,6 +455,7 @@ export type Database = {
           full_name: string | null
           id: string
           is_staff: boolean
+          learning_preferences: Json | null
           mastery_level: number | null
           name: string | null
           next_consultation_date: string | null
@@ -470,6 +471,7 @@ export type Database = {
           full_name?: string | null
           id: string
           is_staff?: boolean
+          learning_preferences?: Json | null
           mastery_level?: number | null
           name?: string | null
           next_consultation_date?: string | null
@@ -485,6 +487,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           is_staff?: boolean
+          learning_preferences?: Json | null
           mastery_level?: number | null
           name?: string | null
           next_consultation_date?: string | null
@@ -766,6 +769,59 @@ export type Database = {
           tutor_id?: string
         }
         Relationships: []
+      }
+      user_documents: {
+        Row: {
+          content: string | null
+          created_at: string | null
+          description: string | null
+          difficulty: string | null
+          file_name: string | null
+          file_size: number | null
+          file_type: string | null
+          file_url: string | null
+          id: string
+          student_id: string
+          subject: string | null
+          title: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string | null
+          description?: string | null
+          difficulty?: string | null
+          file_name?: string | null
+          file_size?: number | null
+          file_type?: string | null
+          file_url?: string | null
+          id?: string
+          student_id: string
+          subject?: string | null
+          title: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string | null
+          description?: string | null
+          difficulty?: string | null
+          file_name?: string | null
+          file_size?: number | null
+          file_type?: string | null
+          file_url?: string | null
+          id?: string
+          student_id?: string
+          subject?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_documents_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_gamification: {
         Row: {

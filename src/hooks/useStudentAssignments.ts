@@ -1,22 +1,11 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Tables, TablesInsert } from "@/integrations/supabase/types";
 
 // Local fallback types. These can be swapped for generated Supabase types
 // after running `supabase gen types`.
-export interface Assignment {
-  id: string;
-  student_id: string;
-  tutor_id?: string;
-  title: string;
-  content_md?: string;
-  due_at?: string; // ISO date string
-  created_at: string;
-  subject?: string;
-  dueDate?: string; // legacy field used in UI
-  status?: string;
-}
-
-export type NewAssignment = Omit<Assignment, "id" | "created_at">;
+export type Assignment = Tables<"assignments">;
+export type NewAssignment = TablesInsert<"assignments">;
 
 /**
  * Returns assignments for a given student and a helper to add a new one.
@@ -30,7 +19,7 @@ export const useStudentAssignments = (studentId: string | undefined) => {
     enabled: !!studentId,
     queryFn: async () => {
       if (!studentId) return [] as Assignment[];
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("assignments")
         .select("*")
         .eq("student_id", studentId)
@@ -42,7 +31,7 @@ export const useStudentAssignments = (studentId: string | undefined) => {
 
   const addMutation = useMutation({
     mutationFn: async (payload: NewAssignment) => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("assignments")
         .insert(payload)
         .select()
@@ -57,7 +46,7 @@ export const useStudentAssignments = (studentId: string | undefined) => {
 
   const completeMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("assignments")
         .update({ status: "completed" })
         .eq("id", id);
@@ -74,8 +63,8 @@ export const useStudentAssignments = (studentId: string | undefined) => {
     isLoading: query.isLoading,
     error: query.error as Error | null,
     addAssignment: addMutation.mutateAsync,
-    isAdding: (addMutation as any).isLoading,
+    isAdding: addMutation.isPending,
     completeAssignment: completeMutation.mutateAsync,
-    isCompleting: (completeMutation as any).isLoading,
+    isCompleting: completeMutation.isPending,
   };
-}; 
+};

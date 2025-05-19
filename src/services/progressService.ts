@@ -44,11 +44,12 @@ export const fetchProgress = async (
     let subjectProgress: SubjectProgress[] = [];
 
     if (masteryRows && masteryRows.length > 0) {
-        overallProgress = masteryRows.reduce((sum, r: any) =>
+        type MasteryRow = { mastery_level: number | null; skill_id: string };
+        overallProgress = masteryRows.reduce((sum, r: MasteryRow) =>
             sum + (r.mastery_level ?? 0), 0) / masteryRows.length * 100;
 
         // group by skill name via join in memory (quick):
-        const skillIds = masteryRows.map((r: any) =>
+        const skillIds = masteryRows.map((r: MasteryRow) =>
             r.skill_id
         );
         const { data: skillRows } = await supabase
@@ -57,9 +58,10 @@ export const fetchProgress = async (
             .in("id", skillIds);
 
         if (skillRows) {
+            type SkillRow = { id: string; name: string };
             const map = new Map<string, { total: number; count: number }>();
-            masteryRows.forEach((mr: any) => {
-                const skill = skillRows.find((s: any) =>
+            masteryRows.forEach((mr: MasteryRow) => {
+                const skill = (skillRows as SkillRow[]).find((s) =>
                     s.id === mr.skill_id
                 );
                 const key = skill?.name || mr.skill_id;
@@ -91,7 +93,8 @@ export const fetchProgress = async (
         .gte("starts_at", monthStart.toISOString());
     let attendanceRate = 0;
     if (appts && appts.length > 0) {
-        const attended = appts.filter((a: any) =>
+        type ApptRow = { status: string };
+        const attended = (appts as ApptRow[]).filter((a) =>
             a.status === "completed"
         ).length;
         attendanceRate = Math.round(attended / appts.length * 100);
@@ -104,7 +107,8 @@ export const fetchProgress = async (
         .eq("student_id", studentId);
     let completionRate = 0;
     if (homeworkRows && homeworkRows.length > 0) {
-        const completed = homeworkRows.filter((h: any) =>
+        type HomeworkRow = { status: string };
+        const completed = (homeworkRows as HomeworkRow[]).filter((h) =>
             h.status === "completed"
         ).length;
         completionRate = Math.round(completed / homeworkRows.length * 100);
@@ -118,8 +122,9 @@ export const fetchProgress = async (
         .not("score", "is", null);
     let quizAverage = 0;
     if (quizRows && quizRows.length > 0) {
-        const sum = quizRows.reduce(
-            (acc: number, q: any) => acc + (q.score ?? 0),
+        type QuizRow = { score: number | null };
+        const sum = (quizRows as QuizRow[]).reduce(
+            (acc: number, q) => acc + (q.score ?? 0),
             0,
         );
         quizAverage = Math.round(sum / quizRows.length);
@@ -147,7 +152,13 @@ export const getStudentSkills = async (
         return [];
     }
 
-    return (data ?? []).map((row: any) => ({
+    return (data ?? []).map((
+        row: {
+            skill_id: string;
+            mastery_level: number | null;
+            skills?: { name?: string; description?: string };
+        },
+    ) => ({
         id: row.skill_id,
         name: row.skills?.name ?? row.skill_id,
         mastery: row.mastery_level !== null

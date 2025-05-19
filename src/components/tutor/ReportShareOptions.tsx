@@ -43,6 +43,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { IS_DEVELOPMENT } from "@/config/env";
+import { toast } from "@/hooks/use-toast";
 
 // Interface for the parent object
 interface Parent {
@@ -250,13 +251,19 @@ const ReportShareOptions: React.FC<ReportShareOptionsProps> = ({
         onShareComplete();
       }
 
-      // Show success message (would use a toast in a real app)
-      alert("Report sharing settings saved successfully!");
+      toast({
+        title: "Settings Saved",
+        description: "Report sharing settings saved successfully.",
+        variant: "default",
+      });
     } catch (error) {
       console.error("Error saving share settings:", error);
 
-      // Show error message (would use a toast in a real app)
-      alert("Error saving sharing settings. Please try again.");
+      toast({
+        title: "Error Saving Settings",
+        description: "Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setSaving(false);
     }

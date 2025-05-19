@@ -17,7 +17,7 @@ export interface AIServiceOptions {
     max_tokens?: number;
     model?: string;
   };
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   studentId?: string;
   trackId?: string;
   edgeFunctionName: string;
@@ -27,7 +27,7 @@ export interface AIServiceOptions {
  * Universal AI service that first tries to use Supabase Edge Functions,
  * and falls back to direct API calls if configured or if edge function fails
  */
-export async function callAIService<T = any>({
+export async function callAIService<T = unknown>({
   systemPrompt,
   userMessage,
   modelParams = {},
@@ -184,7 +184,7 @@ export async function sendAITutorMessage(
   message: string,
   studentId: string,
   trackId: string,
-  history: any[] = [],
+  history: unknown[] = [],
 ) {
   const systemPrompt =
     `You are BrightPair AI Tutor — an expert, human-sounding math tutor.
@@ -235,8 +235,8 @@ export async function generateFlashcards(
   const userMessage = `Please create ${numCards} flashcards about "${topic}".`;
 
   return callAIService<{
-    data: any;
-    success: any;
+    data: unknown;
+    success: boolean;
     flashcards: Array<{ question: string; answer: string }>;
   }>({
     systemPrompt,
@@ -300,9 +300,8 @@ export async function generateLesson(studentId: string, skillId: string) {
   // Get student data
   let studentData = {};
   try {
-    // Use type assertion for RPC calls since we don't have proper types
     const { data: studentSnapshot } = await supabase.rpc(
-      "build_student_snapshot" as any,
+      "build_student_snapshot",
       { p_student: studentId },
     );
 
@@ -322,7 +321,14 @@ export async function generateLesson(studentId: string, skillId: string) {
   }
 
   // Extract relevant student info
-  const student = studentData as any;
+  type StudentSnapshot = {
+    name?: string;
+    grade?: string;
+    learning_style?: string;
+    mood?: string;
+    mastery_level?: number;
+  };
+  const student = studentData as StudentSnapshot;
   const name = student.name || "Student";
   const grade = student.grade || "High School";
   const learningStyle = student.learning_style || "visual";
@@ -425,27 +431,26 @@ FORMAT YOUR RESPONSE AS JSON:
   // Save the lesson to the database if in production or if configured to do so
   if (!IS_DEVELOPMENT || import.meta.env.VITE_SAVE_LESSONS === "true") {
     try {
-      // Use type assertion to handle schema differences
-      await (supabase.from("lessons") as any).insert({
+      await supabase.from("lessons").insert({
         student_id: studentId,
-        skill_id: skillId,
         title: result.title,
-        duration: result.duration,
-        lesson_json: result,
+        content: JSON.stringify(result),
+        subject: skillId,
         created_at: new Date().toISOString(),
       });
 
       // Update student skill mastery if applicable
-      if (result.update_suggestion?.skill_delta) {
-        await supabase.rpc(
-          "update_student_skill" as any,
-          {
-            p_student: studentId,
-            p_skill: skillId,
-            p_delta: result.update_suggestion.skill_delta,
-          },
-        );
-      }
+      // TODO: Add/update RPC for updating student skill mastery in Supabase
+      // if (result.update_suggestion?.skill_delta) {
+      //   await supabase.rpc(
+      //     "update_student_skill",
+      //     {
+      //       p_student: studentId,
+      //       p_skill: skillId,
+      //       p_delta: result.update_suggestion.skill_delta,
+      //     },
+      //   );
+      // }
     } catch (error) {
       console.error("Failed to save lesson:", error);
     }
@@ -535,16 +540,12 @@ export async function generateLessonFromContent(
   // Save the custom lesson to the database
   if (!IS_DEVELOPMENT || import.meta.env.VITE_SAVE_LESSONS === "true") {
     try {
-      // Store in lessons table with a source field
-      await (supabase.from("lessons") as any).insert({
+      await supabase.from("lessons").insert({
         student_id: studentId,
         title: result.title,
         content: content.substring(0, 1000) +
           (content.length > 1000 ? "..." : ""),
-        lesson_json: result,
-        source: "user_content",
-        content_type: contentType,
-        topic: topic,
+        subject: topic,
         created_at: new Date().toISOString(),
       });
     } catch (error) {

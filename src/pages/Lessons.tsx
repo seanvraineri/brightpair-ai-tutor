@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useUser } from "@/contexts/UserContext";
-import { useLesson } from "@/hooks/useLesson";
+import { Lesson, useLesson } from "@/hooks/useLesson";
 import LessonViewer from "@/components/LessonViewer";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,6 +25,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatDistanceToNow } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FEATURES, IS_DEVELOPMENT } from "@/config/env";
+import { Database } from "@/integrations/supabase/types";
 
 interface PastLesson {
   id: string;
@@ -34,7 +35,7 @@ interface PastLesson {
   completed_at?: string;
   skill_name?: string;
   duration: number;
-  lesson_json: any;
+  lesson_json: Lesson;
   topic?: string;
   source?: string;
 }
@@ -47,7 +48,7 @@ interface LessonRecord {
   created_at: string;
   completed_at?: string;
   duration: number;
-  lesson_json: any;
+  lesson_json: Lesson;
   source?: string;
 }
 
@@ -66,7 +67,7 @@ const Lessons: React.FC = () => {
   const [availableSkills, setAvailableSkills] = useState<Skill[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState<boolean>(false);
   const [isLoadingSkills, setIsLoadingSkills] = useState<boolean>(false);
-  const [selectedLesson, setSelectedLesson] = useState<any>(null);
+  const [selectedLesson, setSelectedLesson] = useState<PastLesson | null>(null);
   const { toast } = useToast();
   const availableTabRef = useRef<HTMLButtonElement>(null);
 
@@ -92,7 +93,13 @@ const Lessons: React.FC = () => {
         if (error) throw error;
 
         if (data && data.length > 0) {
-          const skillsWithMastery = data.map((row: any) => ({
+          const skillsWithMastery = data.map((
+            row: {
+              skill_id: string;
+              mastery_level: number | null;
+              skills?: { name?: string; description?: string };
+            },
+          ) => ({
             id: row.skill_id,
             name: row.skills?.name ?? row.skill_id,
             mastery: row.mastery_level !== null
@@ -141,26 +148,40 @@ const Lessons: React.FC = () => {
         if (error) throw error;
 
         // Transform the lessons data to include skill names from our skills array
-        const transformedLessons = data.map((lesson: any) => {
-          const matchingSkill = availableSkills.find((s) =>
-            s.id === lesson.skill_id
-          );
-          return {
-            id: lesson.id,
-            title: lesson.title ||
-              (matchingSkill?.name
-                ? `Lesson on ${matchingSkill.name}`
-                : "Untitled Lesson"),
-            skill_id: lesson.skill_id,
-            topic: lesson.topic,
-            created_at: lesson.created_at,
-            completed_at: lesson.completed_at,
-            skill_name: matchingSkill?.name || lesson.topic || lesson.skill_id,
-            duration: lesson.duration || 0,
-            lesson_json: lesson.lesson_json || lesson.content || {},
-            source: lesson.source,
-          };
-        });
+        const transformedLessons = data.map(
+          (lesson: Database["public"]["Tables"]["lessons"]["Row"]) => {
+            const matchingSkill = availableSkills.find((s) =>
+              s.id === lesson.track_id // Use track_id for skill matching if skill_id is not present
+            );
+            let lessonJson: Lesson = { title: "", duration: 0, sections: [] };
+            if (lesson.content) {
+              try {
+                const parsed = JSON.parse(lesson.content);
+                if (parsed && typeof parsed === "object") {
+                  lessonJson = parsed as Lesson;
+                }
+              } catch {
+                // fallback to empty lesson
+              }
+            }
+            return {
+              id: lesson.id,
+              title: lesson.title ||
+                (matchingSkill?.name
+                  ? `Lesson on ${matchingSkill.name}`
+                  : "Untitled Lesson"),
+              skill_id: lesson.track_id, // fallback to track_id
+              topic: lesson.subject,
+              created_at: lesson.created_at,
+              completed_at: lesson.completed_at || undefined,
+              skill_name: matchingSkill?.name || lesson.subject ||
+                lesson.track_id,
+              duration: 0, // not present in schema, set to 0
+              lesson_json: lessonJson,
+              source: undefined, // not present in schema
+            };
+          },
+        );
 
         setPastLessons(transformedLessons);
       } catch (error) {
@@ -189,7 +210,7 @@ const Lessons: React.FC = () => {
 
   // Handle viewing a past lesson
   const handleViewPastLesson = (lesson: PastLesson) => {
-    setSelectedLesson(lesson.lesson_json);
+    setSelectedLesson(lesson);
     setIsLessonStarted(true);
   };
 
@@ -455,14 +476,14 @@ const Lessons: React.FC = () => {
                 : selectedLesson
                 ? (
                   <LessonViewer
-                    lesson={selectedLesson}
+                    lesson={selectedLesson.lesson_json}
                     onComplete={handleLessonComplete}
                   />
                 )
-                : lessonQuery.data
+                : lessonQuery.data && lessonQuery.data.lesson
                 ? (
                   <LessonViewer
-                    lesson={lessonQuery.data as any}
+                    lesson={lessonQuery.data.lesson}
                     onComplete={handleLessonComplete}
                   />
                 )

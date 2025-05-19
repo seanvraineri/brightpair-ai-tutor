@@ -14,7 +14,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Download, FileText, Trash2, Upload } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
-import { Subject } from "../subjects/SubjectList";
+import { Subject, useSubjects } from "@/hooks/useSubjects";
 
 export interface Document {
   id: string;
@@ -39,6 +39,7 @@ const DocumentUpload: React.FC = () => {
     { [key: string]: number }
   >({});
   const { toast } = useToast();
+  const { data: subjects = [], isLoading: subjectsLoading } = useSubjects();
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
@@ -152,8 +153,7 @@ const DocumentUpload: React.FC = () => {
   };
 
   const getSubjectNameById = (id: string): string => {
-    // TODO: Replace with live subject lookup if needed
-    const subject = null;
+    const subject = subjects.find((s) => s.id === id);
     return subject ? subject.name : "Unknown";
   };
 
@@ -189,7 +189,16 @@ const DocumentUpload: React.FC = () => {
                   <SelectValue placeholder="Select a subject" />
                 </SelectTrigger>
                 <SelectContent>
-                  {/* Render live subjects here */}
+                  {subjectsLoading && (
+                    <SelectItem value="" disabled>
+                      Loading...
+                    </SelectItem>
+                  )}
+                  {subjects.map((sub) => (
+                    <SelectItem key={sub.id} value={sub.id}>
+                      {sub.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

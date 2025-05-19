@@ -16,7 +16,9 @@ export const getCurriculumTopicsForStudent = async (
     return [];
   }
 
-  const trackIds = (trackRows ?? []).map((r: any) => r.track_id);
+  const trackIds = (trackRows ?? []).map((r: { track_id: string }) =>
+    r.track_id
+  );
   if (trackIds.length === 0) return [];
 
   // 2) Fetch topics for those tracks
@@ -31,11 +33,15 @@ export const getCurriculumTopicsForStudent = async (
     return [];
   }
 
-  return (topics ?? []).map((t: any) => ({
-    id: t.id,
-    name: t.title,
-    description: t.content,
-  }));
+  type TopicRow = { id: string; title: string; content?: string };
+  return (topics ?? []).map((row) => {
+    const r = row as unknown as TopicRow;
+    return {
+      id: r.id,
+      name: r.title,
+      description: r.content,
+    };
+  });
 };
 
 // Generate a curriculum: create learning_track, topics, and link student
@@ -94,7 +100,9 @@ export const generateCurriculum = async (params: {
     student_id: params.student_id,
     title: trackData.name,
     goals: params.goals,
-    topics: (insertedTopics ?? []).map((t: any) => ({
+    topics: (insertedTopics ?? []).map((
+      t: { id: string; title: string; content?: string },
+    ) => ({
       id: t.id,
       name: t.title,
       description: t.content,
@@ -123,7 +131,9 @@ export const getCurriculaForTutor = async (
     return [];
   }
 
-  return (data ?? []).map((row: any) => ({
+  return (data ?? []).map((
+    row: { id: string; name: string; description?: string; created_at: string },
+  ) => ({
     id: row.id,
     tutor_id: tutorId,
     student_id: "", // not directly associated
@@ -166,11 +176,15 @@ export const getTopicsForTrack = async (
     console.error("getTopicsForTrack", error);
     return [];
   }
-  return (data ?? []).map((row: any) => ({
-    id: row.id,
-    name: row.title,
-    description: row.content,
-  }));
+  type TopicRow = { id: string; title: string; content?: string };
+  return (data ?? []).map((row) => {
+    const r = row as unknown as TopicRow;
+    return {
+      id: r.id,
+      name: r.title,
+      description: r.content,
+    };
+  });
 };
 
 // Fetch skills for a learning track
@@ -179,7 +193,6 @@ export interface Skill {
   name: string;
   description?: string;
 }
-
 export const getSkillsForTrack = async (trackId: string): Promise<Skill[]> => {
   const { data, error } = await supabase
     .from("skills")

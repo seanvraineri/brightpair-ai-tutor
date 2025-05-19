@@ -120,15 +120,19 @@ const WeeklyProgress: React.FC = () => {
       // Build daily aggregated progress (score average per day)
       const dayMap = new Map<string, { total: number; count: number }>();
       if (quizzes) {
-        quizzes.forEach((q: any) => {
-          const d = new Date(q.completed_at).toLocaleDateString(undefined, {
-            weekday: "short",
-          });
-          const entry = dayMap.get(d) || { total: 0, count: 0 };
-          entry.total += q.score ?? 0;
-          entry.count += 1;
-          dayMap.set(d, entry);
-        });
+        quizzes.forEach(
+          (
+            q: { completed_at: string; score: number | null; subject?: string },
+          ) => {
+            const d = new Date(q.completed_at).toLocaleDateString(undefined, {
+              weekday: "short",
+            });
+            const entry = dayMap.get(d) || { total: 0, count: 0 };
+            entry.total += q.score ?? 0;
+            entry.count += 1;
+            dayMap.set(d, entry);
+          },
+        );
       }
 
       const days = Array.from({ length: 7 }).map((_, i) => {

@@ -3,6 +3,7 @@ import { extractPDFText, generateLessonFromContent } from "./aiService";
 import { IS_DEVELOPMENT } from "@/config/env";
 import { v4 as uuidv4 } from "uuid";
 import { ReactNode } from "react";
+import { Database } from "@/integrations/supabase/types";
 
 // Interface for document upload parameters
 export interface DocumentUploadParams {
@@ -35,22 +36,6 @@ export interface UserDocument {
   subject?: string;
   fileName?: string;
   fileSize?: number;
-}
-
-// Interface for document database record
-interface UserDocumentRecord {
-  id: string;
-  title: string;
-  description?: string;
-  content?: string;
-  file_url?: string;
-  file_type: string;
-  file_name: string;
-  file_size: number;
-  created_at: string;
-  student_id: string;
-  difficulty?: string;
-  subject?: string;
 }
 
 /**
@@ -140,22 +125,23 @@ export const processDocumentForLesson = async (
         return "intermediate"; // covers "medium" and any other
       };
 
-      const docData: Partial<UserDocumentRecord> = {
-        title: title || file.name,
-        description: focus || "",
-        content,
-        file_url: publicUrl,
-        file_type: contentType,
-        file_name: file.name,
-        file_size: file.size,
-        student_id: userId,
-        difficulty: mapDifficulty(difficulty),
-        subject: topic,
-      };
+      const docData: Database["public"]["Tables"]["user_documents"]["Insert"] =
+        {
+          title: title || file.name,
+          description: focus || "",
+          content,
+          file_url: publicUrl,
+          file_type: contentType,
+          file_name: file.name,
+          file_size: file.size,
+          student_id: userId,
+          difficulty: mapDifficulty(difficulty),
+          subject: topic,
+        };
 
-      const { data: document, error: dbError } = await (supabase as any)
+      const { data: document, error: dbError } = await supabase
         .from("user_documents")
-        .insert(docData as any)
+        .insert(docData)
         .select()
         .single();
 
@@ -164,7 +150,41 @@ export const processDocumentForLesson = async (
         return null;
       }
 
-      return document as unknown as UserDocument;
+      if (!document) return null;
+
+      // Convert to UserDocument
+      return {
+        id: document.id,
+        title: document.title,
+        topic: document.subject || document.title,
+        contentType: (document.file_type as UserDocument["contentType"]) ||
+          "notes",
+        createdAt: document.created_at || new Date().toISOString(),
+        url: document.file_url || "",
+        description: document.description || undefined,
+        difficulty: ((): UserDocument["difficulty"] => {
+          if (
+            document.difficulty === "easy" || document.difficulty === "beginner"
+          ) {
+            return "beginner";
+          }
+          if (
+            document.difficulty === "hard" || document.difficulty === "advanced"
+          ) {
+            return "advanced";
+          }
+          if (
+            document.difficulty === "intermediate" ||
+            document.difficulty === "medium"
+          ) {
+            return "intermediate";
+          }
+          return undefined;
+        })(),
+        subject: document.subject || undefined,
+        fileName: document.file_name || undefined,
+        fileSize: document.file_size || undefined,
+      };
     }
 
     // Make sure we have some content to work with
@@ -213,14 +233,11 @@ export const getUserDocuments = async (
   studentId: string,
 ): Promise<UserDocument[]> => {
   try {
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from("user_documents")
       .select("*")
       .eq("student_id", studentId)
-      .order("created_at", { ascending: false }) as {
-        data: UserDocumentRecord[] | null;
-        error: any;
-      };
+      .order("created_at", { ascending: false });
 
     if (error) {
       console.error("Error fetching user documents:", error);
@@ -231,15 +248,15 @@ export const getUserDocuments = async (
       return [];
     }
 
-    // Convert UserDocumentRecord to UserDocument with correct type handling
+    // Convert to UserDocument
     return data.map<UserDocument>((doc) => ({
       id: doc.id,
       title: doc.title,
       topic: doc.subject || doc.title,
       contentType: (doc.file_type as UserDocument["contentType"]) || "notes",
-      createdAt: doc.created_at,
+      createdAt: doc.created_at || new Date().toISOString(),
       url: doc.file_url || "",
-      description: doc.description,
+      description: doc.description || undefined,
       difficulty: ((): UserDocument["difficulty"] => {
         if (doc.difficulty === "easy" || doc.difficulty === "beginner") {
           return "beginner";
@@ -252,9 +269,9 @@ export const getUserDocuments = async (
         }
         return undefined;
       })(),
-      subject: doc.subject,
-      fileName: doc.file_name,
-      fileSize: doc.file_size,
+      subject: doc.subject || undefined,
+      fileName: doc.file_name || undefined,
+      fileSize: doc.file_size || undefined,
     }));
   } catch (error) {
     console.error("Error in getUserDocuments:", error);

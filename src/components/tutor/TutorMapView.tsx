@@ -90,7 +90,7 @@ const TutorMapView: React.FC<TutorMapViewProps> = ({
   className = "",
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<any>(null);
+  const mapRef = useRef<mapboxgl.Map | null>(null);
   const [mapboxToken, setMapboxToken] = useState<string>("");
   const [mapLoaded, setMapLoaded] = useState(false);
   const [selectedTutor, setSelectedTutor] = useState<GeoTutorData | null>(null);
@@ -140,7 +140,7 @@ const TutorMapView: React.FC<TutorMapViewProps> = ({
   };
 
   // Add tutor markers to the map
-  const addMarkers = (map: any) => {
+  const addMarkers = (map: mapboxgl.Map) => {
     tutors.forEach((tutor) => {
       // Create a custom marker element
       const el = document.createElement("div");

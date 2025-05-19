@@ -240,30 +240,34 @@ const Flashcards: React.FC = () => {
                     )
                     : (
                       <div className="space-y-2">
-                        {displayFlashcardSets.map((set: any) => {
-                          const cardCount = (set as any).count ??
-                            set.cards?.length ?? 0;
-                          return (
-                            <div
-                              key={set.id}
-                              className={`p-3 rounded-md cursor-pointer border transition-colors ${
-                                selectedSet === set.id
-                                  ? "border-brightpair bg-brightpair-50"
-                                  : "border-gray-200 hover:bg-gray-50"
-                              }`}
-                              onClick={() => handleSetChange(set.id)}
-                            >
-                              <div className="flex justify-between items-center">
-                                <div>
-                                  <p className="font-medium">{set.name}</p>
-                                  <p className="text-xs text-gray-500">
-                                    {cardCount} cards
-                                  </p>
+                        {displayFlashcardSets.map(
+                          (
+                            set:
+                              import("@/services/flashcardService").FlashcardSet,
+                          ) => {
+                            const cardCount = set.cards?.length ?? 0;
+                            return (
+                              <div
+                                key={set.id}
+                                className={`p-3 rounded-md cursor-pointer border transition-colors ${
+                                  selectedSet === set.id
+                                    ? "border-brightpair bg-brightpair-50"
+                                    : "border-gray-200 hover:bg-gray-50"
+                                }`}
+                                onClick={() => handleSetChange(set.id)}
+                              >
+                                <div className="flex justify-between items-center">
+                                  <div>
+                                    <p className="font-medium">{set.name}</p>
+                                    <p className="text-xs text-gray-500">
+                                      {cardCount} cards
+                                    </p>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          );
-                        })}
+                            );
+                          },
+                        )}
 
                         {generatedFlashcards.length > 0 && (
                           <div

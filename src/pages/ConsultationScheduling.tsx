@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -42,36 +41,38 @@ const ConsultationScheduling: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
+
     if (!date || !timeSlot) {
       toast({
         title: "Missing information",
-        description: "Please select both a date and time for your consultation.",
+        description:
+          "Please select both a date and time for your consultation.",
         variant: "destructive",
       });
       return;
     }
 
     setIsSubmitting(true);
-    
+
     try {
       // Format the date for display
-      const formattedDate = date.toLocaleDateString('en-US', {
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric'
+      const formattedDate = date.toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
       });
       const consultationDateTime = `${formattedDate} at ${timeSlot}`;
-      
+
       // Update user context with consultation date
       setConsultationDate(consultationDateTime);
-      
+
       // Show success toast
       toast({
         title: "Consultation scheduled!",
-        description: `Your consultation has been scheduled for ${consultationDateTime}.`,
+        description:
+          `Your consultation has been scheduled for ${consultationDateTime}.`,
       });
-      
+
       // Navigate to onboarding
       navigate("/onboarding");
     } catch (error) {
@@ -102,10 +103,11 @@ const ConsultationScheduling: React.FC = () => {
             Schedule Your Free Consultation
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            Select a convenient date and time to meet with one of our expert tutors
+            Select a convenient date and time to meet with one of our expert
+            tutors
           </p>
         </div>
-        
+
         <Card>
           <form onSubmit={handleSubmit}>
             <CardHeader>
@@ -114,7 +116,7 @@ const ConsultationScheduling: React.FC = () => {
                 Your consultation will be approximately 30 minutes
               </CardDescription>
             </CardHeader>
-            
+
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label>Select Date</Label>
@@ -148,9 +150,9 @@ const ConsultationScheduling: React.FC = () => {
                 </div>
               )}
             </CardContent>
-            
+
             <CardFooter className="border-t pt-6">
-              <Button 
+              <Button
                 type="submit"
                 className="w-full bg-brightpair hover:bg-brightpair-600"
                 disabled={!date || !timeSlot || isSubmitting}

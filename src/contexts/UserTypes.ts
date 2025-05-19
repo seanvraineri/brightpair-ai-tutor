@@ -1,12 +1,17 @@
 // Import Session from Supabase
-import { Session } from '@supabase/supabase-js';
-import { ActivityType } from '@/hooks/useGamification';
+import { Session } from "@supabase/supabase-js";
+import { ActivityType } from "@/hooks/useGamification";
 
 // Define user onboarding status types
-export type OnboardingStatus = 'pending' | 'consultation-scheduled' | 'consultation-complete' | 'onboarding-complete' | 'active';
+export type OnboardingStatus =
+  | "pending"
+  | "consultation-scheduled"
+  | "consultation-complete"
+  | "onboarding-complete"
+  | "active";
 
 // Define user role type
-export type UserRole = 'student' | 'teacher' | 'parent';
+export type UserRole = "student" | "teacher" | "parent";
 
 // Define gamification elements
 export interface Achievement {
@@ -36,15 +41,27 @@ export interface GamificationData {
   achievements: Achievement[];
   badges: Badge[];
   interests: string[];
-  learningStyle: 'visual' | 'auditory' | 'kinesthetic' | 'reading/writing' | 'mixed';
+  learningStyle:
+    | "visual"
+    | "auditory"
+    | "kinesthetic"
+    | "reading/writing"
+    | "mixed";
   favoriteSubjects: string[];
+}
+
+// Activity log details type
+export interface ActivityDetails {
+  source?: string;
+  subjectId?: string;
+  [key: string]: unknown;
 }
 
 // Activity log interface
 export interface ActivityLog {
   type: ActivityType;
   timestamp: string;
-  details?: any;
+  details?: ActivityDetails;
   xpEarned: number;
 }
 
@@ -70,7 +87,10 @@ export interface UserContextType {
   updateRole: (role: UserRole) => void;
   unlockAchievement: (achievementId: string) => void;
   earnXP: (amount: number) => void;
-  trackActivity: (activityType: ActivityType, details?: any) => Promise<ActivityLog | null>;
+  trackActivity: (
+    activityType: ActivityType,
+    details?: ActivityDetails,
+  ) => Promise<ActivityLog | null>;
   getActivitiesByType: (type: ActivityType) => ActivityLog[];
   getTodayActivities: () => ActivityLog[];
   signOut: () => Promise<void>;

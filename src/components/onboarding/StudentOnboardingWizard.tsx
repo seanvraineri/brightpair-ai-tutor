@@ -16,10 +16,39 @@ import {
     UsersRound,
 } from "lucide-react";
 
+// Add at the top, after imports
+export interface OnboardingFormData {
+    modality: string;
+    modalityOther?: string;
+    priorKnowledge: string;
+    learningGoals: string;
+    weeklyTime: string;
+    lessonLength: string;
+    timePaceOther: string;
+    feedbackPreference: string;
+    feedbackOther: string;
+    struggleAreas: string;
+    accessibilityNeeds: string[];
+    accessibilityOther: string;
+    gamificationStyle: string;
+    gamificationOther: string;
+    mindsetConfidence: string;
+    mindsetOther: string;
+    learningDisabilities: string[];
+    learningDisabilitiesOther: string;
+    tutoringFocus?: string;
+    tutoringFocusFile?:
+        | File
+        | { name: string; size: number; type: string }
+        | null;
+    tutoringFocusFileUrl?: string;
+    [key: string]: unknown; // allow dynamic fields for legacy/extra onboarding fields
+}
+
 // Modern, pill-shaped Learning Modality Step (no Kinesthetic)
 function LearningModalityStep({ value, onChange, canProceed, setCanProceed }: {
-    value: any;
-    onChange: (field: string, value: any) => void;
+    value: OnboardingFormData;
+    onChange: (field: keyof OnboardingFormData, value: unknown) => void;
     canProceed: boolean;
     setCanProceed: (v: boolean) => void;
 }) {
@@ -123,14 +152,16 @@ function LearningModalityStep({ value, onChange, canProceed, setCanProceed }: {
 
 // New Tutoring Focus Step
 function TutoringFocusStep({ value, onChange, canProceed, setCanProceed }: {
-    value: any;
-    onChange: (field: string, value: any) => void;
+    value: OnboardingFormData;
+    onChange: (field: keyof OnboardingFormData, value: unknown) => void;
     canProceed: boolean;
     setCanProceed: (v: boolean) => void;
 }) {
     const [focus, setFocus] = useState(value.tutoringFocus || "");
     const [file, setFile] = useState<File | null>(
-        value.tutoringFocusFile || null,
+        value.tutoringFocusFile instanceof File
+            ? value.tutoringFocusFile
+            : null,
     );
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -164,7 +195,7 @@ function TutoringFocusStep({ value, onChange, canProceed, setCanProceed }: {
                     onDrop={(e) => {
                         e.preventDefault();
                         if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-                            setFile(e.dataTransfer.files[0]);
+                            setFile(e.dataTransfer.files[0] as File);
                             onChange(
                                 "tutoringFocusFile",
                                 e.dataTransfer.files[0],
@@ -184,7 +215,7 @@ function TutoringFocusStep({ value, onChange, canProceed, setCanProceed }: {
                     className="hidden"
                     onChange={(e) => {
                         if (e.target.files && e.target.files[0]) {
-                            setFile(e.target.files[0]);
+                            setFile(e.target.files[0] as File);
                             onChange("tutoringFocusFile", e.target.files[0]);
                         }
                     }}
@@ -192,8 +223,15 @@ function TutoringFocusStep({ value, onChange, canProceed, setCanProceed }: {
             </div>
             {file && (
                 <div className="mt-2 text-xs text-gray-500">
-                    Uploaded: {file.name}{" "}
+                    Uploaded: {file.name}{"  "}
                     ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                </div>
+            )}
+            {/* Show legacy file info if present and not a File */}
+            {value.tutoringFocusFile &&
+                !(value.tutoringFocusFile instanceof File) && (
+                <div className="mt-2 text-xs text-gray-500">
+                    Uploaded: {value.tutoringFocusFile.name} (legacy)
                 </div>
             )}
         </div>
@@ -210,8 +248,8 @@ function WelcomeStep({ value, onChange }) {
     );
 }
 function PriorKnowledgeStep({ value, onChange, canProceed, setCanProceed }: {
-    value: any;
-    onChange: (field: string, value: any) => void;
+    value: OnboardingFormData;
+    onChange: (field: keyof OnboardingFormData, value: unknown) => void;
     canProceed: boolean;
     setCanProceed: (v: boolean) => void;
 }) {
@@ -285,8 +323,8 @@ function PriorKnowledgeStep({ value, onChange, canProceed, setCanProceed }: {
     );
 }
 function MotivationGoalsStep({ value, onChange, canProceed, setCanProceed }: {
-    value: any;
-    onChange: (field: string, value: any) => void;
+    value: OnboardingFormData;
+    onChange: (field: keyof OnboardingFormData, value: unknown) => void;
     canProceed: boolean;
     setCanProceed: (v: boolean) => void;
 }) {
@@ -316,8 +354,8 @@ function MotivationGoalsStep({ value, onChange, canProceed, setCanProceed }: {
     );
 }
 function TimePaceStep({ value, onChange, canProceed, setCanProceed }: {
-    value: any;
-    onChange: (field: string, value: any) => void;
+    value: OnboardingFormData;
+    onChange: (field: keyof OnboardingFormData, value: unknown) => void;
     canProceed: boolean;
     setCanProceed: (v: boolean) => void;
 }) {
@@ -418,8 +456,8 @@ function TimePaceStep({ value, onChange, canProceed, setCanProceed }: {
 }
 function FeedbackPreferencesStep(
     { value, onChange, canProceed, setCanProceed }: {
-        value: any;
-        onChange: (field: string, value: any) => void;
+        value: OnboardingFormData;
+        onChange: (field: keyof OnboardingFormData, value: unknown) => void;
         canProceed: boolean;
         setCanProceed: (v: boolean) => void;
     },
@@ -493,8 +531,8 @@ function FeedbackPreferencesStep(
 
 // New Areas of Struggle Step – open-ended text input
 function StruggleAreasStep({ value, onChange, canProceed, setCanProceed }: {
-    value: any;
-    onChange: (field: string, value: any) => void;
+    value: OnboardingFormData;
+    onChange: (field: keyof OnboardingFormData, value: unknown) => void;
     canProceed: boolean;
     setCanProceed: (v: boolean) => void;
 }) {
@@ -528,8 +566,8 @@ function StruggleAreasStep({ value, onChange, canProceed, setCanProceed }: {
 // Accessibility / Neurodiversity Needs Step
 function AccessibilityNeedsStep(
     { value, onChange, canProceed, setCanProceed }: {
-        value: any;
-        onChange: (field: string, value: any) => void;
+        value: OnboardingFormData;
+        onChange: (field: keyof OnboardingFormData, value: unknown) => void;
         canProceed: boolean;
         setCanProceed: (v: boolean) => void;
     },
@@ -608,8 +646,8 @@ function AccessibilityNeedsStep(
 
 // Gamification Style Step
 function GamificationStyleStep({ value, onChange, canProceed, setCanProceed }: {
-    value: any;
-    onChange: (field: string, value: any) => void;
+    value: OnboardingFormData;
+    onChange: (field: keyof OnboardingFormData, value: unknown) => void;
     canProceed: boolean;
     setCanProceed: (v: boolean) => void;
 }) {
@@ -675,8 +713,8 @@ function GamificationStyleStep({ value, onChange, canProceed, setCanProceed }: {
 
 // Mindset & Confidence Step
 function MindsetConfidenceStep({ value, onChange, canProceed, setCanProceed }: {
-    value: any;
-    onChange: (field: string, value: any) => void;
+    value: OnboardingFormData;
+    onChange: (field: keyof OnboardingFormData, value: unknown) => void;
     canProceed: boolean;
     setCanProceed: (v: boolean) => void;
 }) {
@@ -743,8 +781,8 @@ function MindsetConfidenceStep({ value, onChange, canProceed, setCanProceed }: {
 // Learning Disabilities Disclosure Step
 function LearningDisabilitiesStep(
     { value, onChange, canProceed, setCanProceed }: {
-        value: any;
-        onChange: (field: string, value: any) => void;
+        value: OnboardingFormData;
+        onChange: (field: keyof OnboardingFormData, value: unknown) => void;
         canProceed: boolean;
         setCanProceed: (v: boolean) => void;
     },
@@ -916,7 +954,7 @@ const stepComponents = [
 
 export default function StudentOnboardingWizard({ studentId, onComplete }) {
     const [step, setStep] = useState(0);
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<OnboardingFormData>({
         modality: "",
         priorKnowledge: "",
         learningGoals: "",
@@ -977,7 +1015,7 @@ export default function StudentOnboardingWizard({ studentId, onComplete }) {
     // Save onboarding data to Supabase after each step
     const saveOnboardingStep = async (data) => {
         if (!studentId) return;
-        let prefsToSave = { ...data };
+        const prefsToSave = { ...data };
 
         // If the user attached a tutoring focus file, upload it to Storage and replace the File object with a public URL
         if (data.tutoringFocusFile instanceof File && studentId) {
@@ -1034,7 +1072,7 @@ export default function StudentOnboardingWizard({ studentId, onComplete }) {
         setStep((s) => Math.min(s + 1, steps.length - 1));
     };
     const handleBack = () => setStep((s) => Math.max(s - 1, 0));
-    const handleChange = (field, value) => {
+    const handleChange = (field: keyof OnboardingFormData, value: unknown) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
     };
 

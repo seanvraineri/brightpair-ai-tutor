@@ -16,6 +16,7 @@ import { Link } from "react-router-dom";
 import LessonContent from "./LessonContent";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
+import { Tables } from "@/integrations/supabase/types";
 
 interface LessonModalProps {
   open: boolean;
@@ -24,11 +25,19 @@ interface LessonModalProps {
   onComplete?: () => void;
 }
 
+// Extend lessons row with optional related fields
+type LessonRow = Tables<"lessons"> & {
+  duration?: number | string;
+  relatedHomework?: string;
+  relatedFlashcards?: string;
+  relatedQuiz?: string;
+};
+
 const LessonModal: React.FC<LessonModalProps> = (
   { open, onOpenChange, lessonId, onComplete },
 ) => {
   const { user } = useUser();
-  const [lesson, setLesson] = useState<any | null>(null);
+  const [lesson, setLesson] = useState<LessonRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("content");
   const [noteText, setNoteText] = useState("");

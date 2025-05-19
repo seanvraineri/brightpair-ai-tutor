@@ -26,6 +26,7 @@ import {
   updateSkillMastery,
 } from "@/services/quizService";
 import PrettyMath from "@/components/ui/PrettyMath";
+import { User } from "@/contexts/UserTypes";
 
 interface AdaptiveQuizProps {
   quiz: Quiz;
@@ -96,13 +97,13 @@ const AdaptiveQuiz: React.FC<AdaptiveQuizProps> = (
 
       // Update the user's mastery level in the database
       if (
-        user && (user as any)?.id && result.tool_calls &&
+        user && user.id && result.tool_calls &&
         result.tool_calls.length > 0
       ) {
         const toolCall = result.tool_calls[0];
         if (toolCall.name === "updateSkill" && toolCall.arguments) {
           await updateSkillMastery(
-            (user as any).id,
+            user.id,
             toolCall.arguments.skill_id,
             toolCall.arguments.delta,
           );

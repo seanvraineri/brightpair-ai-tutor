@@ -25,6 +25,11 @@ interface TaskItemProps {
   onClick: () => void;
 }
 
+// Internal task shape including skillId for click handler
+interface Task extends Omit<TaskItemProps, "onClick"> {
+  skillId: string;
+}
+
 const TaskItem: React.FC<TaskItemProps> = ({
   icon,
   title,
@@ -126,19 +131,23 @@ function MessageSquareIcon(props: React.SVGProps<SVGSVGElement>) {
 const RecommendedTasks: React.FC = () => {
   const { toast } = useToast();
   const { user } = useUser();
-  const [tasks, setTasks] = useState<any[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
 
   useEffect(() => {
     if (!user) return;
     const load = async () => {
       const { data, error } = await supabase
         .from("student_skills")
-        .select("mastery_level, skills(name, description)")
+        .select("skill_id, mastery_level, skills(name, description)")
         .eq("student_id", user.id)
         .order("mastery_level", { ascending: true })
         .limit(3);
       if (!error && data) {
-        const items = data.map((row: any) => ({
+        const items: Task[] = data.map((row: {
+          skill_id: string;
+          mastery_level: number;
+          skills: { name?: string; description?: string } | null;
+        }) => ({
           icon: <FilePlus className="h-5 w-5 text-brightpair" />,
           title: `Practice ${row.skills?.name}`,
           description: row.skills?.description || "AI-generated practice task",
@@ -150,7 +159,7 @@ const RecommendedTasks: React.FC = () => {
             : "easy",
           completionTime: "30 min",
           progressPercent: Math.round((row.mastery_level ?? 0) * 100),
-          skillId: row.skill_id,
+          skillId: row.skill_id as string,
         }));
         setTasks(items);
       }

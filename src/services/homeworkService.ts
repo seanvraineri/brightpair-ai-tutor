@@ -42,7 +42,16 @@ export const getHomeworkList = async (
     if (error) throw error;
 
     if (data) {
-      return data.map((row: any) => ({
+      return data.map((
+        row: {
+          id: string;
+          title: string;
+          due_at: string;
+          status: string;
+          student_id: string;
+          subject?: string;
+        },
+      ) => ({
         id: row.id,
         title: row.title,
         due: row.due_at ?? "",
@@ -50,6 +59,7 @@ export const getHomeworkList = async (
         student_name: "",
         status: (row.status ?? "draft") as HomeworkStatus,
         topic: undefined,
+        subject: row.subject,
       }));
     }
   } catch (error) {
@@ -125,15 +135,15 @@ export const generateHomework = async (
     if (data) {
       // Map the response into our Homework shape
       const hw: Homework = {
-        id: (data as any).id,
-        title: (data as any).title ?? "Homework Assignment",
-        description: (data as any).objective ?? "",
-        content_md: (data as any).content_md,
-        due: (data as any).due_at ?? params.due_date,
-        created_at: (data as any).created_at ?? new Date().toISOString(),
-        updated_at: (data as any).updated_at ?? new Date().toISOString(),
-        tutor_id: (data as any).tutor_id ?? params.tutor_id,
-        student_id: (data as any).student_id ?? params.student_id,
+        id: data.id,
+        title: data.title ?? "Homework Assignment",
+        description: data.objective ?? "",
+        content_md: data.content_md,
+        due: data.due_at ?? params.due_date,
+        created_at: data.created_at ?? new Date().toISOString(),
+        updated_at: data.updated_at ?? new Date().toISOString(),
+        tutor_id: data.tutor_id ?? params.tutor_id,
+        student_id: data.student_id ?? params.student_id,
         status: "draft",
         topic: params.topic,
         questions: [],

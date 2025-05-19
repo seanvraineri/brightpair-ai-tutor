@@ -15,6 +15,8 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { BarChart, Download, Loader2, Mail, Save } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { toast } from "@/hooks/use-toast";
 
 interface StudentReportGeneratorProps {
   studentId: string;
@@ -31,6 +33,18 @@ interface GeneratedReport {
   areas_for_improvement: string[];
   next_steps: string[];
   tutor_comments?: string;
+}
+
+// Local interface for reports table (not in generated types)
+interface StudentProgressReportRow {
+  id: string;
+  student_id: string;
+  tutor_id: string;
+  report_date: string;
+  strengths: string[];
+  areas_for_improvement: string[];
+  next_steps: string[];
+  tutor_comments: string | null;
 }
 
 const StudentReportGenerator: React.FC<StudentReportGeneratorProps> = ({
@@ -94,7 +108,11 @@ const StudentReportGenerator: React.FC<StudentReportGeneratorProps> = ({
       });
     } catch (error) {
       console.error("Error generating report:", error);
-      alert("Failed to generate report. Please try again.");
+      toast({
+        title: "Failed to Generate Report",
+        description: "Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsGenerating(false);
     }
@@ -111,8 +129,8 @@ const StudentReportGenerator: React.FC<StudentReportGeneratorProps> = ({
         throw new Error("Not authenticated");
       }
 
-      // Save to database
-      const { data, error } = await (supabase as any)
+      const client = supabase as unknown as SupabaseClient<any, "public", any>;
+      const { data, error } = await client
         .from("student_progress_reports")
         .insert({
           student_id: studentId,
@@ -124,7 +142,7 @@ const StudentReportGenerator: React.FC<StudentReportGeneratorProps> = ({
           tutor_comments: tutorComments.trim() || null,
         })
         .select()
-        .single();
+        .single<StudentProgressReportRow>();
 
       if (error) throw error;
 
@@ -134,11 +152,15 @@ const StudentReportGenerator: React.FC<StudentReportGeneratorProps> = ({
       }
 
       if (data && onReportGenerated) {
-        onReportGenerated((data as any).id);
+        onReportGenerated(data.id);
       }
     } catch (error) {
       console.error("Error saving report:", error);
-      alert("Failed to save report. Please try again.");
+      toast({
+        title: "Failed to Save Report",
+        description: "Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsSaving(false);
     }

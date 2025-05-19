@@ -263,8 +263,12 @@ const TeacherDashboard: React.FC = () => {
                             </div>
                           )
                           : (
-                            (upcomingSessionsData as any).map(
-                              (session: any) => {
+                            (upcomingSessionsData as Array<{
+                              id: string;
+                              starts_at: string;
+                              student_id: string;
+                            }>).map(
+                              (session) => {
                                 const start = new Date(session.starts_at);
                                 const dateStr = start.toLocaleDateString();
                                 const timeStr = start.toLocaleTimeString([], {

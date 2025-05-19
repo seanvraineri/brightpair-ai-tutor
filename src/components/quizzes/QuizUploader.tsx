@@ -14,6 +14,7 @@ import {
   Quiz,
 } from "@/services/quizService";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { User } from "@/contexts/UserTypes";
 
 interface QuizUploaderProps {
   onQuizGenerated: (quiz: Quiz) => void;
@@ -100,8 +101,8 @@ const QuizUploader: React.FC<QuizUploaderProps> = ({ onQuizGenerated }) => {
       setIsProcessing(true);
 
       // Get the student's mastery data
-      const studentSnapshot = user && (user as any)?.id
-        ? await getStudentMastery((user as any).id)
+      const studentSnapshot = user && user.id
+        ? await getStudentMastery(user.id)
         : null;
 
       // Mock processing the document/notes

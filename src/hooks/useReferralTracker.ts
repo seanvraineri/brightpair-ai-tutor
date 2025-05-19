@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import toast from 'react-hot-toast';
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 // Types
 interface Referral {
@@ -38,65 +38,78 @@ export function useReferralTracker(referralData: Referral[]) {
   useEffect(() => {
     if (referralData && referralData.length > 0) {
       const totalReferrals = referralData.length;
-      const activeReferrals = referralData.filter(r => r.status === 'active').length;
+      const activeReferrals = referralData.filter((r) =>
+        r.status === "active"
+      ).length;
       const activeRate = Math.round((activeReferrals / totalReferrals) * 100);
-      
-      const totalCommission = referralData.reduce((acc, referral) => acc + referral.totalEarned, 0);
+
+      const totalCommission = referralData.reduce(
+        (acc, referral) => acc + referral.totalEarned,
+        0,
+      );
       // Calculate current month's commission from active referrals
       const monthlyCommission = referralData
-        .filter(r => r.status === 'active')
+        .filter((r) => r.status === "active")
         .reduce((acc, r) => acc + r.commission, 0);
-      
-      const pendingReferrals = referralData.filter(r => r.status === 'pending').length;
-      
+
+      const pendingReferrals = referralData.filter((r) =>
+        r.status === "pending"
+      ).length;
+
       setMetrics({
         totalReferrals,
         activeReferrals,
         activeRate,
         totalCommission: totalCommission.toFixed(2),
         monthlyCommission: monthlyCommission.toFixed(2),
-        pendingReferrals
+        pendingReferrals,
       });
-      
+
       setIsLoaded(true);
     }
   }, [referralData]);
 
   // Toggle selection of a referral
   const toggleReferralSelection = (id: string) => {
-    setSelectedReferral(prevId => prevId === id ? null : id);
-    console.log(`Referral ${id} details ${selectedReferral === id ? 'collapsed' : 'expanded'}`);
+    setSelectedReferral((prevId) => prevId === id ? null : id);
+    console.log(
+      `Referral ${id} details ${
+        selectedReferral === id ? "collapsed" : "expanded"
+      }`,
+    );
   };
 
   // Handle time range change
   const handleTimeRangeChange = (value: string) => {
     setTimeRange(value);
     console.log(`Time range changed to: ${value}`);
-    toast.success(`Filtered to show ${value === 'all' ? 'all time' : value} data`);
+    toast.success(
+      `Filtered to show ${value === "all" ? "all time" : value} data`,
+    );
   };
 
   // Filter referrals based on time range
   const getFilteredReferrals = () => {
-    if (timeRange === 'all') return referralData;
-    
+    if (timeRange === "all") return referralData;
+
     const now = new Date();
     const cutoffDate = new Date();
-    
-    switch(timeRange) {
-      case 'month':
+
+    switch (timeRange) {
+      case "month":
         cutoffDate.setMonth(now.getMonth() - 1);
         break;
-      case 'quarter':
+      case "quarter":
         cutoffDate.setMonth(now.getMonth() - 3);
         break;
-      case 'year':
+      case "year":
         cutoffDate.setFullYear(now.getFullYear() - 1);
         break;
       default:
         return referralData;
     }
-    
-    return referralData.filter(referral => {
+
+    return referralData.filter((referral) => {
       const referralDate = new Date(referral.referralDate);
       return referralDate >= cutoffDate;
     });
@@ -104,39 +117,44 @@ export function useReferralTracker(referralData: Referral[]) {
 
   // Generate a new referral link
   const generateReferralLink = () => {
-    const referralCode = `REF${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    const referralCode = `REF${
+      Math.random().toString(36).substring(2, 8).toUpperCase()
+    }`;
     const referralLink = `https://brightpair.edu/signup?ref=${referralCode}`;
-    
+
     // Copy to clipboard
     navigator.clipboard.writeText(referralLink)
       .then(() => {
-        toast.success('Referral link copied to clipboard!');
-        console.log('New referral link generated:', referralLink);
+        toast.success("Referral link copied to clipboard!");
+        console.log("New referral link generated:", referralLink);
       })
       .catch(() => {
-        toast.error('Failed to copy referral link');
+        toast.error("Failed to copy referral link");
       });
-    
+
     return referralLink;
   };
 
   // Debug validation
   useEffect(() => {
     if (isLoaded) {
-      console.log('Referral tracker loaded successfully');
-      console.log('Current metrics:', metrics);
-      console.log('Referral data is valid:', validateReferralData(referralData));
+      console.log("Referral tracker loaded successfully");
+      console.log("Current metrics:", metrics);
+      console.log(
+        "Referral data is valid:",
+        validateReferralData(referralData),
+      );
     }
   }, [isLoaded, metrics]);
 
   // Validate referral data
   const validateReferralData = (data: Referral[]) => {
     // Check if each referral has the correct commission calculation (15% of plan value)
-    const commissionsValid = data.every(referral => {
+    const commissionsValid = data.every((referral) => {
       const expectedCommission = referral.planValue * 0.15;
       return Math.abs(referral.commission - expectedCommission) < 0.01; // Allow for small float differences
     });
-    
+
     return commissionsValid;
   };
 
@@ -149,6 +167,6 @@ export function useReferralTracker(referralData: Referral[]) {
     toggleReferralSelection,
     handleTimeRangeChange,
     generateReferralLink,
-    validateReferralData
+    validateReferralData,
   };
-} 
+}

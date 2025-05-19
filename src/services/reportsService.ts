@@ -17,20 +17,30 @@ export const getReportsForParent = async (
         .from("student_parent_relationships")
         .select("student_id").eq("parent_id", parentId);
     if (relErr) return [];
-    const studentIds = (rels ?? []).map((r: any) => r.student_id);
+    const studentIds = (rels ?? []).map((r: { student_id: string }) =>
+        r.student_id
+    );
     if (studentIds.length === 0) return [];
 
     // 2. Get quizzes for these students, join profiles for names
     const { data, error } = await supabase
         .from("quizzes")
         .select(
-            "id, created_at, score, student_id, tutor_id, profiles:student_id(full_name), tutor:profiles!quizzes_tutor_id_fkey(full_name)",
+            "id, created_at, score, student_id, profiles:student_id(full_name), tutor:profiles!quizzes_tutor_id_fkey(full_name)",
         )
         .in("student_id", studentIds)
         .order("created_at", { ascending: false });
     if (error) return [];
 
-    return (data ?? []).map((row: any) => ({
+    type QuizRow = {
+        id: string;
+        created_at: string;
+        score: number | null;
+        profiles?: { full_name?: string };
+        tutor?: { full_name?: string };
+    };
+
+    return ((data ?? []) as QuizRow[]).map((row) => ({
         id: row.id,
         student_name: row.profiles?.full_name ?? "Student",
         tutor_name: row.tutor?.full_name ?? "Tutor",
