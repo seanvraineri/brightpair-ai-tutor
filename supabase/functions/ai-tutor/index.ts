@@ -879,7 +879,9 @@ serve(async (req: Request) => {
               summary: newSummary,
               updated_at: new Date().toISOString(),
             });
-          } catch (_) {}
+          } catch (_) {
+            // Non-critical: summary update failure is safe to ignore
+          }
         })();
       }
 
