@@ -50,13 +50,7 @@ export const useCustomLesson = () => {
       }
       setIsUploading(true);
       try {
-        let learningStyle = "visual";
-        if (
-          user && typeof user === "object" && "learning_style" in user &&
-          typeof (user as User).learning_style === "string"
-        ) {
-          learningStyle = (user as User).learning_style;
-        }
+        const learningStyle = user?.gamification?.learningStyle ?? "visual";
         const result = await processDocumentForLesson({
           ...params,
           userId: session.user.id,
