@@ -442,6 +442,7 @@ const buildBrightPairSystemPrompt = (
     activeHomework: any;
   },
   persona: string | null,
+  convoSummary: string | null,
 ) => {
   // Format studentSnapshot as JSON string
   const studentSnapshotStr = JSON.stringify(studentSnapshot, null, 2);
@@ -467,6 +468,9 @@ ${studentSnapshotStr}
 
 TOPIC_PASSAGES
 ${topicPassagesStr}
+
+CONVERSATION_SUMMARY
+${convoSummary || "No summary yet."}
 
 ──────────────────────────────────────────
 SECTION 2 · FORMAT RULES  (read very carefully)
@@ -772,12 +776,22 @@ serve(async (req: Request) => {
     // Extract topic passages from learning context
     const topicPassages = extractTopicPassages(learningHistory, studentContext);
 
+    // Fetch existing conversation summary
+    let convoSummary: string | null = null;
+    if (studentId) {
+      const { data: summaryRow } = await supabase.from("chat_summaries").select(
+        "summary",
+      ).eq("student_id", studentId).single();
+      convoSummary = summaryRow?.summary ?? null;
+    }
+
     // Build the BrightPair system prompt with improved math formatting
     const systemPrompt = buildBrightPairSystemPrompt(
       studentSnapshot,
       topicPassages,
       learningContext,
       persona,
+      convoSummary,
     );
 
     console.log(
@@ -828,12 +842,49 @@ serve(async (req: Request) => {
       const aiResponse = openAIData.choices[0]?.message?.content ||
         "Sorry, I could not generate a response.";
 
-      // Return the AI response
+      // Asynchronously summarise conversation for memory
+      if (studentId) {
+        (async () => {
+          try {
+            const { data: recent } = await supabase.from("messages").select(
+              "content, sender_id",
+            ).or(`sender_id.eq.${studentId},receiver_id.eq.${studentId}`).order(
+              "created_at",
+              { ascending: false },
+            ).limit(20);
+            const convoText = (recent ?? []).map((m: any) => m.content)
+              .reverse().join("\n");
+            const sumPrompt =
+              `Summarise the following conversation in under 120 words:\n${convoText}`;
+            const sm = await fetch(
+              "https://api.openai.com/v1/chat/completions",
+              {
+                method: "POST",
+                headers: {
+                  "Authorization": `Bearer ${apiKey}`,
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  model: "gpt-4o-mini",
+                  messages: [{ role: "user", content: sumPrompt }],
+                  max_tokens: 150,
+                  temperature: 0.3,
+                }),
+              },
+            );
+            const smJson = await sm.json();
+            const newSummary = smJson.choices?.[0]?.message?.content ?? "";
+            await supabase.from("chat_summaries").upsert({
+              student_id: studentId,
+              summary: newSummary,
+              updated_at: new Date().toISOString(),
+            });
+          } catch (_) {}
+        })();
+      }
+
       return new Response(
-        JSON.stringify({
-          success: true,
-          response: aiResponse,
-        }),
+        JSON.stringify({ success: true, response: aiResponse }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     } catch (openAIError) {
