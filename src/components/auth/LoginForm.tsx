@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,13 +11,11 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
-import { OnboardingStatus, UserRole, useUser } from "@/contexts/UserContext";
+import { UserRole } from "@/contexts/UserContext";
 import { supabase } from "@/integrations/supabase/client";
 
 const LoginForm: React.FC = () => {
-  const navigate = useNavigate();
   const { toast } = useToast();
-  const { updateUser, updateRole, updateOnboardingStatus } = useUser();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -48,20 +45,6 @@ const LoginForm: React.FC = () => {
     });
   };
 
-  const redirectToDashboard = (role: UserRole) => {
-    switch (role) {
-      case "teacher":
-        navigate("/teacher-dashboard");
-        break;
-      case "parent":
-        navigate("/parent-dashboard");
-        break;
-      default:
-        navigate("/dashboard");
-        break;
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
@@ -73,6 +56,8 @@ const LoginForm: React.FC = () => {
         password: formData.password,
       });
 
+      if (error) throw error;
+
       // Set session expiration time based on rememberMe checkbox
       if (data?.session && formData.rememberMe) {
         // Update session with longer expiration (30 days)
@@ -82,69 +67,20 @@ const LoginForm: React.FC = () => {
         });
       }
 
-      if (error) throw error;
-
-      // Get user profile from profiles table
-      let { data: profileData, error: profileError } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", data.user.id)
-        .single();
-
-      if (profileError) {
-        // If no profile exists, create one with default values
-        const { data: newProfile, error: createError } = await supabase
-          .from("profiles")
-          .insert({
-            id: data.user.id,
-            email: data.user.email,
-            name: data.user.email?.split("@")[0] || "User",
-            role: formData.role,
-            onboarding_status: "pending",
-          })
-          .select()
-          .single();
-
-        if (createError) {
-          console.error("Error creating profile:", createError);
-          throw createError;
-        }
-
-        profileData = newProfile;
-      }
-
-      // Update role in profile if it's different from what the user selected
-      if (profileData && profileData.role !== formData.role) {
-        const { error: updateError } = await supabase
+      // Update the user's role in their profile if they selected one
+      if (data?.user && formData.role) {
+        await supabase
           .from("profiles")
           .update({ role: formData.role })
           .eq("id", data.user.id);
-
-        if (updateError) {
-          console.error("Error updating role:", updateError);
-          throw updateError;
-        }
-
-        profileData.role = formData.role;
       }
-
-      // Update user context
-      updateRole(profileData.role as UserRole);
-      updateUser({
-        name: profileData.name,
-        email: profileData.email,
-        role: profileData.role as UserRole,
-        onboardingStatus: profileData.onboarding_status as OnboardingStatus,
-        nextConsultationDate: profileData.next_consultation_date,
-      });
 
       toast({
         title: "Login successful",
         description: "Welcome back to BrightPair!",
       });
 
-      // Redirect to appropriate dashboard based on role
-      redirectToDashboard(profileData.role as UserRole);
+      // The UserContext will handle fetching the profile and redirecting
     } catch (error) {
       const errorMessage = error instanceof Error
         ? error.message
