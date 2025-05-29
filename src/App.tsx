@@ -23,7 +23,6 @@ import {
 } from "@/components/ui/card";
 import Spinner from "@/components/ui/spinner";
 import ErrorBoundary from "@/components/ui/ErrorBoundary";
-
 import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
@@ -175,6 +174,33 @@ function StudentOnboardingWizardWrapper() {
         window.location.href = "/dashboard";
       }}
     />
+  );
+}
+
+// Lazy load dashboard pages
+// const StudentDashboard = lazy(() => import("@/pages/StudentDashboard"));
+// const TutorDashboard = lazy(() => import("@/pages/TutorDashboard"));
+// const ParentDashboard = lazy(() => import("@/pages/ParentDashboard"));
+
+// Lazy load standalone pages
+// const StudentOnboarding = lazy(() => import("@/pages/StudentOnboarding"));
+// const LessonInterface = lazy(() => import("@/pages/LessonInterface"));
+// const CustomLessonPage = lazy(() => import("@/pages/CustomLessonPage"));
+// const StudyBuddy = lazy(() => import("@/components/tutor/StudyBuddy"));
+// const LoginPage = lazy(() => import("@/pages/LoginPage"));
+// const SignupPage = lazy(() => import("@/pages/SignupPage"));
+// const LessonChat = lazy(() => import("@/pages/LessonChat"));
+
+// Loading component for lazy-loaded routes
+function PageLoader() {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brightpair mx-auto">
+        </div>
+        <p className="mt-4 text-gray-600">Loading...</p>
+      </div>
+    </div>
   );
 }
 
@@ -465,6 +491,77 @@ function App() {
                 <Route
                   path="/curricula"
                   element={<Navigate to="/curriculum" replace />}
+                />
+
+                {/* Protected Routes - Removed as components don't exist */}
+                {
+                  /*
+                <Route
+                  path="/student/onboarding"
+                  element={
+                    <AuthGuard>
+                      <StudentOnboarding />
+                    </AuthGuard>
+                  }
+                />
+
+                <Route
+                  path="/student/*"
+                  element={
+                    <AuthGuard>
+                      <RoleGuard allowedRoles={["student"]}>
+                        <StudentRoutes />
+                      </RoleGuard>
+                    </AuthGuard>
+                  }
+                />
+
+                <Route
+                  path="/tutor/dashboard"
+                  element={
+                    <AuthGuard>
+                      <RoleGuard allowedRoles={["tutor"]}>
+                        <TutorDashboard />
+                      </RoleGuard>
+                    </AuthGuard>
+                  }
+                />
+
+                <Route
+                  path="/tutor/*"
+                  element={
+                    <AuthGuard>
+                      <RoleGuard allowedRoles={["tutor"]}>
+                        <TutorRoutes />
+                      </RoleGuard>
+                    </AuthGuard>
+                  }
+                />
+
+                <Route
+                  path="/parent/*"
+                  element={
+                    <AuthGuard>
+                      <RoleGuard allowedRoles={["parent"]}>
+                        <ParentRoutes />
+                      </RoleGuard>
+                    </AuthGuard>
+                  }
+                />
+                */
+                }
+
+                <Route
+                  path="/student"
+                  element={<Navigate to="/dashboard" replace />}
+                />
+                <Route
+                  path="/tutor"
+                  element={<Navigate to="/tutor/dashboard" replace />}
+                />
+                <Route
+                  path="/parent"
+                  element={<Navigate to="/parent/dashboard" replace />}
                 />
 
                 <Route path="*" element={<NotFound />} />

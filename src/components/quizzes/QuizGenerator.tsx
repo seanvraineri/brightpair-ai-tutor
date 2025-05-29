@@ -376,99 +376,43 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ onQuizGenerated }) => {
   }, [topic, currentSubject, ageGroup]);
 
   const handleGenerateQuiz = async () => {
+    if (!topic.trim()) {
+      toast({
+        title: "Topic Required",
+        description: "Please enter a topic to generate a quiz",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsGenerating(true);
 
     try {
-      // Check if we're in an environment where we can access the backend
-      if (typeof window !== "undefined" && import.meta.env.DEV) {
-        // For demo/development purposes
-        const mockQuiz: Quiz = {
-          skill_id: focusSkill,
-          quiz: [
-            {
-              id: "q1",
-              type: "mcq",
-              difficulty: "easy",
-              stem: "Solve for x: 2x + 5 = 15",
-              choices: ["x = 5", "x = 10", "x = 7.5", "x = 5.5"],
-              answer: "0",
-              rationale:
-                "To solve for x, subtract 5 from both sides: 2x = 10. Then divide by 2: x = 5.",
-            },
-            {
-              id: "q2",
-              type: "mcq",
-              difficulty: "med",
-              stem: "Which of the following is a quadratic function?",
-              choices: [
-                "f(x) = 3x + 2",
-                "f(x) = x²+ 5x + 6",
-                "f(x) = 1/x",
-                "f(x) = √x",
-              ],
-              answer: "1",
-              rationale:
-                "A quadratic function has the form f(x) = ax² + bx + c, where a ≠ 0.",
-            },
-            {
-              id: "q3",
-              type: "mcq",
-              difficulty: "hard",
-              stem: "Evaluate the limit: lim(x→0) sin(x)/x",
-              choices: ["0", "1", "∞", "The limit does not exist"],
-              answer: "1",
-              rationale:
-                "This is a famous limit in calculus that equals 1, which can be proven using L'Hôpital's rule or by analyzing the behavior near x = 0.",
-            },
-            {
-              id: "q4",
-              type: "mcq",
-              difficulty: "med",
-              stem: "What is the derivative of f(x) = e^x?",
-              choices: [
-                "f'(x) = e^x",
-                "f'(x) = x·e^x",
-                "f'(x) = ln(x)",
-                "f'(x) = 1/x",
-              ],
-              answer: "0",
-              rationale: "The derivative of e^x is itself, e^x.",
-            },
-            {
-              id: "q5",
-              type: "mcq",
-              difficulty: "hard",
-              stem:
-                "Which of the following is an inflection point of f(x) = x³ - 3x² + 2?",
-              choices: ["x = 0", "x = 1", "x = 2", "x = 3"],
-              answer: "1",
-              rationale:
-                "At an inflection point, the second derivative equals zero and changes sign. For f(x) = x³ - 3x², f''(x) = 6x - 6, which equals 0 when x = 1.",
-            },
-          ],
-        };
+      // Get student mastery data first
+      const studentSnapshot = await getStudentMastery(user?.id || "demo-user");
 
-        setTimeout(() => {
-          // Create a mock quiz
-          onQuizGenerated(mockQuiz);
-
-          toast({
-            title: "Quiz Generated!",
-            description:
-              `Created a quiz with ${mockQuiz.quiz.length} questions on ${
-                topic || "calculus"
-              }.`,
-          });
-
-          setIsGenerating(false);
-          setTopic("");
-          setShowSuggestions(false);
-        }, 2000);
-
-        return; // Skip the rest for the mock implementation
+      if (!studentSnapshot) {
+        throw new Error("Could not fetch student data");
       }
+
+      // Generate the quiz
+      const quiz = await generateQuiz(
+        studentSnapshot,
+        topic,
+        focusSkill as "easy" | "med" | "hard",
+      );
+
+      onQuizGenerated(quiz);
+
+      toast({
+        title: "Quiz Generated!",
+        description:
+          `Created a quiz with ${quiz.quiz.length} questions on ${topic}.`,
+      });
+
+      setTopic("");
+      setShowSuggestions(false);
     } catch (error) {
-      console.error("Error generating quiz:", error);
       toast({
         title: "Generation Failed",
         description: error instanceof Error

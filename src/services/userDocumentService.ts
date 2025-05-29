@@ -16,7 +16,7 @@ export const getStudentDocuments = async (
   studentId: string,
 ): Promise<UserDocument[]> => {
   try {
-    console.log(`Fetching documents for student ${studentId}`);
+    
 
     // Real implementation would be something like:
     // const { data, error } = await supabase
@@ -25,14 +25,14 @@ export const getStudentDocuments = async (
     //   .eq('student_id', studentId);
     //
     // if (error) {
-    //   console.error("Error fetching student documents:", error);
+    //   
     //   return [];
     // }
     //
     // return data || [];
     return [];
   } catch (error) {
-    console.error("Error fetching student documents:", error);
+    
     return [];
   }
 };
@@ -52,14 +52,14 @@ export const getDocumentById = async (
     //   .single();
     //
     // if (error) {
-    //   console.error("Error fetching document:", error);
+    //   
     //   return null;
     // }
     //
     // return data;
     return null;
   } catch (error) {
-    console.error("Error fetching document:", error);
+    
     return null;
   }
 };

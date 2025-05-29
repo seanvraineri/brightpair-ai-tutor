@@ -26,6 +26,7 @@ import { formatDistanceToNow } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FEATURES, IS_DEVELOPMENT } from "@/config/env";
 import { Database } from "@/integrations/supabase/types";
+import { logger } from '@/services/logger';
 
 interface PastLesson {
   id: string;
@@ -113,7 +114,7 @@ const Lessons: React.FC = () => {
           setAvailableSkills([]);
         }
       } catch (error) {
-        console.error("Error fetching available skills:", error);
+        
 
         setAvailableSkills([]);
 
@@ -185,7 +186,7 @@ const Lessons: React.FC = () => {
 
         setPastLessons(transformedLessons);
       } catch (error) {
-        console.error("Error fetching lesson history:", error);
+        
         toast({
           title: "Error",
           description: "Failed to load your lesson history",
@@ -234,8 +235,10 @@ const Lessons: React.FC = () => {
             });
           });
       } catch (error) {
-        console.error("Error updating lesson completion:", error);
-      }
+      logger.debug('Caught error:', error);
+        
+      
+    }
     } else {
       toast({
         title: "Lesson Completed",

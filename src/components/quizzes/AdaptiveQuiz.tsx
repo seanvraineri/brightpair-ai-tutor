@@ -110,7 +110,7 @@ const AdaptiveQuiz: React.FC<AdaptiveQuizProps> = (
         }
       }
     } catch (error) {
-      console.error("Error submitting answer:", error);
+      
       toast({
         title: "Submission Error",
         description: error instanceof Error

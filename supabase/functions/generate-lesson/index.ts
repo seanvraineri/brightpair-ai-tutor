@@ -118,7 +118,7 @@ serve(async (req: Request) => {
     // For local development and testing without full setup
     const url = new URL(req.url);
     if (url.searchParams.get("test") === "true") {
-      console.log("Test mode activated - returning mock data");
+      
       return new Response(
         JSON.stringify({ success: true, lesson: mockData }),
         { headers: cors },
@@ -134,7 +134,7 @@ serve(async (req: Request) => {
       auto_generate_quiz = body.auto_generate_quiz === true;
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
-      console.error("Failed to parse request JSON:", msg);
+      
       return new Response(
         JSON.stringify({
           error: "Invalid request: " + msg,
@@ -155,18 +155,16 @@ serve(async (req: Request) => {
     }
 
     // Debug logging
-    console.log(
-      `Generating lesson for student: ${student_id}, skill: ${skill_id}`,
-    );
+    
 
     // Get Supabase credentials
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
     if (!supabaseUrl || !supabaseKey) {
-      console.error("Supabase credentials missing");
+      
       // Fallback to mock data in case of missing credentials
-      console.log("Falling back to mock data due to missing credentials");
+      
       return new Response(
         JSON.stringify({ success: true, lesson: mockData }),
         { headers: cors },
@@ -179,9 +177,9 @@ serve(async (req: Request) => {
       // Get OpenAI API key
       const apiKey = Deno.env.get("OPENAI_API_KEY");
       if (!apiKey) {
-        console.error("OpenAI API key is missing");
+        
         // Fallback to mock data
-        console.log("Falling back to mock data due to missing OpenAI API key");
+        
         return new Response(
           JSON.stringify({ success: true, lesson: mockData }),
           { headers: cors },
@@ -197,7 +195,7 @@ serve(async (req: Request) => {
           supabaseKey as string,
         );
       } catch (snapErr) {
-        console.warn("Error building student snapshot:", snapErr);
+        
       }
 
       // Get passages data (with fallback)
@@ -209,7 +207,7 @@ serve(async (req: Request) => {
         });
         if (!error) passages = data || [];
       } catch (dbError) {
-        console.warn("Error fetching passages:", dbError);
+        
       }
 
       // Get errors data (with fallback)
@@ -221,7 +219,7 @@ serve(async (req: Request) => {
         });
         if (!error) errors = data || [];
       } catch (dbError) {
-        console.warn("Error fetching recent errors:", dbError);
+        
       }
 
       // Build prompt
@@ -237,7 +235,7 @@ serve(async (req: Request) => {
         .replace("{{RECENT_ERRORS}}", JSON.stringify(errors || []));
 
       // Call OpenAI
-      console.log("Calling OpenAI API...");
+      
       const openai = new OpenAI({ apiKey });
       const resp = await openai.chat.completions.create({
         model: "gpt-4o-mini",
@@ -252,8 +250,8 @@ serve(async (req: Request) => {
       try {
         lesson = JSON.parse(lessonText);
       } catch (parseError) {
-        console.error("Failed to parse OpenAI response as JSON:", parseError);
-        console.log("OpenAI response was:", lessonText);
+        
+        
         // Fallback to mock data
         return new Response(
           JSON.stringify({ success: true, lesson: mockData }),
@@ -261,7 +259,7 @@ serve(async (req: Request) => {
         );
       }
 
-      console.log("Lesson generated successfully");
+      
 
       // Save lesson (with error handling)
       try {
@@ -282,7 +280,7 @@ serve(async (req: Request) => {
           });
         }
       } catch (dbError) {
-        console.error("Database error when saving lesson:", dbError);
+        
         // Continue despite database error - we still want to return the lesson
       }
 
@@ -302,7 +300,7 @@ serve(async (req: Request) => {
             }),
           });
         } catch (quizErr) {
-          console.warn("Auto-generate quiz failed:", quizErr);
+          
         }
       }
 
@@ -312,17 +310,17 @@ serve(async (req: Request) => {
         { headers: cors },
       );
     } catch (apiError) {
-      console.error("API Error:", apiError);
+      
 
       // Fall back to mock data for development/testing
-      console.log("Falling back to mock data due to error");
+      
       return new Response(
         JSON.stringify({ success: true, lesson: mockData }),
         { headers: cors },
       );
     }
   } catch (error) {
-    console.error("General error:", error);
+    
     return new Response(
       JSON.stringify({
         error: `Failed to process request: ${

@@ -43,7 +43,7 @@ Example 1: Detailed walkthrough of a problem
 Example 2: Another sample problem with solution
 `;
   } catch (error) {
-    console.error("Error extracting PDF text:", error);
+    
     throw error;
   }
 }
@@ -77,7 +77,7 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error("Error processing request:", error);
+    
     
     return new Response(
       JSON.stringify({ 

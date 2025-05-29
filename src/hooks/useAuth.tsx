@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '../integrations/supabase/client';
+import { logger } from '@/services/logger';
 
 export const useAuth = () => {
   const [session, setSession] = useState<Session | null>(null);
@@ -27,7 +28,9 @@ export const useAuth = () => {
       await supabase.auth.signOut();
       setSession(null);
     } catch (error) {
-      console.error('Error signing out:', error);
+      logger.debug('Caught error:', error);
+      
+    
     }
   };
 

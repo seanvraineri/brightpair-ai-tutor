@@ -6,7 +6,9 @@
     "module": "ES2022",
     "moduleResolution": "bundler",
     "types": [
-      "tailwindcss"
+      "tailwindcss",
+      "jest",
+      "node"
     ],
     "jsx": "react-jsx",
     "skipLibCheck": true,
@@ -25,7 +27,8 @@
     "strictNullChecks": false
   },
   "include": [
-    "src"
+    "src",
+    "jest.setup.js"
   ],
   "exclude": [
     "node_modules"

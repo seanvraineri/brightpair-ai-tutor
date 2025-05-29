@@ -82,7 +82,7 @@ const PersonalizedLearningPanel: React.FC = () => {
           setLoading(false);
         }, 1000);
       } catch (error) {
-        console.error("Error fetching personalized learning plan:", error);
+        
         setLoading(false);
       }
     };

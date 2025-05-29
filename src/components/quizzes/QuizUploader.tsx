@@ -110,9 +110,6 @@ const QuizUploader: React.FC<QuizUploaderProps> = ({ onQuizGenerated }) => {
         ? `Content from ${file?.name}`
         : notes;
 
-      // Create mock topic passages from the uploaded content
-      const mockTopicPassages = [contentToProcess];
-
       // Generate the quiz using the existing quiz service
       const quiz = await generateQuiz(
         studentSnapshot || {
@@ -128,7 +125,8 @@ const QuizUploader: React.FC<QuizUploaderProps> = ({ onQuizGenerated }) => {
           current_track: { id: "general", name: "General" },
           deadline_days: 30,
         },
-        mockTopicPassages,
+        contentToProcess,
+        "med", // default difficulty
       );
 
       setIsProcessing(false);
@@ -151,7 +149,6 @@ const QuizUploader: React.FC<QuizUploaderProps> = ({ onQuizGenerated }) => {
         fileInputRef.current.value = "";
       }
     } catch (error) {
-      console.error("Error generating quiz:", error);
       toast({
         title: "Generation Failed",
         description: error instanceof Error

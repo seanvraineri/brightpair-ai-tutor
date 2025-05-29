@@ -37,7 +37,7 @@ export const getUpcomingAppointments = async (
 
     const { data, error } = await query;
     if (error) {
-        console.error("getUpcomingAppointments", error);
+        
         return [];
     }
 

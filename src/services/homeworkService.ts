@@ -63,7 +63,7 @@ export const getHomeworkList = async (
       }));
     }
   } catch (error) {
-    console.error("Error fetching homework list:", error);
+    
     return [];
   }
 };
@@ -98,7 +98,7 @@ export const getHomework = async (
       return hw;
     }
   } catch (error) {
-    console.error("Error fetching homework details:", error);
+    
     return null;
   }
 };
@@ -128,7 +128,7 @@ export const generateHomework = async (
     );
 
     if (error) {
-      console.error("Edge function error while generating homework:", error);
+      
       throw error;
     }
 
@@ -152,7 +152,7 @@ export const generateHomework = async (
       return hw;
     }
   } catch (error) {
-    console.error("Error generating homework:", error);
+    
     return null;
   }
 };
@@ -177,7 +177,7 @@ export const saveHomework = async (homework: Homework): Promise<boolean> => {
     if (error) throw error;
     return true;
   } catch (error) {
-    console.error("Error saving homework:", error);
+    
     return false;
   }
 };
@@ -197,7 +197,7 @@ export const updateHomeworkStatus = async (
     if (error) throw error;
     return true;
   } catch (error) {
-    console.error("Error updating homework status:", error);
+    
     return false;
   }
 };
@@ -261,7 +261,7 @@ export const gradeHomework = async (
 
     return { score, total, feedback };
   } catch (error) {
-    console.error("Error grading homework:", error);
+    
     return { score: 0, total: 0, feedback: {} };
   }
 };
@@ -285,7 +285,7 @@ export const uploadPdf = async (file: File): Promise<string | null> => {
     // Return a local URL that points to our sample PDF
     return `/homework-files/sample.pdf`;
   } catch (error) {
-    console.error("Error uploading PDF:", error);
+    
     return null;
   }
 };
@@ -312,7 +312,7 @@ export const extractPdfText = async (file: File): Promise<string | null> => {
     // For development, return mock text
     return "This is a sample PDF text extracted for homework generation. It contains math problems related to quadratic equations and factoring.";
   } catch (error) {
-    console.error("Error extracting PDF text:", error);
+    
     return null;
   }
 };
@@ -334,7 +334,7 @@ export const getStudents = async (): Promise<
     // For development, return mock students
     return [];
   } catch (error) {
-    console.error("Error fetching students:", error);
+    
     return [];
   }
 };

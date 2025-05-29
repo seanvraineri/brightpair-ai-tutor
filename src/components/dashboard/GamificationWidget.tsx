@@ -29,6 +29,7 @@ import {
   ScrollText,
   Trophy,
 } from "lucide-react";
+import { logger } from '@/services/logger';
 
 const GamificationWidget = () => {
   const { user, unlockAchievement, earnXP } = useUser();
@@ -69,8 +70,10 @@ const GamificationWidget = () => {
           setCompletedLessons(lessonsCount);
         }
       } catch (error) {
-        console.error("Error getting activity data from localStorage:", error);
-      }
+      logger.debug('Caught error:', error);
+        
+      
+    }
     };
 
     getActivityStats();
@@ -177,7 +180,7 @@ const GamificationWidget = () => {
         description: `You earned 15 XP for logging in today.`,
       });
     } catch (error) {
-      console.error("Error recording activity:", error);
+      
       toast({
         title: "Error Recording Activity",
         description:

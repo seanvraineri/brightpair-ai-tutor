@@ -115,7 +115,7 @@ Return ONLY JSON of shape { skill_id, questions:[{id,type,difficulty,stem,choice
       quiz_json: quizJson,
     });
   } catch (dbErr) {
-    console.warn("Could not save quiz:", dbErr);
+    
   }
 
   return new Response(JSON.stringify({ success: true, quiz: quizJson }), {

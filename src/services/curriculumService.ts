@@ -12,7 +12,7 @@ export const getCurriculumTopicsForStudent = async (
     .eq("student_id", studentId);
 
   if (trackErr) {
-    console.error("getCurriculumTopicsForStudent", trackErr);
+    
     return [];
   }
 
@@ -29,7 +29,7 @@ export const getCurriculumTopicsForStudent = async (
     .order("title");
 
   if (error) {
-    console.error("getCurriculumTopicsForStudent topics", error);
+    
     return [];
   }
 
@@ -127,7 +127,7 @@ export const getCurriculaForTutor = async (
     .eq("tutor_id", tutorId);
 
   if (error) {
-    console.error("getCurriculaForTutor", error);
+    
     return [];
   }
 
@@ -157,7 +157,7 @@ export const getTracks = async (): Promise<Track[]> => {
     .select("id, name, description")
     .order("name");
   if (error) {
-    console.error("getTracks error", error);
+    
     return [];
   }
   return data ?? [];
@@ -173,7 +173,7 @@ export const getTopicsForTrack = async (
     .eq("track_id", trackId)
     .order("title");
   if (error) {
-    console.error("getTopicsForTrack", error);
+    
     return [];
   }
   type TopicRow = { id: string; title: string; content?: string };
@@ -200,7 +200,7 @@ export const getSkillsForTrack = async (trackId: string): Promise<Skill[]> => {
     .eq("track_id", trackId)
     .order("name");
   if (error) {
-    console.error("getSkillsForTrack", error);
+    
     return [];
   }
   return data ?? [];

@@ -994,10 +994,7 @@ export default function StudentOnboardingWizard({ studentId, onComplete }) {
             .then(({ data, error }) => {
                 if (error) {
                     // The column may not exist yet on some environments. Ignore for now.
-                    console.warn(
-                        "Could not load learning preferences:",
-                        error.message,
-                    );
+                    
                 }
                 if (
                     data && typeof data === "object" &&
@@ -1034,10 +1031,7 @@ export default function StudentOnboardingWizard({ studentId, onComplete }) {
                 } = supabase.storage.from("tutoring-files").getPublicUrl(path);
                 prefsToSave.tutoringFocusFileUrl = publicUrl;
             } else {
-                console.error(
-                    "Failed to upload tutoring focus file",
-                    uploadErr,
-                );
+                
             }
 
             // Replace the File object with basic metadata for reference
@@ -1062,7 +1056,7 @@ export default function StudentOnboardingWizard({ studentId, onComplete }) {
             // Ignore "column does not exist" errors when the migration hasn't run yet.
             // These have code "42703" in Postgres.
             if (error.code !== "42703") {
-                console.error("Failed to save onboarding data", error);
+                
             }
         }
     };

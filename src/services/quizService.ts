@@ -48,7 +48,8 @@ export interface QuizAnswer {
 
 export const generateQuiz = async (
   studentSnapshot: StudentSnapshot,
-  topicPassages: string[],
+  topic: string,
+  difficulty: "easy" | "med" | "hard" = "med",
 ): Promise<Quiz> => {
   try {
     const { data, error } = await supabase.functions.invoke(
@@ -56,15 +57,24 @@ export const generateQuiz = async (
       {
         body: {
           studentSnapshot,
-          topicPassages,
+          lessonContent: { title: topic, content: topic },
+          difficulty,
         },
       },
     );
 
     if (error) throw error;
 
-    // Expect edge function to return { skill_id, quiz: QuizQuestion[] }
-    return data as Quiz;
+    // The edge function returns { success, quiz: { skill_id, questions } }
+    if (data && data.success && data.quiz) {
+      // Transform to match our Quiz interface
+      return {
+        skill_id: data.quiz.skill_id || "general",
+        quiz: data.quiz.questions || [],
+      };
+    }
+
+    throw new Error("Invalid response from quiz generation");
   } catch (error) {
     console.error("Quiz generation error:", error);
     throw error;
@@ -77,6 +87,8 @@ export const submitQuizAnswer = async (
   originalQuestion: QuizQuestion,
 ): Promise<QuizAnswer> => {
   try {
+    // Log the payload for debugging
+
     const { data, error } = await supabase.functions.invoke(
       "grade-quiz-answer",
       {
@@ -90,7 +102,6 @@ export const submitQuizAnswer = async (
     if (error) throw error;
     return data as QuizAnswer;
   } catch (error) {
-    console.error("Quiz grading error:", error);
     throw error;
   }
 };
@@ -100,29 +111,26 @@ export const getStudentMastery = async (
   studentId: string,
 ): Promise<StudentSnapshot | null> => {
   try {
-    // Mock student data
-    const mockStudentSnapshot: StudentSnapshot = {
+    // For now, we'll use demo data that adapts based on the topic
+    // In production, this would fetch real student data from the database
+    const demoStudentSnapshot: StudentSnapshot = {
       student_id: studentId,
-      name: "Alex",
+      name: "Demo Student",
       learning_style: "visual",
-      goals: ["Master calculus", "Improve problem-solving skills"],
+      goals: ["Master the topic", "Improve problem-solving skills"],
       lowest_mastery: [
-        { skill_id: "chain", name: "Chain Rule", mastery: 0.32 },
-        {
-          skill_id: "implicit",
-          name: "Implicit Differentiation",
-          mastery: 0.47,
-        },
-        { skill_id: "limits", name: "Limits", mastery: 0.65 },
+        { skill_id: "basic", name: "Basic Concepts", mastery: 0.4 },
+        { skill_id: "intermediate", name: "Intermediate Skills", mastery: 0.6 },
+        { skill_id: "advanced", name: "Advanced Topics", mastery: 0.8 },
       ],
       current_track: {
-        id: "calc",
-        name: "AP Calculus AB",
+        id: "general",
+        name: "General Learning",
       },
-      deadline_days: 28,
+      deadline_days: 30,
     };
 
-    return mockStudentSnapshot;
+    return demoStudentSnapshot;
   } catch (error) {
     console.error("Error fetching student mastery:", error);
     return null;
@@ -144,7 +152,6 @@ export const getTopicPassages = async (
 
     return mockPassages;
   } catch (error) {
-    console.error("Error fetching topic passages:", error);
     return [];
   }
 };
@@ -156,14 +163,9 @@ export const updateSkillMastery = async (
   delta: number,
 ): Promise<boolean> => {
   try {
-    console.log(
-      `Mock: Updated ${studentId}'s mastery of ${skillId} by ${delta}`,
-    );
-
     // Just return success since we're mocking
     return true;
   } catch (error) {
-    console.error("Error updating skill mastery:", error);
     return false;
   }
 };
@@ -187,7 +189,6 @@ export const getAvailableQuizzes = async (
     if (error) throw error;
     return data || [];
   } catch (error) {
-    console.error("Error fetching available quizzes:", error);
     return IS_DEVELOPMENT ? [] : [];
   }
 };
@@ -205,7 +206,6 @@ export const getQuizHistory = async (studentId: string): Promise<QuizRow[]> => {
     if (error) throw error;
     return data || [];
   } catch (error) {
-    console.error("Error fetching quiz history:", error);
     return IS_DEVELOPMENT ? [] : [];
   }
 };

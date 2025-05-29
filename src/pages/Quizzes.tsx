@@ -44,6 +44,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { IS_DEVELOPMENT } from "@/config/env";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUser } from "@/contexts/UserContext";
+import { logger } from '@/services/logger';
 
 // Rename the old quiz interfaces to avoid conflicts
 interface LegacyQuizQuestion {
@@ -216,8 +217,10 @@ const Quizzes: React.FC = () => {
         setAvailableQuizzes(avail.map(transformRow));
         setQuizHistory(history.map(transformRow));
       } catch (error) {
-        console.error("Error loading quizzes:", error);
-      } finally {
+      logger.debug('Caught error:', error);
+        
+      
+    } finally {
         setIsLoadingQuizzes(false);
       }
     };

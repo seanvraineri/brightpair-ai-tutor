@@ -35,8 +35,13 @@ export const ENDPOINTS = {
   SUPABASE_FUNCTIONS: {
     AI_TUTOR: "ai-tutor",
     GENERATE_FLASHCARDS: "generate-flashcards",
+    GENERATE_QUIZ: "generate-quiz",
+    GRADE_QUIZ_ANSWER: "grade-quiz-answer",
     EXTRACT_PDF: "extract-pdf-text",
     GENERATE_HOMEWORK: "generate_homework",
+    PROCESS_DOCUMENT: "process-document",
+    SKILL_DRIFT: "skill-drift",
+    GENERATE_LESSON: "generate-lesson",
   },
 };
 

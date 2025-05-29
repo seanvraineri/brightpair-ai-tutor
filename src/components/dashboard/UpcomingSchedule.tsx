@@ -152,7 +152,7 @@ const UpcomingSchedule: React.FC = () => {
       if (!error) {
         setAppointments((data as AppointmentRow[]) || []);
       } else {
-        console.error(error);
+        
       }
     };
     fetchUpcoming();

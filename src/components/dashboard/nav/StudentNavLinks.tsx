@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import { BookOpen, Brain, BarChart, GraduationCap, FileCheck } from "lucide-react";
 import NavItem from "./NavItem";
 import { getHomeworkList } from "@/services/homeworkService";
+import { logger } from '@/services/logger';
 
 interface StudentNavLinksProps {
   onItemClick?: () => void;
@@ -23,8 +24,10 @@ const StudentNavLinks: React.FC<StudentNavLinksProps> = ({ onItemClick, collapse
         });
         setPendingHomework(homework.length);
       } catch (error) {
-        console.error("Error fetching pending homework:", error);
-      }
+      logger.debug('Caught error:', error);
+        
+      
+    }
     };
     
     fetchPendingHomework();

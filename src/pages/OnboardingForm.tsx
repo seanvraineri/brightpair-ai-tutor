@@ -91,7 +91,7 @@ const OnboardingForm: React.FC = () => {
       // Navigate to dashboard with walkthrough flag
       navigate("/dashboard?walkthrough=true");
     } catch (error) {
-      console.error("Onboarding submission error:", error);
+      
       toast({
         title: "Submission failed",
         description: "There was an error saving your profile information.",

@@ -50,7 +50,10 @@ serve(async (req: Request) => {
 
   try {
     // Parse the request body
-    const { questionId, studentAnswer } = await req.json();
+    const body = await req.json();
+    // Accept both camelCase and snake_case for compatibility
+    const questionId = body.questionId ?? body.question_id;
+    const studentAnswer = body.studentAnswer ?? body.student_answer;
 
     // Validate required parameters
     if (!questionId || !studentAnswer) {
@@ -93,7 +96,7 @@ Return JSON { is_correct:boolean, feedback:string }`;
       });
       evaluation = JSON.parse(r.choices[0].message.content as string);
     } catch (err) {
-      console.warn("OpenAI grading fallback", err);
+      
       evaluation.feedback = "Could not grade automatically.";
     }
 
@@ -112,7 +115,7 @@ Return JSON { is_correct:boolean, feedback:string }`;
       },
     );
   } catch (error) {
-    console.error("Error grading quiz answer:", error);
+    
 
     return new Response(
       JSON.stringify({

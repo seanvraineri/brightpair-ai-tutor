@@ -28,6 +28,7 @@ import {
   updateHomeworkStatus,
 } from "@/services/homeworkService";
 import { Textarea } from "@/components/ui/textarea";
+import { logger } from '@/services/logger';
 
 interface Student {
   id: string;
@@ -86,13 +87,15 @@ export const HomeworkGenerator: React.FC<HomeworkGeneratorProps> = ({
         setPdfText(text);
       }
     } catch (error) {
-      console.error("Failed to extract PDF text:", error);
+      logger.debug('Caught error:', error);
+      
+    
     }
   };
 
   // Handle PDF upload error
   const handleUploadError = (errorMessage: string) => {
-    console.error("PDF upload error:", errorMessage);
+    
     // Show some error notification to the user
   };
 
@@ -124,8 +127,11 @@ export const HomeworkGenerator: React.FC<HomeworkGeneratorProps> = ({
       setGeneratedHomework(homework);
       setIsPreviewOpen(true);
     } catch (error) {
-      console.error("Error generating homework:", error);
       // Show some error notification to the user
+      logger.debug('Caught error:', error);
+      
+      // Show some error notification to the user
+    
     } finally {
       setIsGenerating(false);
     }
@@ -140,7 +146,9 @@ export const HomeworkGenerator: React.FC<HomeworkGeneratorProps> = ({
         onSuccess();
       }
     } catch (error) {
-      console.error("Error saving homework:", error);
+      logger.debug('Caught error:', error);
+      
+    
     } finally {
       setIsLoading(false);
     }
@@ -155,7 +163,9 @@ export const HomeworkGenerator: React.FC<HomeworkGeneratorProps> = ({
         onSuccess();
       }
     } catch (error) {
-      console.error("Error assigning homework:", error);
+      logger.debug('Caught error:', error);
+      
+    
     } finally {
       setIsLoading(false);
     }

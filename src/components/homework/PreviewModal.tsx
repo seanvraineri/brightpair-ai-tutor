@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Homework, HomeworkQuestion } from '@/types/homework';
 import { X, Edit2, AlertCircle, FileText } from 'lucide-react';
+import { logger } from '@/services/logger';
 
 interface PreviewModalProps {
   isOpen: boolean;
@@ -83,7 +84,9 @@ const PreviewModal: React.FC<PreviewModalProps> = ({
       await onSave(editedHomework);
       onClose();
     } catch (error) {
-      console.error('Error saving homework:', error);
+      logger.debug('Caught error:', error);
+      
+    
     } finally {
       setIsSaving(false);
     }
@@ -99,7 +102,9 @@ const PreviewModal: React.FC<PreviewModalProps> = ({
       });
       onClose();
     } catch (error) {
-      console.error('Error assigning homework:', error);
+      logger.debug('Caught error:', error);
+      
+    
     } finally {
       setIsAssigning(false);
     }

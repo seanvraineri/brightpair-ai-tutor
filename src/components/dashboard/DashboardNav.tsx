@@ -12,6 +12,7 @@ import ParentNavLinks from "./nav/ParentNavLinks";
 import LearningResourcesLinks from "./nav/LearningResourcesLinks";
 import Logo from "@/components/Logo";
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from '@/services/logger';
 
 interface DashboardNavProps {
   isMobileOpen?: boolean;
@@ -41,7 +42,9 @@ const DashboardNav: React.FC<DashboardNavProps> = ({
       await supabase.auth.signOut();
       navigate('/login');
     } catch (error) {
-      console.error('Error signing out:', error);
+      logger.debug('Caught error:', error);
+      
+    
     }
   };
   

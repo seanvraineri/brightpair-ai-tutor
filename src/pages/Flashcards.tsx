@@ -25,6 +25,7 @@ import PrettyMath from "@/components/ui/PrettyMath";
 import { formatMessage } from "@/utils/messageFormatters";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { logger } from '@/services/logger';
 
 const Flashcards: React.FC = () => {
   const [selectedSet, setSelectedSet] = useState<string>("");
@@ -66,7 +67,7 @@ const Flashcards: React.FC = () => {
             setFlashcards([]);
           }
         } catch (error) {
-          console.error("Error loading flashcards:", error);
+          
           setFlashcards([]);
         } finally {
           setIsLoadingCards(false);
@@ -96,8 +97,10 @@ const Flashcards: React.FC = () => {
         const sets = await getFlashcardSets();
         setUserFlashcardSets(sets);
       } catch (error) {
-        console.error("Error fetching flashcard sets:", error);
-      } finally {
+      logger.debug('Caught error:', error);
+        
+      
+    } finally {
         setIsLoading(false);
       }
     };

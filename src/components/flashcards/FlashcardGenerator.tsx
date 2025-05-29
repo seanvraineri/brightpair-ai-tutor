@@ -354,7 +354,7 @@ const FlashcardGenerator: React.FC<FlashcardGeneratorProps> = (
       setTopic("");
       setShowSuggestions(false);
     } catch (error) {
-      console.error("Error generating flashcards:", error);
+      
       toast({
         title: "Generation Failed",
         description: error instanceof Error

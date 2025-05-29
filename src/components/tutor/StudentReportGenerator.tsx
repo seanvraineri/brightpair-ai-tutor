@@ -107,7 +107,7 @@ const StudentReportGenerator: React.FC<StudentReportGeneratorProps> = ({
         ],
       });
     } catch (error) {
-      console.error("Error generating report:", error);
+      
       toast({
         title: "Failed to Generate Report",
         description: "Please try again.",
@@ -148,14 +148,14 @@ const StudentReportGenerator: React.FC<StudentReportGeneratorProps> = ({
 
       if (emailToParent) {
         // In a real app, you would implement email sending here
-        console.log("Would send email to parent with report");
+        
       }
 
       if (data && onReportGenerated) {
         onReportGenerated(data.id);
       }
     } catch (error) {
-      console.error("Error saving report:", error);
+      
       toast({
         title: "Failed to Save Report",
         description: "Please try again.",

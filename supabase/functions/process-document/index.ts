@@ -143,7 +143,7 @@ ${documentContent}`;
 
     if (!openAIResponse.ok) {
       const errorData = await openAIResponse.json();
-      console.error('OpenAI API error:', errorData);
+      
       throw new Error(`OpenAI API error: ${errorData.error?.message || 'Unknown error'}`);
     }
 
@@ -169,7 +169,7 @@ ${documentContent}`;
         back: card.back || 'Missing answer',
       }));
     } catch (parseError) {
-      console.error('Error parsing flashcards:', parseError);
+      
       
       // Fallback to basic structured flashcards
       flashcards = [
@@ -193,7 +193,7 @@ ${documentContent}`;
       }
     );
   } catch (error) {
-    console.error('Error processing document:', error);
+    
 
     return new Response(
       JSON.stringify({

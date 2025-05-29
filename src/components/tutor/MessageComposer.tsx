@@ -46,6 +46,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { IS_DEVELOPMENT } from "@/config/env";
 import { toast } from "@/hooks/use-toast";
+import { logger } from '@/services/logger';
 
 interface Student {
   id: string;
@@ -284,8 +285,9 @@ const MessageComposer: React.FC<MessageComposerProps> = ({
 
         setTemplates(MOCK_TEMPLATES);
       } catch (error) {
-        console.error("Error fetching message composer data:", error);
-      } finally {
+      logger.debug('Caught error:', error);
+      
+    } finally {
         setLoading(false);
       }
     };
@@ -391,7 +393,8 @@ const MessageComposer: React.FC<MessageComposerProps> = ({
       setAiEnhancement(enhancement);
       setUsesEnhanced(true);
     } catch (error) {
-      console.error("Error enhancing message:", error);
+      logger.debug('Caught error:', error);
+    
     } finally {
       setEnhancingMessage(false);
     }
@@ -407,12 +410,12 @@ const MessageComposer: React.FC<MessageComposerProps> = ({
       // Simulate API call for both dev and production
       // until we properly set up the database schema
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      console.log("Sending message:", {
-        to: getParentName(selectedParentId),
-        subject,
-        message: usesEnhanced && aiEnhancement
-          ? aiEnhancement.enhanced
-          : message,
+
+      toast({
+        title: "Message sent",
+        description: `Message sent to ${
+          getParentName(selectedParentId)
+        } about ${getStudentName(selectedStudentId || "")}`,
       });
 
       // Call success callback
@@ -426,15 +429,7 @@ const MessageComposer: React.FC<MessageComposerProps> = ({
       setAiEnhancement(null);
 
       setSendingMessage(false);
-
-      // Show success message
-      toast({
-        title: "Message Sent",
-        description: "Your message was sent successfully.",
-        variant: "default",
-      });
     } catch (error) {
-      console.error("Error sending message:", error);
       setSendingMessage(false);
 
       // Show error message
@@ -455,11 +450,6 @@ const MessageComposer: React.FC<MessageComposerProps> = ({
 
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      console.log("Saving as template:", {
-        title: subject,
-        content: message,
-        tone: selectedTone,
-      });
 
       // Show success message
       toast({
@@ -468,8 +458,6 @@ const MessageComposer: React.FC<MessageComposerProps> = ({
         variant: "default",
       });
     } catch (error) {
-      console.error("Error saving template:", error);
-
       // Show error message
       toast({
         title: "Error Saving Template",

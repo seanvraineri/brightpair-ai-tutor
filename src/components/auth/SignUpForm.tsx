@@ -3,10 +3,16 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
-import { useUser, UserRole, OnboardingStatus } from "@/contexts/UserContext";
+import { OnboardingStatus, UserRole, useUser } from "@/contexts/UserContext";
 import { supabase } from "@/integrations/supabase/client";
 
 interface SignUpFormProps {
@@ -14,9 +20,9 @@ interface SignUpFormProps {
   initialConsultationBooked?: boolean;
 }
 
-const SignUpForm: React.FC<SignUpFormProps> = ({ 
-  initialEmail = "", 
-  initialConsultationBooked = false 
+const SignUpForm: React.FC<SignUpFormProps> = ({
+  initialEmail = "",
+  initialConsultationBooked = false,
 }) => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -46,7 +52,7 @@ const SignUpForm: React.FC<SignUpFormProps> = ({
       role: value as UserRole,
     });
   };
-  
+
   const handleCheckboxChange = (field: string) => {
     setFormData({
       ...formData,
@@ -57,7 +63,7 @@ const SignUpForm: React.FC<SignUpFormProps> = ({
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     if (formData.password !== formData.confirmPassword) {
       toast({
         title: "Passwords do not match",
@@ -80,11 +86,11 @@ const SignUpForm: React.FC<SignUpFormProps> = ({
             consultationBooked: formData.consultationBooked,
             bookingReference: formData.bookingReference,
           },
-        }
+        },
       });
-      
+
       if (error) throw error;
-      
+
       // If we have a session and "remember me" is selected, set a longer session
       if (data.session && formData.rememberMe) {
         await supabase.auth.setSession({
@@ -92,28 +98,32 @@ const SignUpForm: React.FC<SignUpFormProps> = ({
           refresh_token: data.session.refresh_token,
         });
       }
-      
+
       // Update user context
       updateRole(formData.role);
       updateUser({
         name: formData.name,
         email: formData.email,
         role: formData.role,
-        onboardingStatus: formData.consultationBooked ? "consultation-scheduled" : "pending" as OnboardingStatus
+        onboardingStatus: formData.consultationBooked
+          ? "consultation-scheduled"
+          : "pending" as OnboardingStatus,
       });
-      
+
       toast({
         title: "Account created!",
         description: "You've successfully created your account.",
       });
-      
+
       // Navigate based on whether they've already booked a consultation
       navigate(formData.consultationBooked ? "/dashboard" : "/consultation");
-    } catch (error: any) {
-      console.error("Signup error:", error);
+    } catch (error) {
+      const errorMessage = error instanceof Error
+        ? error.message
+        : "An error occurred during registration.";
       toast({
-        title: "Sign up failed",
-        description: error.message || "There was an error creating your account.",
+        title: "Registration failed",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -194,13 +204,13 @@ const SignUpForm: React.FC<SignUpFormProps> = ({
         {/* Consultation booking checkbox - only show if not already set from URL param */}
         {!initialConsultationBooked && (
           <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="consultationBooked" 
+            <Checkbox
+              id="consultationBooked"
               checked={formData.consultationBooked}
-              onCheckedChange={() => handleCheckboxChange('consultationBooked')}
+              onCheckedChange={() => handleCheckboxChange("consultationBooked")}
             />
-            <Label 
-              htmlFor="consultationBooked" 
+            <Label
+              htmlFor="consultationBooked"
               className="text-sm font-medium leading-none cursor-pointer"
             >
               I've already booked a consultation
@@ -211,7 +221,9 @@ const SignUpForm: React.FC<SignUpFormProps> = ({
         {/* Booking reference field - only shown when consultation is booked */}
         {formData.consultationBooked && (
           <div className="space-y-2">
-            <Label htmlFor="bookingReference">Booking Reference (Optional)</Label>
+            <Label htmlFor="bookingReference">
+              Booking Reference (Optional)
+            </Label>
             <Input
               id="bookingReference"
               name="bookingReference"
@@ -227,13 +239,13 @@ const SignUpForm: React.FC<SignUpFormProps> = ({
         )}
 
         <div className="flex items-center space-x-2">
-          <Checkbox 
-            id="rememberMe" 
+          <Checkbox
+            id="rememberMe"
             checked={formData.rememberMe}
-            onCheckedChange={() => handleCheckboxChange('rememberMe')}
+            onCheckedChange={() => handleCheckboxChange("rememberMe")}
           />
-          <Label 
-            htmlFor="rememberMe" 
+          <Label
+            htmlFor="rememberMe"
             className="text-sm font-medium leading-none cursor-pointer"
           >
             Stay signed in for 30 days
@@ -242,7 +254,11 @@ const SignUpForm: React.FC<SignUpFormProps> = ({
       </div>
 
       <div className="mt-6">
-        <Button type="submit" className="w-full bg-brightpair hover:bg-brightpair-600" disabled={isLoading}>
+        <Button
+          type="submit"
+          className="w-full bg-brightpair hover:bg-brightpair-600"
+          disabled={isLoading}
+        >
           {isLoading ? "Creating Account..." : "Sign Up"}
         </Button>
       </div>

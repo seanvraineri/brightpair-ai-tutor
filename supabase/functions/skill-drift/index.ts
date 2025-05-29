@@ -13,14 +13,14 @@ Deno.serve(async (_req) => {
     // Call the mastery decay function
     await supabase.rpc('decay_mastery');
     
-    console.log("Skill mastery decay process completed successfully");
+    
     
     return new Response(
       JSON.stringify({ success: true, message: "Skill mastery decay complete" }),
       { headers: { "Content-Type": "application/json" } }
     );
   } catch (error) {
-    console.error("Error in skill mastery decay:", error);
+    
     
     return new Response(
       JSON.stringify({ success: false, error: error.message }),

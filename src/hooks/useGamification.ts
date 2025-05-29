@@ -5,6 +5,7 @@ import {
   Badge,
   User,
 } from "@/contexts/UserTypes";
+import { logger } from '@/services/logger';
 
 // Define activity types and their XP rewards
 export enum ActivityType {
@@ -123,8 +124,10 @@ export const useGamification = (
           setActivityLog(JSON.parse(savedLog));
         }
       } catch (error) {
-        console.error("Error loading activity data from localStorage:", error);
-      }
+      logger.debug('Caught error:', error);
+        
+      
+    }
     };
 
     loadActivityData();
@@ -183,7 +186,7 @@ export const useGamification = (
 
       return newActivity;
     } catch (error) {
-      console.error("Error tracking activity:", error);
+      
       return null;
     }
   };

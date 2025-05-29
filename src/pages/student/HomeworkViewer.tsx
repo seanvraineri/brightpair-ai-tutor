@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Homework, HomeworkQuestion } from '@/types/homework';
 import { getHomework, updateHomeworkStatus } from '@/services/homeworkService';
 import StatusPill from '@/components/homework/StatusPill';
+import { logger } from '@/services/logger';
 
 const HomeworkViewer: React.FC = () => {
   const navigate = useNavigate();
@@ -47,7 +48,9 @@ const HomeworkViewer: React.FC = () => {
         setAnswers(initialAnswers);
       }
     } catch (error) {
-      console.error('Error fetching homework:', error);
+      logger.debug('Caught error:', error);
+      
+    
     } finally {
       setLoading(false);
     }
@@ -81,7 +84,9 @@ const HomeworkViewer: React.FC = () => {
         });
       }
     } catch (error) {
-      console.error('Error submitting homework:', error);
+      logger.debug('Caught error:', error);
+      
+    
     } finally {
       setIsSubmitting(false);
     }

@@ -76,7 +76,7 @@ const ConsultationScheduling: React.FC = () => {
       // Navigate to onboarding
       navigate("/onboarding");
     } catch (error) {
-      console.error("Scheduling error:", error);
+      
       toast({
         title: "Scheduling failed",
         description: "There was an error scheduling your consultation.",

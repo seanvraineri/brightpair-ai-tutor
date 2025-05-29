@@ -164,7 +164,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ onFlashcardsGenerated }) =>
       }
       
     } catch (error) {
-      console.error("Error processing content:", error);
+      
       toast({
         title: "Processing failed",
         description: error instanceof Error ? error.message : "Failed to process your content",

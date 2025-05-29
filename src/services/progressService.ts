@@ -148,7 +148,7 @@ export const getStudentSkills = async (
         .eq("student_id", studentId);
 
     if (error) {
-        console.error("getStudentSkills", error);
+        
         return [];
     }
 

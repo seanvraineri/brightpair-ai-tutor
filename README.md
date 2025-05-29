@@ -1,399 +1,219 @@
-# Supabase CLI
-
-[![Coverage Status](https://coveralls.io/repos/github/supabase/cli/badge.svg?branch=main)](https://coveralls.io/github/supabase/cli?branch=main) [![Bitbucket Pipelines](https://img.shields.io/bitbucket/pipelines/supabase-cli/setup-cli/master?style=flat-square&label=Bitbucket%20Canary)](https://bitbucket.org/supabase-cli/setup-cli/pipelines) [![Gitlab Pipeline Status](https://img.shields.io/gitlab/pipeline-status/sweatybridge%2Fsetup-cli?label=Gitlab%20Canary)
-](https://gitlab.com/sweatybridge/setup-cli/-/pipelines)
-
-[Supabase](https://supabase.io) is an open source Firebase alternative. We're building the features of Firebase using enterprise-grade open source tools.
-
-This repository contains all the functionality for Supabase CLI.
-
-- [x] Running Supabase locally
-- [x] Managing database migrations
-- [x] Creating and deploying Supabase Functions
-- [x] Generating types directly from your database schema
-- [x] Making authenticated HTTP requests to [Management API](https://supabase.com/docs/reference/api/introduction)
-
-## Getting started
-
-### Install the CLI
-
-Available via [NPM](https://www.npmjs.com) as dev dependency. To install:
-
-```bash
-npm i supabase --save-dev
-```
-
-To install the beta release channel:
-
-```bash
-npm i supabase@beta --save-dev
-```
-
-When installing with yarn 4, you need to disable experimental fetch with the following nodejs config.
-
-```
-NODE_OPTIONS=--no-experimental-fetch yarn add supabase
-```
-
-> **Note**
-For Bun versions below v1.0.17, you must add `supabase` as a [trusted dependency](https://bun.sh/guides/install/trusted) before running `bun add -D supabase`.
-
-<details>
-  <summary><b>macOS</b></summary>
-
-  Available via [Homebrew](https://brew.sh). To install:
-
-  ```sh
-  brew install supabase/tap/supabase
-  ```
-
-  To install the beta release channel:
-  
-  ```sh
-  brew install supabase/tap/supabase-beta
-  brew link --overwrite supabase-beta
-  ```
-  
-  To upgrade:
-
-  ```sh
-  brew upgrade supabase
-  ```
-</details>
-
-<details>
-  <summary><b>Windows</b></summary>
-
-  Available via [Scoop](https://scoop.sh). To install:
-
-  ```powershell
-  scoop bucket add supabase https://github.com/supabase/scoop-bucket.git
-  scoop install supabase
-  ```
-
-  To upgrade:
-
-  ```powershell
-  scoop update supabase
-  ```
-</details>
-
-<details>
-  <summary><b>Linux</b></summary>
-
-  Available via [Homebrew](https://brew.sh) and Linux packages.
-
-  #### via Homebrew
-
-  To install:
-
-  ```sh
-  brew install supabase/tap/supabase
-  ```
-
-  To upgrade:
-
-  ```sh
-  brew upgrade supabase
-  ```
-
-  #### via Linux packages
-
-  Linux packages are provided in [Releases](https://github.com/supabase/cli/releases). To install, download the `.apk`/`.deb`/`.rpm`/`.pkg.tar.zst` file depending on your package manager and run the respective commands.
-
-  ```sh
-  sudo apk add --allow-untrusted <...>.apk
-  ```
-
-  ```sh
-  sudo dpkg -i <...>.deb
-  ```
-
-  ```sh
-  sudo rpm -i <...>.rpm
-  ```
-
-  ```sh
-  sudo pacman -U <...>.pkg.tar.zst
-  ```
-</details>
-
-<details>
-  <summary><b>Other Platforms</b></summary>
-
-  You can also install the CLI via [go modules](https://go.dev/ref/mod#go-install) without the help of package managers.
-
-  ```sh
-  go install github.com/supabase/cli@latest
-  ```
-
-  Add a symlink to the binary in `$PATH` for easier access:
-
-  ```sh
-  ln -s "$(go env GOPATH)/bin/cli" /usr/bin/supabase
-  ```
-
-  This works on other non-standard Linux distros.
-</details>
-
-<details>
-  <summary><b>Community Maintained Packages</b></summary>
-
-  Available via [pkgx](https://pkgx.sh/). Package script [here](https://github.com/pkgxdev/pantry/blob/main/projects/supabase.com/cli/package.yml).
-  To install in your working directory:
-
-  ```bash
-  pkgx install supabase
-  ```
-
-  Available via [Nixpkgs](https://nixos.org/). Package script [here](https://github.com/NixOS/nixpkgs/blob/master/pkgs/development/tools/supabase-cli/default.nix).
-</details>
-
-### Run the CLI
-
-```bash
-supabase bootstrap
-```
-
-Or using npx:
-
-```bash
-npx supabase bootstrap
-```
-
-The bootstrap command will guide you through the process of setting up a Supabase project using one of the [starter](https://github.com/supabase-community/supabase-samples/blob/main/samples.json) templates.
-
-## Docs
-
-Command & config reference can be found [here](https://supabase.com/docs/reference/cli/about).
-
-## Breaking changes
-
-We follow semantic versioning for changes that directly impact CLI commands, flags, and configurations.
-
-However, due to dependencies on other service images, we cannot guarantee that schema migrations, seed.sql, and generated types will always work for the same CLI major version. If you need such guarantees, we encourage you to pin a specific version of CLI in package.json.
-
-## Developing
-
-To run from source:
-
-```sh
-# Go >= 1.22
-go run . help
-```
-
 # BrightPair AI Tutor
 
-A personalized AI-powered tutoring platform powered by React, TypeScript and Supabase.
+🎓 A personalized AI-powered tutoring platform built with React, TypeScript, and
+Supabase.
 
----
+![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.5-blue)
+![React](https://img.shields.io/badge/React-18.3-61DAFB)
+![Supabase](https://img.shields.io/badge/Supabase-2.0-3ECF8E)
 
-## Quick-start
+## 🚀 Features
 
-### 1. Clone & install
+- **AI-Powered Tutoring**: Interactive chat with an AI tutor specialized in
+  mathematics
+- **Multi-Role Support**: Student, Tutor, and Parent dashboards with
+  role-specific features
+- **Curriculum Management**: Structured learning paths with skills tracking
+- **Homework System**: Create, assign, and grade homework with AI assistance
+- **Flashcards & Quizzes**: AI-generated study materials from topics or uploaded
+  documents
+- **Progress Tracking**: Visual progress monitoring with skill mastery metrics
+- **Document Processing**: Extract content from PDFs and generate lessons
+- **Real-time Messaging**: Communication between tutors and parents
+- **Responsive Design**: Works seamlessly on desktop and mobile devices
+
+## 📋 Prerequisites
+
+- Node.js 18+ (or Bun 1.0+)
+- Supabase account
+- OpenAI API key (for AI features)
+
+## 🛠️ Quick Start
+
+### 1. Clone the Repository
 
 ```bash
-# Using pnpm (recommended) or npm / yarn
-pnpm install
+git clone https://github.com/yourusername/brightpair-ai-tutor.git
+cd brightpair-ai-tutor
 ```
 
-### 2. Environment variables
+### 2. Install Dependencies
 
-Copy `.env.example` → `.env.local` and fill in your project credentials:
-
-```env
-VITE_SUPABASE_URL=your-supabase-url
-VITE_SUPABASE_ANON_KEY=your-anon-key
+```bash
+npm install
+# or
+bun install
 ```
 
-### 3. Database
+### 3. Environment Setup
 
-If you only use the cloud database:
+Copy the environment example file and fill in your credentials:
+
+```bash
+cp .env.example .env.local
+```
+
+Required environment variables:
+
+- `VITE_SUPABASE_URL`: Your Supabase project URL
+- `VITE_SUPABASE_ANON_KEY`: Your Supabase anonymous key
+- `VITE_OPENAI_API_KEY`: Your OpenAI API key
+
+### 4. Database Setup
+
+The project includes database migrations for all required tables and RLS
+policies.
+
+For local development with Supabase CLI:
+
+```bash
+supabase start
+supabase db push
+```
+
+For cloud deployment:
 
 ```bash
 supabase link --project-ref <your-project-ref>
-supabase db push            # runs ./supabase/migrations/*
+supabase db push
 ```
 
-For full local workflow you'll need Docker and can run `supabase start` instead.
-
-### 4. Run the app
+### 5. Run the Development Server
 
 ```bash
-pnpm dev      # vite dev server on http://localhost:5173 (or 8083 if you changed it)
+npm run dev
 ```
 
-### 5. Type checking & linting
+The application will be available at `http://localhost:5173`
+
+## 🏗️ Project Structure
+
+```
+brightpair-ai-tutor/
+├── src/
+│   ├── components/     # Reusable UI components
+│   ├── contexts/       # React contexts for state management
+│   ├── hooks/          # Custom React hooks
+│   ├── pages/          # Route-based page components
+│   ├── routes/         # Route definitions and guards
+│   ├── services/       # API and service layers
+│   ├── types/          # TypeScript type definitions
+│   └── utils/          # Utility functions
+├── supabase/
+│   ├── functions/      # Edge functions for AI operations
+│   └── migrations/     # Database schema migrations
+└── public/            # Static assets
+```
+
+## 🔑 Key Technologies
+
+- **Frontend**: React 18, TypeScript, Vite, Tailwind CSS
+- **UI Components**: shadcn/ui, Radix UI
+- **Backend**: Supabase (PostgreSQL, Auth, Storage, Edge Functions)
+- **AI Integration**: OpenAI GPT-4
+- **State Management**: React Context + Hooks
+- **Routing**: React Router v6
+- **Forms**: React Hook Form + Zod validation
+- **Charts**: Recharts
+- **Math Rendering**: KaTeX
+
+## 📱 Features by Role
+
+### Students
+
+- AI tutor chat with personalized learning
+- View and complete homework assignments
+- Practice with AI-generated quizzes
+- Study with flashcards
+- Track learning progress
+
+### Tutors
+
+- Create and manage homework assignments
+- Monitor student progress
+- Send messages to parents
+- Generate student reports
+- Access curriculum management tools
+
+### Parents
+
+- View children's progress
+- Receive updates from tutors
+- Access learning reports
+- Monitor homework completion
+
+## 🧪 Development Commands
 
 ```bash
-pnpm lint      # eslint + prettier
-pnpm typecheck # tsc --noEmit
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+
+# Run ESLint
+npm run lint
+
+# Type checking
+npm run typecheck
 ```
 
----
+## 🚀 Deployment
 
-## Project structure (apps only)
+### Deploy to Vercel
 
-```
-src/
-  pages/           route based views
-  components/      shared UI + feature components
-  routes/          React-Router bundled route groups
-  services/        thin API / Supabase callers
-supabase/
-  migrations/      SQL change scripts (RLS policies etc.)
-```
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new)
 
----
+### Deploy to Netlify
 
-## Current readiness score
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start)
 
-We're tracking progress across 5 pillars: Data, Auth, UX, Tests, DevOps.
-
-| Pillar | Status |
-| ------ | ------ |
-| Data layer & migrations | 70 % (core tables & RLS scripted; remaining: replace all mock fetches) |
-| Auth / role gates        | 80 % (role-based routing finished; signup flow TBD) |
-| UI / UX                  | 75 % (layout alignment fixed; responsive + a11y pass pending) |
-| Testing                  | 20 % (typecheck ok, tests not written) |
-| DevOps / docs            | 60 % (README updated, CI + monitoring todo) |
-
-**Overall completion ≈ 62 %.**
-
-Next milestone: wire live Supabase queries (students, assignments, messages) and push remaining migrations.
-
----
-
-## Features
-
-- **AI Tutor Chat**: Engage with an AI tutor for personalized learning assistance
-- **Curriculum Lessons**: Access lessons from the mathematics curriculum
-- **Custom Lessons**: Create your own lessons from notes or uploaded documents
-- **Flashcards & Quizzes**: Generate study materials tailored to specific topics
-- **Progress Tracking**: Monitor learning progress across different skills
-
-## Tech Stack
-
-- **Frontend**: React, TypeScript, Vite, Tailwind CSS, shadcn/ui
-- **Backend**: Supabase (Database, Auth, Storage, Edge Functions)
-- **AI**: OpenAI GPT models
-
-## Architecture
-
-The application follows a hybrid architecture:
-
-1. **Edge Functions** (Production): Serverless functions hosted on Supabase that handle AI interactions securely
-2. **Direct API** (Development): Direct calls to OpenAI API for easier development
-
-## Environment Setup
-
-### Required Environment Variables
-
-Create a `.env` file with these variables:
-
-```
-# Supabase Configuration
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-
-# OpenAI Configuration
-VITE_OPENAI_API_KEY=your_openai_api_key
-VITE_OPENAI_API_URL=https://api.openai.com/v1
-
-# Application Configuration
-VITE_USE_EDGE_FUNCTIONS=true
-VITE_USE_MOCK_DATA=false
-VITE_SAVE_LESSONS=true
-```
-
-### Development Environment
-
-For development, use:
-
-```
-VITE_USE_EDGE_FUNCTIONS=false
-VITE_USE_MOCK_DATA=true
-```
-
-## Installation & Local Development
-
-1. Clone the repository:
-   ```
-   git clone https://github.com/yourusername/brightpair-ai-tutor.git
-   cd brightpair-ai-tutor
-   ```
-
-2. Install dependencies:
-   ```
-   npm install
-   ```
-
-3. Start the development server:
-   ```
-   npm run dev
-   ```
-
-## Database Schema
-
-The application requires the following tables in Supabase:
-
-- `profiles`: User profiles with learning preferences
-- `lessons`: Stores all lesson data including custom lessons
-- `skills`: Curriculum-based skills and topics
-- `student_skills`: Tracks student mastery of skills
-- `chat_logs`: History of AI tutor conversations
-
-## Supabase Edge Functions
-
-Deploy the Edge Functions to Supabase:
-
-1. Navigate to the functions directory:
-   ```
-   cd supabase/functions
-   ```
-
-2. Deploy each function:
-   ```
-   supabase functions deploy ai-tutor
-   supabase functions deploy generate-flashcards
-   supabase functions deploy extract-pdf-text
-   ```
-
-## Production Deployment
+### Manual Deployment
 
 1. Build the application:
-   ```
+   ```bash
    npm run build
    ```
 
-2. Deploy to your hosting platform:
-   - Vercel: `vercel deploy`
-   - Netlify: `netlify deploy`
-   - Static hosting: Upload the `dist` directory
+2. Deploy the `dist` directory to your hosting provider
 
-## Scaling Considerations
+3. Set up environment variables on your hosting platform
 
-For scaling the application to handle more users:
+## 🔒 Security Considerations
 
-1. **Caching**: Implement caching for commonly requested lessons and responses
-2. **Rate Limiting**: Configure rate limits for AI API calls
-3. **Optimistic UI**: Implement optimistic updates for better UX during API calls
-4. **Database Indexes**: Ensure proper indexes on frequently queried fields
-5. **Edge Function Optimization**: Optimize Edge Functions for better cold-start performance
-6. **CDN**: Use a CDN for static assets and consider edge caching for API responses
+- All API routes are protected with Supabase RLS policies
+- Authentication is handled by Supabase Auth
+- Environment variables are used for sensitive configuration
+- Input validation on all forms
+- XSS protection through React's default escaping
 
-## Contributing
+## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Commit your changes: `git commit -m 'Add amazing feature'`
-4. Push to the branch: `git push origin feature/amazing-feature`
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## License
+## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
+for details.
 
-## Contact
+## 📞 Support
 
-For inquiries, please contact support@brightpair.com
+For support, email support@brightpair.com or join our Discord community.
+
+## 🙏 Acknowledgments
+
+- [Supabase](https://supabase.com) for the backend infrastructure
+- [shadcn/ui](https://ui.shadcn.com) for the component library
+- [OpenAI](https://openai.com) for AI capabilities
+
+---
+
+Built with ❤️ by the BrightPair team

@@ -5,6 +5,7 @@ import { HomeworkListItem } from '@/types/homework';
 import { getHomeworkList } from '@/services/homeworkService';
 import StatusPill from '@/components/homework/StatusPill';
 import { Calendar, Clock } from 'lucide-react';
+import { logger } from '@/services/logger';
 
 const Homework: React.FC = () => {
   const navigate = useNavigate();
@@ -23,8 +24,10 @@ const Homework: React.FC = () => {
         const homework = await getHomeworkList({ student_id: studentId });
         setHomeworkList(homework);
       } catch (error) {
-        console.error('Error fetching homework:', error);
-      } finally {
+      logger.debug('Caught error:', error);
+        
+      
+    } finally {
         setLoading(false);
       }
     };

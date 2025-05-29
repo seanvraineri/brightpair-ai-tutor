@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { MapPin } from "lucide-react";
 import { TutorCardProps } from "./TutorCard";
 import { Link } from "react-router-dom";
+import { logger } from '@/services/logger';
 
 // Mock data with geolocation for tutors
 interface GeoTutorData extends TutorCardProps {
@@ -135,7 +136,9 @@ const TutorMapView: React.FC<TutorMapViewProps> = ({
         mapRef.current = map;
       });
     } catch (error) {
-      console.error("Error initializing Mapbox map:", error);
+      logger.debug('Caught error:', error);
+      
+    
     }
   };
 

@@ -9,6 +9,15 @@ import { Conversation, Message } from "@/types/messages";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
 
+// Type for Supabase message row
+interface MessageRow {
+  id: string;
+  content: string;
+  created_at: string;
+  sender_id: string;
+  receiver_id: string;
+}
+
 // Helper to build conversations from message rows
 const buildConversations = (
   msgs: Message[],
@@ -82,11 +91,10 @@ export const MessageProvider: React.FC<{ children: ReactNode }> = (
         .order("created_at", { ascending: false });
 
       if (error) {
-        console.error("Fetch messages error", error);
         return;
       }
 
-      const rows = (data ?? []).map((r: any) => ({
+      const rows = (data ?? []).map((r: MessageRow) => ({
         id: r.id,
         senderId: r.sender_id,
         senderName: r.sender_id,
@@ -121,7 +129,6 @@ export const MessageProvider: React.FC<{ children: ReactNode }> = (
       .single();
 
     if (error) {
-      console.error("sendMessage error", error);
       return;
     }
 

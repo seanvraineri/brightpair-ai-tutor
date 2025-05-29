@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { logger } from "@/services/logger";
 
 // Types
 interface Referral {
@@ -72,17 +73,12 @@ export function useReferralTracker(referralData: Referral[]) {
   // Toggle selection of a referral
   const toggleReferralSelection = (id: string) => {
     setSelectedReferral((prevId) => prevId === id ? null : id);
-    console.log(
-      `Referral ${id} details ${
-        selectedReferral === id ? "collapsed" : "expanded"
-      }`,
-    );
   };
 
   // Handle time range change
   const handleTimeRangeChange = (value: string) => {
     setTimeRange(value);
-    console.log(`Time range changed to: ${value}`);
+
     toast.success(
       `Filtered to show ${value === "all" ? "all time" : value} data`,
     );
@@ -126,7 +122,6 @@ export function useReferralTracker(referralData: Referral[]) {
     navigator.clipboard.writeText(referralLink)
       .then(() => {
         toast.success("Referral link copied to clipboard!");
-        console.log("New referral link generated:", referralLink);
       })
       .catch(() => {
         toast.error("Failed to copy referral link");
@@ -138,12 +133,11 @@ export function useReferralTracker(referralData: Referral[]) {
   // Debug validation
   useEffect(() => {
     if (isLoaded) {
-      console.log("Referral tracker loaded successfully");
-      console.log("Current metrics:", metrics);
-      console.log(
-        "Referral data is valid:",
-        validateReferralData(referralData),
-      );
+      logger.debug("Referral tracker loaded", {
+        totalReferrals: metrics?.totalReferrals,
+        activeReferrals: metrics?.activeReferrals,
+        totalCommission: metrics?.totalCommission,
+      });
     }
   }, [isLoaded, metrics]);
 

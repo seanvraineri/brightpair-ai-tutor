@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { OnboardingStatus, User, UserRole } from "@/contexts/UserTypes";
 import { getPersonalizedAchievements } from "@/utils/gamificationUtils";
 import { Session } from "@supabase/supabase-js";
+import { logger } from '@/services/logger';
 
 export const useUserProfile = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -25,6 +26,7 @@ export const useUserProfile = () => {
           role: data.role as UserRole,
           onboardingStatus: data.onboarding_status as OnboardingStatus,
           nextConsultationDate: data.next_consultation_date,
+          learning_style: (data.learning_preferences as any)?.style || "visual",
           gamification: {
             level: 3,
             xp: 750,
@@ -60,7 +62,8 @@ export const useUserProfile = () => {
         });
       }
     } catch (error) {
-      console.error("Error fetching user profile:", error);
+      logger.debug('Caught error:', error);
+    
     }
   };
 
@@ -94,8 +97,9 @@ export const useUserProfile = () => {
           if (error) throw error;
         }
       } catch (error) {
-        console.error("Error updating user profile:", error);
-      }
+      logger.debug('Caught error:', error);
+      
+    }
     }
   };
 
@@ -115,8 +119,9 @@ export const useUserProfile = () => {
 
         if (error) throw error;
       } catch (error) {
-        console.error("Error updating onboarding status:", error);
-      }
+      logger.debug('Caught error:', error);
+      
+    }
     }
   };
 
@@ -147,8 +152,9 @@ export const useUserProfile = () => {
 
         if (error) throw error;
       } catch (error) {
-        console.error("Error updating consultation date:", error);
-      }
+      logger.debug('Caught error:', error);
+      
+    }
     }
   };
 
@@ -168,8 +174,9 @@ export const useUserProfile = () => {
 
         if (error) throw error;
       } catch (error) {
-        console.error("Error updating role:", error);
-      }
+      logger.debug('Caught error:', error);
+      
+    }
     }
   };
 

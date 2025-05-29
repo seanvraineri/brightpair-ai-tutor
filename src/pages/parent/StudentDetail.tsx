@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, LogOut } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/services/logger';
 
 interface StudentDetailProps {
   isParentView?: boolean;
@@ -18,7 +19,9 @@ const StudentDetail: React.FC<StudentDetailProps> = ({ isParentView = false }) =
       await supabase.auth.signOut();
       navigate('/login');
     } catch (error) {
-      console.error('Error signing out:', error);
+      logger.debug('Caught error:', error);
+      
+    
     }
   };
   

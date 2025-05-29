@@ -159,7 +159,7 @@ export const StudentDetail = () => {
   // Force browser to reload the component (added to help with caching issues)
   useEffect(() => {
     // This is a dummy effect to help with hot reloading
-    console.log("StudentDetail component loaded/reloaded");
+    
   }, []);
   
   return (

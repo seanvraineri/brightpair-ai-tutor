@@ -40,6 +40,7 @@ import {
   TrendingUp,
   User,
 } from "lucide-react";
+import { logger } from '@/services/logger';
 
 interface Student {
   id: string;
@@ -97,8 +98,10 @@ const ParentDashboard: React.FC = () => {
         const rep = await getReportsForParent(parentId);
         setReports(rep);
       } catch (error) {
-        console.error("Error fetching dashboard data:", error);
-      } finally {
+      logger.debug('Caught error:', error);
+        
+      
+    } finally {
         setLoading(false);
       }
     };
@@ -167,7 +170,9 @@ const ParentDashboard: React.FC = () => {
       await supabase.auth.signOut();
       navigate("/login");
     } catch (error) {
-      console.error("Error signing out:", error);
+      logger.debug('Caught error:', error);
+      
+    
     }
   };
 

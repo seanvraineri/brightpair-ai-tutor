@@ -619,16 +619,14 @@ const Reports: React.FC = () => {
       (objectivesAchieved / totalObjectives) * 100,
     );
 
-    const averageEngagement =
-      sessionAnalyticsData.reduce(
-        (acc, session) => acc + session.studentEngagement,
-        0,
-      ) / totalSessions;
-    const averageComprehension =
-      sessionAnalyticsData.reduce(
-        (acc, session) => acc + session.studentComprehension,
-        0,
-      ) / totalSessions;
+    const averageEngagement = sessionAnalyticsData.reduce(
+      (acc, session) => acc + session.studentEngagement,
+      0,
+    ) / totalSessions;
+    const averageComprehension = sessionAnalyticsData.reduce(
+      (acc, session) => acc + session.studentComprehension,
+      0,
+    ) / totalSessions;
 
     return {
       totalSessions,
@@ -731,32 +729,46 @@ const Reports: React.FC = () => {
             </Select>
             <Button
               variant="outline"
-              onClick={() => exportPdf(reportData || {})}
+              onClick={() => {
+                const validData = reportData && !("error" in reportData)
+                  ? reportData
+                  : {
+                    active_students: undefined,
+                    hours: undefined,
+                    avg_score: undefined,
+                    low_mastery: undefined,
+                  };
+                exportPdf(validData);
+              }}
             >
               <Download className="h-4 w-4 mr-2" />
               PDF
             </Button>
             <Button
               variant="outline"
-              onClick={() =>
+              onClick={() => {
+                const validData = reportData && !("error" in reportData)
+                  ? reportData
+                  : null;
                 exportCsv([
                   [
                     "Active Students",
-                    reportData?.active_students?.toString() || "N/A",
+                    validData?.active_students?.toString() || "N/A",
                   ],
                   [
                     "Hours",
-                    reportData?.hours
-                      ? Math.round(reportData.hours / 3600).toString()
+                    validData?.hours
+                      ? Math.round(validData.hours / 3600).toString()
                       : "N/A",
                   ],
                   [
                     "Avg Score",
-                    reportData?.avg_score
-                      ? Math.round(reportData.avg_score).toString()
+                    validData?.avg_score
+                      ? Math.round(validData.avg_score).toString()
                       : "N/A",
                   ],
-                ])}
+                ]);
+              }}
             >
               <Download className="h-4 w-4 mr-2" />
               CSV
@@ -765,7 +777,9 @@ const Reports: React.FC = () => {
         </div>
 
         {/* Add KPI Tiles from API Data */}
-        {reportData && <KpiTiles data={reportData} />}
+        {reportData && !("error" in reportData) && (
+          <KpiTiles data={reportData} />
+        )}
 
         {/* Heat map - moved to its own section with proper width constraints */}
         <div className="my-6">
@@ -1141,51 +1155,45 @@ const Reports: React.FC = () => {
                                   data={[
                                     {
                                       month: "Jan",
-                                      score:
-                                        getStudentById(selectedStudent)
-                                          ?.initialAssessment || 0,
+                                      score: getStudentById(selectedStudent)
+                                        ?.initialAssessment || 0,
                                     },
                                     {
                                       month: "Feb",
-                                      score:
-                                        getStudentById(selectedStudent)
-                                            ?.initialAssessment
-                                          ? getStudentById(selectedStudent)
-                                            ?.initialAssessment + 5
-                                          : 0,
+                                      score: getStudentById(selectedStudent)
+                                          ?.initialAssessment
+                                        ? getStudentById(selectedStudent)
+                                          ?.initialAssessment + 5
+                                        : 0,
                                     },
                                     {
                                       month: "Mar",
-                                      score:
-                                        getStudentById(selectedStudent)
-                                            ?.initialAssessment
-                                          ? getStudentById(selectedStudent)
-                                            ?.initialAssessment + 7
-                                          : 0,
+                                      score: getStudentById(selectedStudent)
+                                          ?.initialAssessment
+                                        ? getStudentById(selectedStudent)
+                                          ?.initialAssessment + 7
+                                        : 0,
                                     },
                                     {
                                       month: "Apr",
-                                      score:
-                                        getStudentById(selectedStudent)
-                                            ?.initialAssessment
-                                          ? getStudentById(selectedStudent)
-                                            ?.initialAssessment + 10
-                                          : 0,
+                                      score: getStudentById(selectedStudent)
+                                          ?.initialAssessment
+                                        ? getStudentById(selectedStudent)
+                                          ?.initialAssessment + 10
+                                        : 0,
                                     },
                                     {
                                       month: "May",
-                                      score:
-                                        getStudentById(selectedStudent)
-                                            ?.initialAssessment
-                                          ? getStudentById(selectedStudent)
-                                            ?.initialAssessment + 11
-                                          : 0,
+                                      score: getStudentById(selectedStudent)
+                                          ?.initialAssessment
+                                        ? getStudentById(selectedStudent)
+                                          ?.initialAssessment + 11
+                                        : 0,
                                     },
                                     {
                                       month: "Jun",
-                                      score:
-                                        getStudentById(selectedStudent)
-                                          ?.currentScore || 0,
+                                      score: getStudentById(selectedStudent)
+                                        ?.currentScore || 0,
                                     },
                                   ]}
                                   margin={{
@@ -1662,8 +1670,7 @@ const Reports: React.FC = () => {
                                                 : "text-gray-500"
                                             }`}
                                           >
-                                            {objective}{" "}
-                                            {index <
+                                            {objective} {index <
                                                 session.objectivesAchieved &&
                                               "✓"}
                                           </li>
@@ -1993,8 +2000,7 @@ const Reports: React.FC = () => {
                       </TableHeader>
                       <TableBody>
                         {assignmentsData
-                          .filter((a) =>
-                            assignmentFilter === "all" ||
+                          .filter((a) => assignmentFilter === "all" ||
                             a.status === assignmentFilter
                           )
                           .map((assignment) => (
@@ -2080,7 +2086,7 @@ const Reports: React.FC = () => {
                                                       </div>
                                                     </div>
                                                   </div>
-                                                )
+                                                ),
                                               )}
                                             </div>
                                           </div>

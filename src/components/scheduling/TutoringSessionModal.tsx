@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { format } from "date-fns";
 import {
@@ -22,10 +21,22 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 
+export interface SessionData {
+  title: string;
+  subject: string;
+  description: string;
+  date: Date;
+  time: string;
+  duration: number;
+  mode: "remote" | "in-person";
+  tutorId?: string;
+  tutorName?: string;
+}
+
 interface TutoringSessionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSchedule: (sessionData: any) => void;
+  onSchedule: (sessionData: SessionData) => void;
   selectedDate: Date | undefined;
   selectedTimeSlot: string | null;
   selectedTutorId?: string;
@@ -46,11 +57,11 @@ const TutoringSessionModal: React.FC<TutoringSessionModalProps> = ({
   const [subject, setSubject] = useState("");
   const [description, setDescription] = useState("");
   const [duration, setDuration] = useState("60");
-  const [mode, setMode] = useState("remote");
+  const [mode, setMode] = useState<"remote" | "in-person">("remote");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!selectedDate || !selectedTimeSlot) {
       toast({
         title: "Error",
@@ -59,7 +70,7 @@ const TutoringSessionModal: React.FC<TutoringSessionModalProps> = ({
       });
       return;
     }
-    
+
     onSchedule({
       title,
       subject,
@@ -71,7 +82,7 @@ const TutoringSessionModal: React.FC<TutoringSessionModalProps> = ({
       tutorId: selectedTutorId,
       tutorName: selectedTutorName,
     });
-    
+
     // Reset form
     setTitle("");
     setSubject("");
@@ -87,7 +98,9 @@ const TutoringSessionModal: React.FC<TutoringSessionModalProps> = ({
           <DialogTitle>Schedule Tutoring Session</DialogTitle>
           <DialogDescription>
             {selectedDate && selectedTimeSlot
-              ? `Create a new session for ${format(selectedDate, "PPP")} at ${selectedTimeSlot}`
+              ? `Create a new session for ${
+                format(selectedDate, "PPP")
+              } at ${selectedTimeSlot}`
               : "Select date and time for your session"}
             {selectedTutorName && ` with ${selectedTutorName}`}
           </DialogDescription>
@@ -143,7 +156,12 @@ const TutoringSessionModal: React.FC<TutoringSessionModalProps> = ({
 
           <div className="space-y-2">
             <Label htmlFor="mode">Session Mode</Label>
-            <Select value={mode} onValueChange={setMode} required>
+            <Select
+              value={mode}
+              onValueChange={(value) =>
+                setMode(value as "remote" | "in-person")}
+              required
+            >
               <SelectTrigger id="mode">
                 <SelectValue placeholder="Select session mode" />
               </SelectTrigger>

@@ -7,6 +7,7 @@ import {
   IS_DEVELOPMENT,
   RETRY_CONFIG,
 } from "@/config/env";
+import { logger } from "@/services/logger";
 
 // Type definitions
 export interface AIServiceOptions {
@@ -42,7 +43,6 @@ export async function callAIService<T = unknown>({
   const logPrefix = `[AI-${edgeFunctionName}-${requestId}]`;
 
   if (FEATURES.DEBUG_LOGGING) {
-    console.log(`${logPrefix} Request started`);
   }
 
   let attempts = 0;
@@ -56,7 +56,6 @@ export async function callAIService<T = unknown>({
       // First try using Supabase Edge Functions if enabled
       if (FEATURES.USE_EDGE_FUNCTIONS) {
         if (FEATURES.DEBUG_LOGGING) {
-          console.log(`${logPrefix} Attempt ${attempts}: Trying Edge Function`);
         }
 
         const { data, error } = await supabase.functions.invoke(
@@ -78,11 +77,10 @@ export async function callAIService<T = unknown>({
         }
 
         if (FEATURES.DEBUG_LOGGING) {
-          console.log(
-            `${logPrefix} Edge function response received in ${
-              Date.now() - startTime
-            }ms`,
-          );
+          logger.debug(`Edge function ${edgeFunctionName} response received`, {
+            requestId,
+            duration: Date.now() - startTime,
+          });
         }
 
         return data as T;
@@ -91,7 +89,6 @@ export async function callAIService<T = unknown>({
       // Fallback to direct API if edge functions are disabled or we're in development
       if (FEATURES.USE_DIRECT_API) {
         if (FEATURES.DEBUG_LOGGING) {
-          console.log(`${logPrefix} Attempt ${attempts}: Using Direct API`);
         }
 
         const openai = new OpenAI({
@@ -116,11 +113,11 @@ export async function callAIService<T = unknown>({
         }
 
         if (FEATURES.DEBUG_LOGGING) {
-          console.log(
-            `${logPrefix} Direct API response received in ${
-              Date.now() - startTime
-            }ms`,
-          );
+          logger.debug(`OpenAI direct API response received`, {
+            requestId,
+            model: modelParams.model || AI_CONFIG.DEFAULT_MODEL,
+            duration: Date.now() - startTime,
+          });
         }
 
         // Try to parse the response content as JSON if expected
@@ -136,25 +133,6 @@ export async function callAIService<T = unknown>({
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
 
-      if (FEATURES.DEBUG_LOGGING) {
-        console.error(
-          `${logPrefix} Attempt ${attempts} failed:`,
-          lastError.message,
-        );
-      }
-
-      // Retry if we haven't reached the maximum number of attempts
-      if (attempts < RETRY_CONFIG.attempts) {
-        const backoffTime = RETRY_CONFIG.backoff * Math.pow(2, attempts - 1);
-
-        if (FEATURES.DEBUG_LOGGING) {
-          console.log(`${logPrefix} Retrying in ${backoffTime}ms...`);
-        }
-
-        await new Promise((resolve) => setTimeout(resolve, backoffTime));
-        return attemptWithRetry();
-      }
-
       throw lastError;
     }
   };
@@ -163,16 +141,20 @@ export async function callAIService<T = unknown>({
     const result = await attemptWithRetry();
 
     if (FEATURES.DEBUG_LOGGING) {
-      console.log(
-        `${logPrefix} Request completed successfully in ${
-          Date.now() - startTime
-        }ms`,
-      );
+      logger.info(`AI service ${edgeFunctionName} completed successfully`, {
+        requestId,
+        totalDuration: Date.now() - startTime,
+        attempts,
+      });
     }
 
     return result;
   } catch (error) {
-    console.error(`${logPrefix} All attempts failed:`, error);
+    logger.error(`AI service ${edgeFunctionName} failed`, error, {
+      requestId,
+      attempts,
+      totalDuration: Date.now() - startTime,
+    });
     throw error;
   }
 }
@@ -288,7 +270,7 @@ export async function generateQuiz(
     modelParams: {
       temperature: 0.3,
     },
-    edgeFunctionName: ENDPOINTS.SUPABASE_FUNCTIONS.GENERATE_FLASHCARDS, // Reusing this endpoint for now
+    edgeFunctionName: ENDPOINTS.SUPABASE_FUNCTIONS.GENERATE_QUIZ,
     metadata: { type: "quiz", difficulty },
   });
 }
@@ -304,10 +286,8 @@ export async function generateLesson(studentId: string, skillId: string) {
       "build_student_snapshot",
       { p_student: studentId },
     );
-
     studentData = studentSnapshot || {};
   } catch (error) {
-    console.warn("Failed to fetch student snapshot:", error);
     if (IS_DEVELOPMENT) {
       // Use mock data in development when RPC fails
       studentData = {
@@ -320,143 +300,18 @@ export async function generateLesson(studentId: string, skillId: string) {
     }
   }
 
-  // Extract relevant student info
-  type StudentSnapshot = {
-    name?: string;
-    grade?: string;
-    learning_style?: string;
-    mood?: string;
-    mastery_level?: number;
-  };
-  const student = studentData as StudentSnapshot;
-  const name = student.name || "Student";
-  const grade = student.grade || "High School";
-  const learningStyle = student.learning_style || "visual";
-  const mood = student.mood || "curious";
-  const masteryPercent = Math.round((student.mastery_level || 0.5) * 100);
-
-  // Create system prompt for lesson generation
-  const systemPrompt = `
-You are BrightPair LessonCoach, an expert tutor who writes personalized lessons.
-Every lesson is shaped by the student's strengths, gaps, mood, and preferred style.
-
-STUDENT SNAPSHOT:
-Name: ${name}
-Grade/Level: ${grade}
-Preferred style: ${learningStyle} (visual | auditory | hands-on | reading/writing | mixed)
-Latest mood: ${mood} (curious | frustrated | neutral | excited)
-Topic requested: ${skillId}
-Current mastery: ${masteryPercent}%
-
-WHAT TO PRODUCE:
-1. Create a personalized lesson that targets the specific skill 
-2. Adjust to the student's learning style and mood
-3. Include a clear explanation section
-4. Provide a worked example section  
-5. End with a short quiz section containing 2 practice questions
-6. Use inline math with proper LaTeX formatting ($...$ for inline, $$....$$ for display)
-
-FORMAT YOUR RESPONSE AS JSON:
-{
-  "title": "Descriptive title of the lesson",
-  "duration": 5,
-  "sections": [
+  // Call the correct Edge Function with the correct body
+  const { data, error } = await supabase.functions.invoke(
+    "generate-lesson",
     {
-      "type": "explain",
-      "content_md": "The main explanation of the topic here."
-    },
-    {
-      "type": "example",
-      "content_md": "A worked example with steps."
-    },
-    {
-      "type": "quiz",
-      "questions": [
-        {
-          "id": "q1",
-          "type": "mcq",
-          "stem": "Question 1?",
-          "choices": ["Option A", "Option B", "Option C", "Option D"],
-          "answer": "Option B"
-        },
-        {
-          "id": "q2",
-          "type": "short",
-          "stem": "Question 2?",
-          "answer": "Expected answer"
-        }
-      ]
-    }
-  ],
-  "update_suggestion": {
-    "skill_delta": 0.05
-  }
-}`;
-
-  const userMessage =
-    `Please create a personalized lesson about ${skillId} for me.`;
-
-  const result = await callAIService<{
-    title: string;
-    duration: number;
-    sections: Array<{
-      type: string;
-      content_md: string;
-      questions?: Array<{
-        id: string;
-        type: string;
-        stem: string;
-        choices?: string[];
-        answer: string;
-      }>;
-    }>;
-    update_suggestion?: {
-      skill_delta: number;
-    };
-  }>({
-    systemPrompt,
-    userMessage,
-    modelParams: {
-      temperature: 0.7,
-      model: AI_CONFIG.DEFAULT_MODEL,
-      max_tokens: 1500,
-    },
-    studentId,
-    metadata: {
-      skill_id: skillId,
-    },
-    edgeFunctionName: ENDPOINTS.SUPABASE_FUNCTIONS.AI_TUTOR,
-  });
-
-  // Save the lesson to the database if in production or if configured to do so
-  if (!IS_DEVELOPMENT || import.meta.env.VITE_SAVE_LESSONS === "true") {
-    try {
-      await supabase.from("lessons").insert({
+      body: {
         student_id: studentId,
-        title: result.title,
-        content: JSON.stringify(result),
-        subject: skillId,
-        created_at: new Date().toISOString(),
-      });
-
-      // Update student skill mastery if applicable
-      // TODO: Add/update RPC for updating student skill mastery in Supabase
-      // if (result.update_suggestion?.skill_delta) {
-      //   await supabase.rpc(
-      //     "update_student_skill",
-      //     {
-      //       p_student: studentId,
-      //       p_skill: skillId,
-      //       p_delta: result.update_suggestion.skill_delta,
-      //     },
-      //   );
-      // }
-    } catch (error) {
-      console.error("Failed to save lesson:", error);
-    }
-  }
-
-  return { lesson: result };
+        skill_id: skillId,
+      },
+    },
+  );
+  if (error) throw error;
+  return data;
 }
 
 /**
@@ -549,7 +404,7 @@ export async function generateLessonFromContent(
         created_at: new Date().toISOString(),
       });
     } catch (error) {
-      console.error("Failed to save custom lesson:", error);
+      logger.debug("Caught error:", error);
     }
   }
 

@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
@@ -16,25 +15,32 @@ const SocialAuth: React.FC<SocialAuthProps> = ({ isLoading, setIsLoading }) => {
     try {
       setIsLoading(true);
       const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
+        provider: "google",
         options: {
           redirectTo: `${window.location.origin}/dashboard`,
           queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
+            access_type: "offline",
+            prompt: "consent",
           },
         },
       });
-      
+
       if (error) throw error;
-      
-    } catch (error: any) {
-      console.error("Google auth error:", error);
+
       toast({
-        title: "Authentication failed",
-        description: error.message || "Failed to authenticate with Google",
+        title: "Login successful",
+        description: "Redirecting to your dashboard...",
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error
+        ? error.message
+        : `Failed to login with Google`;
+      toast({
+        title: "Login failed",
+        description: errorMessage,
         variant: "destructive",
       });
+    } finally {
       setIsLoading(false);
     }
   };
@@ -49,12 +55,12 @@ const SocialAuth: React.FC<SocialAuthProps> = ({ isLoading, setIsLoading }) => {
           <span className="px-2 bg-white text-gray-500">Or continue with</span>
         </div>
       </div>
-      
+
       <div className="mt-6">
-        <Button 
-          type="button" 
-          variant="outline" 
-          className="w-full" 
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full"
           disabled={isLoading}
           onClick={handleGoogleSignIn}
         >

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, LogOut } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from '@/services/logger';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -42,7 +43,9 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       await supabase.auth.signOut();
       navigate("/login");
     } catch (error) {
-      console.error("Error signing out:", error);
+      logger.debug('Caught error:', error);
+      
+    
     }
   };
 

@@ -14,7 +14,7 @@ const supabaseAdmin = createClient(
 
 const openai = new OpenAI({ apiKey: Deno.env.get("OPENAI_API_KEY") });
 
-console.log("Hello from Functions!");
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

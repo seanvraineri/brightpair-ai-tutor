@@ -85,25 +85,26 @@ serve(async (req: Request) => {
       - Use proper LaTeX commands: \\frac{}{} for fractions, x^{2} for exponents, \\sqrt{} for square roots
       - Add proper spacing around operators: $a + b$ not $a+b$
       
-      Return the flashcards as a JSON array with the following structure:
-      [
-        {
-          "id": "uniqueId1",
-          "front": "Question text",
-          "back": "Answer text with properly formatted LaTeX when needed"
-        },
-        ...
-      ]
+      Return a JSON object with a "flashcards" array containing the flashcards:
+      {
+        "flashcards": [
+          {
+            "id": "1",
+            "front": "Question text",
+            "back": "Answer text with properly formatted LaTeX when needed"
+          },
+          {
+            "id": "2",
+            "front": "Another question",
+            "back": "Another answer"
+          }
+        ]
+      }
       
       Be educational, accurate, and at an appropriate level of detail for the ${difficulty} difficulty level.
       Ensure the content is factually correct and formatted clearly.
       Make sure that any mathematical expressions are properly formatted in LaTeX to ensure they render correctly.
     `;
-
-    console.log(
-      "Generating flashcards. Source:",
-      sourceText ? "document" : topic,
-    );
 
     // Call OpenAI API
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -118,17 +119,23 @@ serve(async (req: Request) => {
           {
             role: "system",
             content:
-              "You are an educational assistant that creates study flashcards with well-formatted mathematical expressions using LaTeX.",
+              "You are an educational assistant that creates study flashcards. Always return a valid JSON array of flashcards.",
           },
-          { role: "user", content: prompt },
+          {
+            role: "user",
+            content: prompt +
+              "\n\nIMPORTANT: Return ONLY a valid JSON array, no additional text or formatting.",
+          },
         ],
         temperature: 0.5,
         max_tokens: 2000,
+        response_format: { type: "json_object" },
       }),
     });
 
     if (!response.ok) {
       const errorData = await response.json();
+      console.log(`OpenAI API error response: ${JSON.stringify(errorData)}`);
       throw new Error(
         `OpenAI API error: ${errorData.error?.message || "Unknown error"}`,
       );
@@ -140,16 +147,42 @@ serve(async (req: Request) => {
     try {
       // Try to parse the flashcards from the response
       const content = data.choices[0]?.message?.content || "";
-      // Extract JSON from the content if needed
-      const jsonMatch = content.match(/\[[\s\S]*\]/);
+      console.log(`OpenAI response content: ${content.substring(0, 200)}...`);
 
-      if (jsonMatch) {
-        flashcards = JSON.parse(jsonMatch[0]);
+      // Parse the content directly as JSON
+      const parsedContent = JSON.parse(content);
+
+      // Check if it's wrapped in an object with flashcards property
+      if (parsedContent.flashcards && Array.isArray(parsedContent.flashcards)) {
+        flashcards = parsedContent.flashcards;
+      } else if (Array.isArray(parsedContent)) {
+        flashcards = parsedContent;
       } else {
-        throw new Error("Could not extract valid JSON from the response");
+        // Try to find an array in the parsed content
+        const possibleArrays = Object.values(parsedContent).filter((val) =>
+          Array.isArray(val)
+        );
+        if (possibleArrays.length > 0) {
+          flashcards = possibleArrays[0];
+        } else {
+          throw new Error("No flashcard array found in response");
+        }
       }
+
+      // Validate flashcards structure
+      if (!Array.isArray(flashcards) || flashcards.length === 0) {
+        throw new Error("Invalid flashcards array");
+      }
+
+      // Ensure each flashcard has required fields
+      flashcards = flashcards.map((card, index) => ({
+        id: card.id || `card-${index + 1}`,
+        front: card.front || card.question || "",
+        back: card.back || card.answer || "",
+      }));
     } catch (parseError) {
-      console.error("Error parsing flashcards:", parseError);
+      console.log(`Parse error: ${parseError}`);
+      console.log(`Raw content: ${data.choices[0]?.message?.content}`);
       throw new Error("Failed to parse flashcards from AI response");
     }
 
@@ -175,12 +208,14 @@ serve(async (req: Request) => {
           .single();
 
         if (insertError) {
-          console.error("Error storing flashcards:", insertError);
+          console.log(`Database insert error: ${insertError.message}`);
         } else {
-          console.log("Flashcards stored with ID:", flashcardsSet.id);
+          console.log(
+            `Flashcards saved to database with set ID: ${flashcardsSet.id}`,
+          );
         }
       } catch (dbError) {
-        console.error("Database error:", dbError);
+        console.log(`Database error: ${dbError}`);
       }
     }
 
@@ -196,7 +231,7 @@ serve(async (req: Request) => {
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (error) {
-    console.error("Error in generate-flashcards function:", error);
+    console.log(`Error in generate-flashcards: ${error}`);
 
     return new Response(
       JSON.stringify({

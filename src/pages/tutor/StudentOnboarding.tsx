@@ -90,7 +90,7 @@ const StudentOnboarding: React.FC = () => {
       setIsSubmitting(true);
 
       // Here we would make actual API calls to Supabase
-      console.log("Form values:", values);
+      
 
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1500));
@@ -141,7 +141,7 @@ const StudentOnboarding: React.FC = () => {
       // Move to success screen
       setCurrentStep("success");
     } catch (error) {
-      console.error("Error onboarding student:", error);
+      
       alert("Failed to onboard student. Please try again.");
     } finally {
       setIsSubmitting(false);

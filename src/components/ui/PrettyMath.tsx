@@ -112,7 +112,7 @@ const PrettyMath: FC<Props> = ({ latex, displayMode = true }) => {
       </div>
     );
   } catch (error) {
-    console.error("KaTeX rendering error:", error);
+    
     // Fallback for when KaTeX fails
     return (
       <div className={`${displayMode ? 'flex justify-center my-2' : 'inline-block'}`}>

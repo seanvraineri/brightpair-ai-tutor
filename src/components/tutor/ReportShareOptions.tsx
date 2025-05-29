@@ -44,6 +44,7 @@ import {
 } from "@/components/ui/tooltip";
 import { IS_DEVELOPMENT } from "@/config/env";
 import { toast } from "@/hooks/use-toast";
+import { logger } from '@/services/logger';
 
 // Interface for the parent object
 interface Parent {
@@ -146,8 +147,10 @@ const ReportShareOptions: React.FC<ReportShareOptionsProps> = ({
         }
         */
       } catch (error) {
-        console.error("Error fetching report share data:", error);
-      } finally {
+      logger.debug('Caught error:', error);
+        
+      
+    } finally {
         setLoading(false);
       }
     };
@@ -215,12 +218,7 @@ const ReportShareOptions: React.FC<ReportShareOptionsProps> = ({
 
       // Simulate API delay
       await new Promise((resolve) => setTimeout(resolve, 1500));
-      console.log("Saving share settings:", {
-        shareSettings,
-        notifyParents,
-        customMessage,
-        allowDownload,
-      });
+      
 
       /*
       // This code is commented out until we properly define the Supabase schema types
@@ -257,7 +255,7 @@ const ReportShareOptions: React.FC<ReportShareOptionsProps> = ({
         variant: "default",
       });
     } catch (error) {
-      console.error("Error saving share settings:", error);
+      
 
       toast({
         title: "Error Saving Settings",

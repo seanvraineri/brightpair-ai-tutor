@@ -41,7 +41,7 @@ const Contact: React.FC = () => {
 
     try {
       // Simulate API call
-      console.log("Contact form submitted:", formData);
+      
 
       setTimeout(() => {
         toast({
@@ -59,7 +59,7 @@ const Contact: React.FC = () => {
         });
       }, 1500);
     } catch (error) {
-      console.error("Error submitting form:", error);
+      
       toast({
         title: "Submission failed",
         description:

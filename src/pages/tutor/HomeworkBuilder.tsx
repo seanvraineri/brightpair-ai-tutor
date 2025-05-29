@@ -15,6 +15,7 @@ import { HomeworkListItem } from "@/types/homework";
 import { getHomeworkList, getStudents } from "@/services/homeworkService";
 import HomeworkGenerator from "@/components/homework/HomeworkGenerator";
 import StatusPill from "@/components/homework/StatusPill";
+import { logger } from '@/services/logger';
 
 const HomeworkBuilder: React.FC = () => {
   const navigate = useNavigate();
@@ -59,7 +60,9 @@ const HomeworkBuilder: React.FC = () => {
       const homework = await getHomeworkList(filters);
       setHomeworkList(homework);
     } catch (error) {
-      console.error("Error fetching homework list:", error);
+      logger.debug('Caught error:', error);
+      
+    
     } finally {
       setLoading(false);
     }
@@ -71,7 +74,9 @@ const HomeworkBuilder: React.FC = () => {
       const studentList = await getStudents();
       setStudents(studentList);
     } catch (error) {
-      console.error("Error fetching students:", error);
+      logger.debug('Caught error:', error);
+      
+    
     }
   };
 

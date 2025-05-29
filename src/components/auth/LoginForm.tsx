@@ -1,13 +1,18 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
-import { useUser, UserRole, OnboardingStatus } from "@/contexts/UserContext";
+import { OnboardingStatus, UserRole, useUser } from "@/contexts/UserContext";
 import { supabase } from "@/integrations/supabase/client";
 
 const LoginForm: React.FC = () => {
@@ -35,7 +40,7 @@ const LoginForm: React.FC = () => {
       role: value as UserRole,
     });
   };
-  
+
   const handleCheckboxChange = () => {
     setFormData({
       ...formData,
@@ -44,7 +49,7 @@ const LoginForm: React.FC = () => {
   };
 
   const redirectToDashboard = (role: UserRole) => {
-    switch(role) {
+    switch (role) {
       case "teacher":
         navigate("/teacher-dashboard");
         break;
@@ -60,14 +65,14 @@ const LoginForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     try {
       // Sign in with Supabase Auth
       const { data, error } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
       });
-      
+
       // Set session expiration time based on rememberMe checkbox
       if (data?.session && formData.rememberMe) {
         // Update session with longer expiration (30 days)
@@ -76,30 +81,30 @@ const LoginForm: React.FC = () => {
           refresh_token: data.session.refresh_token,
         });
       }
-      
+
       if (error) throw error;
-      
+
       // Get user profile from profiles table
       const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', data.user.id)
+        .from("profiles")
+        .select("*")
+        .eq("id", data.user.id)
         .single();
-        
+
       if (profileError) throw profileError;
-      
+
       // Update role in profile if it's different from what the user selected
       if (profileData.role !== formData.role) {
         const { error: updateError } = await supabase
-          .from('profiles')
+          .from("profiles")
           .update({ role: formData.role })
-          .eq('id', data.user.id);
-          
+          .eq("id", data.user.id);
+
         if (updateError) throw updateError;
-        
+
         profileData.role = formData.role;
       }
-      
+
       // Update user context
       updateRole(profileData.role as UserRole);
       updateUser({
@@ -109,20 +114,22 @@ const LoginForm: React.FC = () => {
         onboardingStatus: profileData.onboarding_status as OnboardingStatus,
         nextConsultationDate: profileData.next_consultation_date,
       });
-      
+
       toast({
         title: "Login successful",
         description: "Welcome back to BrightPair!",
       });
-      
+
       // Redirect to appropriate dashboard based on role
       redirectToDashboard(profileData.role as UserRole);
-      
-    } catch (error: any) {
-      console.error("Login error:", error);
+    } catch (error) {
+      const errorMessage = error instanceof Error
+        ? error.message
+        : "Invalid email or password.";
+
       toast({
         title: "Login failed",
-        description: error.message || "Invalid email or password.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -149,7 +156,10 @@ const LoginForm: React.FC = () => {
         <div className="space-y-2">
           <div className="flex justify-between">
             <Label htmlFor="password">Password</Label>
-            <a href="/forgot-password" className="text-sm text-brightpair hover:underline">
+            <a
+              href="/forgot-password"
+              className="text-sm text-brightpair hover:underline"
+            >
               Forgot password?
             </a>
           </div>
@@ -180,13 +190,13 @@ const LoginForm: React.FC = () => {
           </Select>
         </div>
         <div className="flex items-center space-x-2">
-          <Checkbox 
-            id="rememberMe" 
+          <Checkbox
+            id="rememberMe"
             checked={formData.rememberMe}
             onCheckedChange={handleCheckboxChange}
           />
-          <Label 
-            htmlFor="rememberMe" 
+          <Label
+            htmlFor="rememberMe"
             className="text-sm font-medium leading-none cursor-pointer"
           >
             Remember me for 30 days
@@ -195,7 +205,11 @@ const LoginForm: React.FC = () => {
       </div>
 
       <div className="mt-6">
-        <Button type="submit" className="w-full bg-brightpair hover:bg-brightpair-600" disabled={isLoading}>
+        <Button
+          type="submit"
+          className="w-full bg-brightpair hover:bg-brightpair-600"
+          disabled={isLoading}
+        >
           {isLoading ? "Signing In..." : "Sign In"}
         </Button>
       </div>

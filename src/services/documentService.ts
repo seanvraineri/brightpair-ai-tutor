@@ -45,18 +45,18 @@ export const extractTextFromPDF = async (
   fileUrl: string,
 ): Promise<string | null> => {
   try {
-    console.log("Extracting text from PDF", fileUrl);
+    
     // Call the AI service to extract text from the PDF
     const { text, success } = await extractPDFText(fileUrl);
 
     if (!success || !text) {
-      console.error("Failed to extract text from PDF");
+      
       return null;
     }
 
     return text;
   } catch (error) {
-    console.error("Error extracting text from PDF:", error);
+    
     return null;
   }
 };
@@ -101,7 +101,7 @@ export const processDocumentForLesson = async (
         .upload(filePath, file);
 
       if (uploadError) {
-        console.error("Error uploading document:", uploadError);
+        
         return null;
       }
 
@@ -146,7 +146,7 @@ export const processDocumentForLesson = async (
         .single();
 
       if (dbError) {
-        console.error("Error saving document to database:", dbError);
+        
         return null;
       }
 
@@ -221,7 +221,7 @@ export const processDocumentForLesson = async (
       url: "", // no file URL for text-only lessons
     };
   } catch (error) {
-    console.error("Document processing error:", error);
+    
     return null;
   }
 };
@@ -240,7 +240,7 @@ export const getUserDocuments = async (
       .order("created_at", { ascending: false });
 
     if (error) {
-      console.error("Error fetching user documents:", error);
+      
       return [];
     }
 
@@ -274,7 +274,7 @@ export const getUserDocuments = async (
       fileSize: doc.file_size || undefined,
     }));
   } catch (error) {
-    console.error("Error in getUserDocuments:", error);
+    
     return [];
   }
 };

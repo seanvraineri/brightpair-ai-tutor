@@ -91,7 +91,7 @@ interface LessonInsert {
   skill_id: string;
   title: string;
   duration: number;
-  lesson_json: any;
+  lesson_json: Json;
   subject?: string; // Add required fields
 }
 
@@ -149,10 +149,6 @@ export const useLesson = (studentId: string, skillId: string) =>
   useQuery({
     queryKey: ["lesson", skillId],
     queryFn: async () => {
-      console.log(
-        `Generating lesson for student: ${studentId}, skill: ${skillId}`,
-      );
-
       try {
         // Only proceed if we have a valid skillId
         if (!skillId) {
@@ -160,10 +156,9 @@ export const useLesson = (studentId: string, skillId: string) =>
         }
 
         const result = await generateLesson(studentId, skillId);
-        console.log("Lesson generated successfully");
+
         return result as { lesson: Lesson };
       } catch (error) {
-        console.error("Error in lesson generation:", error);
         // Return mock data as fallback in development
         if (IS_DEVELOPMENT) {
           return { lesson: { ...mockLesson, skill_id: skillId } };

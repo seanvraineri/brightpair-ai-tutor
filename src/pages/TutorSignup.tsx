@@ -64,7 +64,7 @@ const TutorSignup: React.FC = () => {
     setIsLoading(true);
     try {
       // We'll integrate Supabase here in the future
-      console.log("Submitting tutor application:", formData);
+      
 
       // Simulate API call
       setTimeout(() => {
@@ -76,7 +76,7 @@ const TutorSignup: React.FC = () => {
         navigate("/");
       }, 1500);
     } catch (error) {
-      console.error("Error submitting application:", error);
+      
       toast({
         title: "Submission failed",
         description:

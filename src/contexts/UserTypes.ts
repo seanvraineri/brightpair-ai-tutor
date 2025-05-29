@@ -67,6 +67,7 @@ export interface ActivityLog {
 
 // Define user interface
 export interface User {
+  learning_style: string;
   id: string;
   name: string;
   email: string;

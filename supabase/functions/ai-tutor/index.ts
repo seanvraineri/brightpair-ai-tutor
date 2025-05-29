@@ -273,7 +273,6 @@ const fetchStudentContext = async (
       .single();
 
     if (profileError) {
-      console.error("Error fetching student profile:", profileError);
       return { profile: null, track: null, skills: null, mastery: [] };
     }
 
@@ -321,7 +320,6 @@ const fetchStudentContext = async (
       mastery: studentSkillsError ? [] : studentSkills,
     };
   } catch (error) {
-    console.error("Error in fetchStudentContext:", error);
     return { profile: null, track: null, skills: null, mastery: [] };
   }
 };
@@ -385,7 +383,6 @@ const createStudentSnapshot = (
       mood: userProfile?.gamification?.mood || "neutral",
     };
   } catch (error) {
-    console.error("Error creating student snapshot:", error);
     return { name: "Student", learning_style: "mixed", grade: "Unknown" };
   }
 };
@@ -612,11 +609,6 @@ serve(async (req: Request) => {
   } else {
     rl.count++;
     if (rl.count > RATE_LIMIT_MAX_REQUESTS) {
-      console.warn(
-        `[${new Date().toISOString()}] Rate limit exceeded for user: ${
-          authHeader.substring(0, 8)
-        }...`,
-      );
       return new Response(
         JSON.stringify({
           success: false,
@@ -637,9 +629,6 @@ serve(async (req: Request) => {
     try {
       body = await req.json();
     } catch (e) {
-      console.error(
-        `[${new Date().toISOString()}] Invalid JSON in request body.`,
-      );
       return new Response(
         JSON.stringify({
           success: false,
@@ -665,9 +654,6 @@ serve(async (req: Request) => {
       persona,
     } = body;
     if (!isString(message)) {
-      console.error(
-        `[${new Date().toISOString()}] Missing or invalid 'message' field.`,
-      );
       return new Response(
         JSON.stringify({
           success: false,
@@ -680,9 +666,6 @@ serve(async (req: Request) => {
       );
     }
     if (!isObject(userProfile)) {
-      console.error(
-        `[${new Date().toISOString()}] Missing or invalid 'userProfile' field.`,
-      );
       return new Response(
         JSON.stringify({
           success: false,
@@ -695,7 +678,6 @@ serve(async (req: Request) => {
       );
     }
     if (trackId && !isString(trackId)) {
-      console.error(`[${new Date().toISOString()}] Invalid 'trackId' field.`);
       return new Response(
         JSON.stringify({
           success: false,
@@ -708,7 +690,6 @@ serve(async (req: Request) => {
       );
     }
     if (studentId && !isString(studentId)) {
-      console.error(`[${new Date().toISOString()}] Invalid 'studentId' field.`);
       return new Response(
         JSON.stringify({
           success: false,
@@ -721,11 +702,6 @@ serve(async (req: Request) => {
       );
     }
     if (!isObject(learningHistory)) {
-      console.error(
-        `[${
-          new Date().toISOString()
-        }] Missing or invalid 'learningHistory' field.`,
-      );
       return new Response(
         JSON.stringify({
           success: false,
@@ -738,13 +714,6 @@ serve(async (req: Request) => {
       );
     }
     // Log incoming request (summary)
-    console.log(
-      `[${new Date().toISOString()}] Request from user: ${
-        authHeader.substring(0, 8)
-      }... | Message: ${message.substring(0, 60)}${
-        message.length > 60 ? "..." : ""
-      }`,
-    );
 
     // Create Supabase client
     const supabaseUrl = (globalThis as any).Deno?.env.get("SUPABASE_URL");
@@ -794,11 +763,6 @@ serve(async (req: Request) => {
       convoSummary,
     );
 
-    console.log(
-      "Using system prompt: ",
-      systemPrompt.substring(0, 200) + "...",
-    );
-
     // Make API request to OpenAI with error handling
     try {
       const openAIResponse = await fetch(
@@ -828,13 +792,10 @@ serve(async (req: Request) => {
       );
 
       if (!openAIResponse.ok) {
-        const errorData = await openAIResponse.json();
-        console.error(
-          `[${new Date().toISOString()}] OpenAI API error:`,
-          errorData,
-        );
         throw new Error(
-          `OpenAI API error: ${errorData.error?.message || "Unknown error"}`,
+          `OpenAI API error: ${await openAIResponse.json().then((j) =>
+            j.error?.message || "Unknown error"
+          )}`,
         );
       }
 
@@ -890,10 +851,6 @@ serve(async (req: Request) => {
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     } catch (openAIError) {
-      console.error(
-        `[${new Date().toISOString()}] Error calling OpenAI API:`,
-        openAIError,
-      );
       return new Response(
         JSON.stringify({
           success: false,
@@ -908,10 +865,6 @@ serve(async (req: Request) => {
       );
     }
   } catch (error) {
-    console.error(
-      `[${new Date().toISOString()}] Error in AI tutor function:`,
-      error,
-    );
     return new Response(
       JSON.stringify({
         success: false,

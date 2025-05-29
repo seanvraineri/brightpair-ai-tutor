@@ -84,7 +84,7 @@ export const generateFlashcards = async (
       back: card.answer,
     }));
   } catch (error) {
-    console.error("Flashcard generation error:", error);
+    
     throw error;
   }
 };
@@ -110,7 +110,7 @@ export const processUploadedDocument = async (
         .upload(filePath, params.file);
 
       if (uploadError) {
-        console.error("Error uploading document:", uploadError);
+        
         throw new Error(`Upload failed: ${uploadError.message}`);
       }
 
@@ -147,7 +147,7 @@ export const processUploadedDocument = async (
 
     return flashcards;
   } catch (error) {
-    console.error("Content processing error:", error);
+    
     throw error;
   }
 };
@@ -172,7 +172,7 @@ export const getFlashcardSets = async (
     const { data, error } = await query;
 
     if (error) {
-      console.error("Error in getFlashcardSets:", error);
+      
       return [];
     }
 
@@ -199,7 +199,7 @@ export const getFlashcardSets = async (
 
     return flashcardSets;
   } catch (error) {
-    console.error("Error fetching flashcard sets:", error);
+    
     return [];
   }
 };
@@ -216,7 +216,7 @@ export const getFlashcardSetById = async (
       .single();
 
     if (error) {
-      console.error("Error in getFlashcardSetById:", error);
+      
       return null;
     }
 
@@ -241,7 +241,7 @@ export const getFlashcardSetById = async (
 
     return flashcardSet;
   } catch (error) {
-    console.error("Error fetching flashcard set:", error);
+    
     return null;
   }
 };
@@ -263,7 +263,7 @@ export const saveFlashcardSet = async (
       .select();
 
     if (error) {
-      console.error("Error saving flashcard set:", error);
+      
       return null;
     }
 
@@ -290,7 +290,7 @@ export const saveFlashcardSet = async (
         : undefined,
     };
   } catch (error) {
-    console.error("Error in saveFlashcardSet:", error);
+    
     return null;
   }
 };

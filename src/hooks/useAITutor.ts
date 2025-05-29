@@ -4,6 +4,7 @@ import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/components/ui/use-toast";
 import { sendAITutorMessage } from "@/services/aiService";
 import { Tables } from "@/integrations/supabase/types";
+import { logger } from '@/services/logger';
 
 interface Message {
   id: string;
@@ -54,7 +55,7 @@ export const useAITutor = () => {
       if (error) throw error;
       return (data as Track[]) || [];
     } catch (error) {
-      console.error("Error fetching learning tracks:", error);
+      
       return [];
     }
   };
@@ -74,7 +75,7 @@ export const useAITutor = () => {
         .limit(10);
 
       if (homeworkError) {
-        console.error("Error fetching homework:", homeworkError);
+        
       }
 
       // Fetch quiz-like assignments (fallback to assignments table until dedicated quizzes table exists)
@@ -86,7 +87,7 @@ export const useAITutor = () => {
         .limit(10);
 
       if (quizzesError) {
-        console.error("Error fetching quizzes:", quizzesError);
+        
       }
 
       // Attempt to fetch lesson history – guard if table missing in local dev
@@ -131,7 +132,7 @@ export const useAITutor = () => {
       setLearningHistory(history);
       return history;
     } catch (error) {
-      console.error("Error fetching learning history:", error);
+      
       toast({
         title: "Error",
         description: "Failed to load your learning history",
@@ -240,7 +241,7 @@ export const useAITutor = () => {
 
       return assistantMessage;
     } catch (error) {
-      console.error("Error sending message to AI tutor:", error);
+      
       toast({
         title: "Error",
         description: error instanceof Error
@@ -268,7 +269,9 @@ export const useAITutor = () => {
         skills_addressed: {}, // placeholder
       });
     } catch (error) {
-      console.error("Error logging chat interaction:", error);
+      logger.debug('Caught error:', error);
+      
+    
     }
   };
 

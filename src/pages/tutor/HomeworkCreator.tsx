@@ -1,5 +1,5 @@
 import React, { ChangeEvent, useEffect, useRef, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Card,
@@ -48,29 +48,30 @@ import {
   Upload,
 } from "lucide-react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { toast } from "@/hooks/use-toast";
+import toast from "react-hot-toast";
+import { useUser } from "@/contexts/UserContext";
+import {
+  getStudentById,
+  getStudentsForTutor,
+  type Student,
+} from "@/services/studentService";
+import { logger } from "@/services/logger";
+import { v4 as uuidv4 } from "uuid";
 
-// Mock student data
-const MOCK_STUDENTS = [
-  {
-    id: "student-1",
-    full_name: "Emma Johnson",
-    grade_level: "8th",
-    subject: "Mathematics",
-  },
-  {
-    id: "student-2",
-    full_name: "Noah Williams",
-    grade_level: "5th",
-    subject: "Science",
-  },
-  {
-    id: "student-3",
-    full_name: "Michael Chen",
-    grade_level: "6th",
-    subject: "Science",
-  },
-];
+// Type definitions
+interface HomeworkQuestion {
+  question: string;
+  type: "multiple-choice" | "short-answer" | "essay";
+  options?: string[];
+  correctAnswer?: string;
+  points?: number;
+}
+
+interface HomeworkPlan {
+  title: string;
+  description: string;
+  suggestedQuestions: number;
+}
 
 // Form schema validation
 const formSchema = z.object({
@@ -103,6 +104,8 @@ type UploadedFile = {
 const HomeworkCreator: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const { session } = useUser();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [currentTab, setCurrentTab] = useState<"upload" | "create" | "ai">(
@@ -115,6 +118,17 @@ const HomeworkCreator: React.FC = () => {
   const [preselectedStudentId, setPreselectedStudentId] = useState<
     string | null
   >(null);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [selectedStudent, setSelectedStudent] = useState<string>("");
+  const [subject, setSubject] = useState<string>("");
+  const [title, setTitle] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
+  const [dueDate, setDueDate] = useState<Date | undefined>(new Date());
+  const [useSourcePdf, setUseSourcePdf] = useState(false);
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [numQuestions, setNumQuestions] = useState<number>(5);
+  const [questions, setQuestions] = useState<HomeworkQuestion[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Check for studentId in URL params
   useEffect(() => {
@@ -127,9 +141,11 @@ const HomeworkCreator: React.FC = () => {
       form.setValue("students", [studentId]);
 
       // Find the student to get their info
-      const student = MOCK_STUDENTS.find((s) => s.id === studentId);
+      const student = students.find((s) => s.id === studentId);
       if (student) {
-        form.setValue("subject", student.subject);
+        setSelectedStudent(preselectedStudentId);
+        setSubject(student.subject || "");
+        toast.success(`Creating homework for ${student.full_name}`);
       }
     }
 
@@ -176,6 +192,42 @@ const HomeworkCreator: React.FC = () => {
       students: [],
     },
   });
+
+  // Fetch students on mount
+  useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+        setIsLoading(true);
+        const tutorId = session?.user?.id;
+        if (!tutorId) {
+          logger.warn("No tutor ID available");
+          return;
+        }
+
+        const fetchedStudents = await getStudentsForTutor(tutorId);
+        setStudents(fetchedStudents);
+
+        // If there's a preselected student, validate and set it
+        if (preselectedStudentId) {
+          const student = fetchedStudents.find((s) =>
+            s.id === preselectedStudentId
+          );
+          if (student) {
+            setSelectedStudent(preselectedStudentId);
+            setSubject(student.subject || "");
+            toast.success(`Creating homework for ${student.full_name}`);
+          }
+        }
+      } catch (error) {
+        logger.error("Failed to fetch students", error);
+        toast.error("Failed to load students");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchStudents();
+  }, [session?.user?.id, preselectedStudentId]);
 
   // Handle file selection
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -292,7 +344,7 @@ const HomeworkCreator: React.FC = () => {
       // Set content
       setGeneratedContent(sampleContent);
     } catch (error) {
-      console.error("Error generating homework:", error);
+      logger.debug("Caught error:", error);
     } finally {
       setIsGenerating(false);
     }
@@ -306,20 +358,11 @@ const HomeworkCreator: React.FC = () => {
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      console.log("Submitting homework assignment:", {
-        ...values,
-        files: uploadedFiles,
-        content: generatedContent,
-      });
-
       // In a real app, this would save to Supabase or your backend
 
-      // Success notification
-      toast({
-        title: "Homework Created",
-        description: "Homework assignment created successfully.",
-        variant: "default",
-      });
+      toast.success(
+        "Homework Created: Homework assignment created successfully.",
+      );
 
       // If we came from student detail page, go back there
       if (preselectedStudentId) {
@@ -329,12 +372,7 @@ const HomeworkCreator: React.FC = () => {
         navigate("/tutor/dashboard?tab=students");
       }
     } catch (error) {
-      console.error("Error creating homework:", error);
-      toast({
-        title: "Error Creating Homework",
-        description: "Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Error Creating Homework: Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -351,6 +389,132 @@ const HomeworkCreator: React.FC = () => {
 
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
   };
+
+  const handleGeneratePlan = async () => {
+    if (!selectedStudent || !subject) {
+      toast.error("Please select a student and subject");
+      return;
+    }
+
+    const student = students.find((s) => s.id === selectedStudent);
+    if (!student) return;
+
+    setIsGenerating(true);
+    try {
+      // Simulate generating a homework plan
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      const plan: HomeworkPlan = {
+        title: `${subject} Homework - ${new Date().toLocaleDateString()}`,
+        description:
+          `Practice problems for ${student.grade_level} grade ${subject}`,
+        suggestedQuestions: 5,
+      };
+
+      if (plan) {
+        setTitle(plan.title);
+        setDescription(plan.description);
+        setNumQuestions(plan.suggestedQuestions);
+        toast.success("Homework plan generated!");
+      }
+    } catch (error) {
+      logger.error("Failed to generate homework plan", error);
+      toast.error("Failed to generate homework plan");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleGenerateQuestions = async () => {
+    if (!subject || !title) {
+      toast.error("Please fill in subject and title first");
+      return;
+    }
+
+    const student = students.find((s) => s.id === selectedStudent);
+    if (!student) return;
+
+    setIsGenerating(true);
+    try {
+      // Simulate generating questions
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      const generatedQuestions: HomeworkQuestion[] = [
+        {
+          question: `Sample question 1 for ${subject}`,
+          type: "short-answer",
+          points: 10,
+        },
+        {
+          question: `Sample question 2 for ${subject}`,
+          type: "multiple-choice",
+          options: ["Option A", "Option B", "Option C", "Option D"],
+          correctAnswer: "Option A",
+          points: 5,
+        },
+      ];
+
+      if (generatedQuestions && generatedQuestions.length > 0) {
+        setQuestions(generatedQuestions);
+        toast.success("Questions generated successfully!");
+      }
+    } catch (error) {
+      logger.error("Failed to generate questions", error);
+      toast.error("Failed to generate questions");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleSaveHomework = async () => {
+    if (!selectedStudent || !title || !subject || !dueDate) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    try {
+      const student = students.find((s) => s.id === selectedStudent);
+      if (!student) return;
+
+      const homeworkData = {
+        student_id: selectedStudent,
+        tutor_id: session?.user?.id,
+        title,
+        subject,
+        description,
+        due_date: dueDate.toISOString(),
+        source_pdf_provided: useSourcePdf,
+        num_questions: questions.length,
+        questions: questions.map((q, index) => ({
+          id: uuidv4(),
+          order_index: index,
+          ...q,
+        })),
+        status: "assigned",
+      };
+
+      const { error } = await supabase.from("homework").insert(homeworkData);
+
+      if (error) throw error;
+
+      toast.success("Homework created successfully!");
+      navigate("/tutor/homework");
+    } catch (error) {
+      logger.error("Failed to save homework", error);
+      toast.error("Failed to save homework");
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900">
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <DashboardLayout>
@@ -374,9 +538,9 @@ const HomeworkCreator: React.FC = () => {
 
           <h1 className="text-2xl font-bold">
             {preselectedStudentId &&
-                MOCK_STUDENTS.find((s) => s.id === preselectedStudentId)
+                students.find((s) => s.id === preselectedStudentId)
               ? `Create Homework for ${
-                MOCK_STUDENTS.find((s) => s.id === preselectedStudentId)
+                students.find((s) => s.id === preselectedStudentId)
                   ?.full_name
               }`
               : "Create Homework Assignment"}
@@ -541,7 +705,7 @@ const HomeworkCreator: React.FC = () => {
                         </FormDescription>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        {MOCK_STUDENTS.map((student) => (
+                        {students.map((student) => (
                           <FormField
                             key={student.id}
                             control={form.control}
