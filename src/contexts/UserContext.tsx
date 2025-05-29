@@ -47,6 +47,8 @@ export const useUser = () => useContext(UserContext);
 export const UserProvider: React.FC<{ children: ReactNode }> = (
   { children },
 ) => {
+  const [session, setSession] = useState<Session | null>(null);
+
   const {
     user,
     setUser,
@@ -57,7 +59,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = (
     updateRole: updateUserRole,
   } = useUserProfile();
 
-  const { session, setSession, signOut } = useAuth();
+  const { signOut } = useAuth();
   const {
     unlockAchievement,
     earnXP,

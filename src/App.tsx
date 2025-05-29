@@ -25,6 +25,7 @@ import Spinner from "@/components/ui/spinner";
 import ErrorBoundary from "@/components/ui/ErrorBoundary";
 import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
+import TestAuth from "./pages/TestAuth";
 import SignUp from "./pages/SignUp";
 import ConsultationScheduling from "./pages/ConsultationScheduling";
 import OnboardingForm from "./pages/OnboardingForm";
@@ -216,6 +217,7 @@ function App() {
               <Routes>
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/login" element={<Login />} />
+                <Route path="/test-auth" element={<TestAuth />} />
                 <Route path="/signup" element={<SignUp />} />
                 <Route
                   path="/consultation"

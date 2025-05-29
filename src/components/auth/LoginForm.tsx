@@ -69,7 +69,7 @@ const LoginForm: React.FC = () => {
 
       // Update the user's role in their profile if they selected one
       if (data?.user && formData.role) {
-        await supabase
+        const { error: updateError } = await supabase
           .from("profiles")
           .update({ role: formData.role })
           .eq("id", data.user.id);
