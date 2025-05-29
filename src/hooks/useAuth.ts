@@ -14,7 +14,14 @@ interface AuthState {
 }
 
 export function useAuth() {
-    const navigate = useNavigate();
+    // Try to get navigate, but don't fail if we're outside Router context
+    let navigate: ReturnType<typeof useNavigate> | null = null;
+    try {
+        navigate = useNavigate();
+    } catch {
+        // We're outside router context, that's okay
+    }
+
     const [authState, setAuthState] = useState<AuthState>({
         user: null,
         loading: true,
@@ -205,7 +212,12 @@ export function useAuth() {
     const signOut = useCallback(async () => {
         try {
             await sessionManager.signOut();
-            navigate("/login");
+            if (navigate) {
+                navigate("/login");
+            } else {
+                // Fallback if we're outside router context
+                window.location.href = "/login";
+            }
         } catch (error) {
             logger.error("Sign out failed", error);
             toast({

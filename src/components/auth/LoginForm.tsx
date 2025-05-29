@@ -85,22 +85,45 @@ const LoginForm: React.FC = () => {
       if (error) throw error;
 
       // Get user profile from profiles table
-      const { data: profileData, error: profileError } = await supabase
+      let { data: profileData, error: profileError } = await supabase
         .from("profiles")
         .select("*")
         .eq("id", data.user.id)
         .single();
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        // If no profile exists, create one with default values
+        const { data: newProfile, error: createError } = await supabase
+          .from("profiles")
+          .insert({
+            id: data.user.id,
+            email: data.user.email,
+            name: data.user.email?.split("@")[0] || "User",
+            role: formData.role,
+            onboarding_status: "pending",
+          })
+          .select()
+          .single();
+
+        if (createError) {
+          console.error("Error creating profile:", createError);
+          throw createError;
+        }
+
+        profileData = newProfile;
+      }
 
       // Update role in profile if it's different from what the user selected
-      if (profileData.role !== formData.role) {
+      if (profileData && profileData.role !== formData.role) {
         const { error: updateError } = await supabase
           .from("profiles")
           .update({ role: formData.role })
           .eq("id", data.user.id);
 
-        if (updateError) throw updateError;
+        if (updateError) {
+          console.error("Error updating role:", updateError);
+          throw updateError;
+        }
 
         profileData.role = formData.role;
       }

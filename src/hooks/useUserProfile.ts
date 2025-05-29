@@ -3,20 +3,54 @@ import { supabase } from "@/integrations/supabase/client";
 import { OnboardingStatus, User, UserRole } from "@/contexts/UserTypes";
 import { getPersonalizedAchievements } from "@/utils/gamificationUtils";
 import { Session } from "@supabase/supabase-js";
-import { logger } from '@/services/logger';
+import { logger } from "@/services/logger";
 
 export const useUserProfile = () => {
   const [user, setUser] = useState<User | null>(null);
 
   const fetchUserProfile = async (userId: string) => {
     try {
-      const { data, error } = await supabase
+      let { data, error } = await supabase
         .from("profiles")
         .select("*")
         .eq("id", userId)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        // If profile doesn't exist, create a default one
+        if (error.code === "PGRST116") {
+          logger.debug(
+            "No profile found, creating default profile for user:",
+            userId,
+          );
+
+          // Get user email from auth
+          const { data: { user } } = await supabase.auth.getUser();
+
+          if (user) {
+            const { data: newProfile, error: createError } = await supabase
+              .from("profiles")
+              .insert({
+                id: userId,
+                email: user.email,
+                name: user.email?.split("@")[0] || "User",
+                role: "student",
+                onboarding_status: "pending",
+              })
+              .select()
+              .single();
+
+            if (createError) {
+              logger.error("Error creating profile:", createError);
+              throw createError;
+            }
+
+            data = newProfile;
+          }
+        } else {
+          throw error;
+        }
+      }
 
       if (data) {
         setUser({
@@ -62,8 +96,7 @@ export const useUserProfile = () => {
         });
       }
     } catch (error) {
-      logger.debug('Caught error:', error);
-    
+      logger.debug("Caught error:", error);
     }
   };
 
@@ -97,9 +130,8 @@ export const useUserProfile = () => {
           if (error) throw error;
         }
       } catch (error) {
-      logger.debug('Caught error:', error);
-      
-    }
+        logger.debug("Caught error:", error);
+      }
     }
   };
 
@@ -119,9 +151,8 @@ export const useUserProfile = () => {
 
         if (error) throw error;
       } catch (error) {
-      logger.debug('Caught error:', error);
-      
-    }
+        logger.debug("Caught error:", error);
+      }
     }
   };
 
@@ -152,9 +183,8 @@ export const useUserProfile = () => {
 
         if (error) throw error;
       } catch (error) {
-      logger.debug('Caught error:', error);
-      
-    }
+        logger.debug("Caught error:", error);
+      }
     }
   };
 
@@ -174,9 +204,8 @@ export const useUserProfile = () => {
 
         if (error) throw error;
       } catch (error) {
-      logger.debug('Caught error:', error);
-      
-    }
+        logger.debug("Caught error:", error);
+      }
     }
   };
 

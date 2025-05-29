@@ -209,8 +209,8 @@ function App() {
     <>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
-          <UserProvider>
-            <BrowserRouter>
+          <BrowserRouter>
+            <UserProvider>
               <Toaster />
               <Sonner />
               <Routes>
@@ -566,8 +566,8 @@ function App() {
 
                 <Route path="*" element={<NotFound />} />
               </Routes>
-            </BrowserRouter>
-          </UserProvider>
+            </UserProvider>
+          </BrowserRouter>
         </TooltipProvider>
       </QueryClientProvider>
     </>
